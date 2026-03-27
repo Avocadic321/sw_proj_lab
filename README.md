@@ -4,7 +4,7 @@
 **On Windows**
 
 ```powershell
-cd pipes-in-desert && .\mvnw.cmd compile exec:java -Dexec.args="arg1 arg2"
+cd pipes-in-desert; .\mvnw.cmd compile exec:java -Dexec.args="arg1 arg2"
 ```
 
 **On Mac/Unix**
