@@ -13,23 +13,24 @@ public class Game {
     public Team saboteur;
     public Team plumber;
     public GameState state;
-    public int goalScore;
+    public GameConfig config;
 
     public Game() {
         this.elements = new ArrayList<>();
         this.turnManager = new TurnManager();
-        this.state = GameState.START;
-        this.goalScore = 0; // TODO: Change to default value
+        this.state = GameState.INITIALIZING;
+        this.config = new GameConfig();
         System.out.println("[Game] Game object created");
     }
 
     public void startGame() {
-        System.out.println("[Game] startGame()\n");
-        state = GameState.START;
+        System.out.println("[Game] startGame()");
+        System.out.println("[Game] state = INITIALIZING");
+        state = GameState.INITIALIZING;
 
-        Spring spring  = new Spring();
+        Spring spring = new Spring();
         Cistern cistern = new Cistern();
-        Pump pump    = new Pump();
+        Pump pump = new Pump();
 
         addElement(spring);
         addElement(cistern);
@@ -38,20 +39,18 @@ public class Game {
         plumber = new Team(Teams.PLUMBERS);
         saboteur = new Team(Teams.SABOTEURS);
 
-        // Add players according to number in each team?
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             plumber.addPlayer(new Plumber());
         }
         System.out.println('\n');
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             saboteur.addPlayer(new Saboteur());
         }
 
+        turnManager.setTimerDuration(config.getTurnDurationSeconds());
         turnManager.startTurn();
 
-        setGoalScore(100);
-
-        System.out.println("[Game] state = RUNNING\n");
+        System.out.println("[Game] state = RUNNING");
         state = GameState.RUNNING;
     }
 
@@ -103,16 +102,5 @@ public class Game {
 
     public void addElement(Element element) {
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
-    }
-
-    public boolean setGoalScore(int score) {
-        System.out.printf("[Game] setGoalScore(%d)%n", score);
-
-        if (score > 0) {
-            this.goalScore = score;
-            return true;
-        } else {
-            return false;
-        }
     }
 }

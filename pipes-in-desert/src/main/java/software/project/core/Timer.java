@@ -1,7 +1,7 @@
 package software.project.core;
 
 public class Timer {
-    public int duration;
+    public int turnDuration;
     public int timeLeft;
     public boolean isRunning;
 

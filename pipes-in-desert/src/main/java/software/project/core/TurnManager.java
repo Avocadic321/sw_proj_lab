@@ -15,9 +15,7 @@ public class TurnManager {
 
     public void startTurn() {
         System.out.println("[TurnManager] startTurn()");
-        timer.setTurnDuration(120);
         timer.start();
-
     }
 
     public void suspendTurn() {
@@ -36,5 +34,9 @@ public class TurnManager {
 
     public void nextPlayer() {
         System.out.println("[TurnManager] nextPlayer()");
+    }
+
+    public void setTimerDuration(int seconds) {
+        timer.setTurnDuration(seconds);
     }
 }
