@@ -10,12 +10,23 @@ public class Team {
     public List<Player> players;
     public int score;
 
+    public Team(Teams team) {
+        System.out.printf("[Team] Team(%s)%n",  team.toString());
+        this.players = new ArrayList<>();
+        this.team = team;
+
+        System.out.println("[Team] initializeScore(0)");
+        this.score = 0;
+    }
+
     public void addPlayer(Player player) {
-        System.out.println("[Team] addPlayer()");
+        System.out.printf("[Team] addPlayer() - Team %s%n", team.toString());
+        players.add(player);
     }
 
     public void removePlayer(Player player) {
         System.out.println("[Team] removePlayer()");
+        players.remove(player);
     }
 
     public int getScore() {
@@ -23,7 +34,7 @@ public class Team {
         return score;
     }
     public void addScore(int score) {
-        System.out.printf("[Team] addScore(%d)\n", score);
+        System.out.printf("[Team] addScore(%d)%n", score);
         this.score += score;
     }
 

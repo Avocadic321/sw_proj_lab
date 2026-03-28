@@ -7,8 +7,17 @@ public class TurnManager {
     public Player currentPlayer;
     public boolean isRunning;
 
+    TurnManager() {
+        timer = new Timer();
+        currentPlayer = null;
+        isRunning = false;
+    }
+
     public void startTurn() {
         System.out.println("[TurnManager] startTurn()");
+        timer.setTurnDuration(120);
+        timer.start();
+
     }
 
     public void endTurn() {

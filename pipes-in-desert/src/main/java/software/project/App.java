@@ -13,6 +13,7 @@ public class App {
             printMainMenu();
             int choice = scanner.nextInt();
             switch (choice) {
+                case 1 -> startNewGame();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -44,5 +45,12 @@ public class App {
         System.out.println("17. End Game");
         System.out.println("18. Manage Waterflow");
         System.out.println("0. Exit");
+    }
+
+    private static void startNewGame() {
+        System.out.println("\n===== 1. Start New Game =====");
+        Game game = new Game();
+        game.startGame();
+        System.out.println("Game Initialized Successfully");
     }
 }

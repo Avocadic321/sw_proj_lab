@@ -19,12 +19,40 @@ public class Game {
         this.elements = new ArrayList<>();
         this.turnManager = new TurnManager();
         this.state = GameState.START;
-        this.goalScore = 0;
+        this.goalScore = 0; // TODO: Change to default value
         System.out.println("[Game] Game object created");
     }
 
     public void startGame() {
         System.out.println("[Game] startGame()\n");
+        state = GameState.START;
+
+        Spring spring  = new Spring();
+        Cistern cistern = new Cistern();
+        Pump pump    = new Pump();
+
+        addElement(spring);
+        addElement(cistern);
+        addElement(pump);
+
+        plumber = new Team(Teams.PLUMBERS);
+        saboteur = new Team(Teams.SABOTEURS);
+
+        // Add players according to number in each team?
+        for (int i = 0; i < 4; ++i) {
+            plumber.addPlayer(new Plumber());
+        }
+        System.out.println('\n');
+        for (int i = 0; i < 4; ++i) {
+            saboteur.addPlayer(new Saboteur());
+        }
+
+        turnManager.startTurn();
+
+        setGoalScore(100);
+
+        System.out.println("[Game] state = RUNNING\n");
+        state = GameState.RUNNING;
     }
 
     public void pauseGame() {
