@@ -27,6 +27,11 @@ public abstract class Element {
         return true;
     }
 
+    public boolean validateConnection(Pipe selectedPipe, PipeEnd freeEnd) {
+        System.out.println("[Element] validateConnection(selectedPipe, freeEnd)");
+        return true;
+    }
+
 
 
 }
