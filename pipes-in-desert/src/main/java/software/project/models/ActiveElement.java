@@ -2,7 +2,7 @@ package software.project.models;
 
 import java.util.List;
 
-public abstract class ActiveElement {
+public abstract class ActiveElement extends Element {
 
     public List<PipeEnd> connections;
 }
