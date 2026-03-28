@@ -1,12 +1,14 @@
 package software.project;
 
 import software.project.core.Game;
+import software.project.core.GameConfig;
 import software.project.utils.GameState;
 
 import java.util.Scanner;
 
 public class App {
     private static final Scanner scanner = new Scanner(System.in);
+    private static final GameConfig config = new GameConfig();
 
     public static void main(String[] args) {
 
@@ -15,7 +17,8 @@ public class App {
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1 -> startNewGame();
-                case 2 -> pauseResumeGame();
+                case 2 -> configureGame();
+                case 3 -> pauseResumeGame();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -51,9 +54,34 @@ public class App {
 
     private static void startNewGame() {
         System.out.println("\n===== 1. Start New Game =====");
-        Game game = new Game();
+        Game game = new Game(config);
         game.startGame();
         System.out.println("Game Initialized Successfully");
+    }
+
+    private static void configureGame() {
+        System.out.println("\n===== Configure Game =====");
+
+        System.out.print("Input new goal score: ");
+        int goal = scanner.nextInt();
+        config.setGoalScore(goal);
+
+        System.out.print("Input turn duration in seconds: ");
+        int duration = scanner.nextInt();
+        config.setTurnDurationSeconds(duration);
+
+        System.out.print("Enable real-time scoring? (y/n): ");
+        String input = scanner.next();
+        boolean realTime = input.equalsIgnoreCase("y");
+        config.setRealTimeScoring(realTime);
+
+        System.out.print("How many players will participate? ");
+        int players = scanner.nextInt();
+        config.setNumberOfPlayers(players);
+
+        System.out.println(config);
+
+        System.out.println("===== Game Configuration Finalized =====");
     }
 
     private static void pauseResumeGame() {

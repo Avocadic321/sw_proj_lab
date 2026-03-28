@@ -15,12 +15,16 @@ public class Game {
     public GameState state;
     public GameConfig config;
 
-    public Game() {
+    public Game(GameConfig config) {
         this.elements = new ArrayList<>();
         this.turnManager = new TurnManager();
         this.state = GameState.INITIALIZING;
-        this.config = new GameConfig();
+        this.config = config;
         System.out.println("[Game] Game object created");
+    }
+
+    public Game() {
+        this(new GameConfig());
     }
 
     public void startGame() {

@@ -46,7 +46,7 @@ public class GameConfig {
     // Setters with validation
     public void setGoalScore(int score) {
         if (goalScore >= MIN_GOAL_SCORE &&  goalScore <= MAX_GOAL_SCORE) {
-            System.out.printf("[GameConfig] setGoalScore(%d)", score);
+            System.out.printf("[GameConfig] setGoalScore(%d)%n", score);
             this.goalScore = score;
         } else {
             System.out.println("[GameConfig] Goal score must be >= " + MIN_GOAL_SCORE);
@@ -55,7 +55,7 @@ public class GameConfig {
 
     public void setTurnDurationSeconds(int seconds) {
         if (turnDurationSeconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
-            System.out.printf("[GameConfig] setTurnDurationSeconds(%d)", seconds);
+            System.out.printf("[GameConfig] setTurnDurationSeconds(%d)%n", seconds);
             this.turnDurationSeconds = seconds;
         } else {
             System.out.println("[GameConfig] Turn duration must be >= " + MIN_TURN_DURATION);
@@ -63,13 +63,13 @@ public class GameConfig {
     }
 
     public void setRealTimeScoring(boolean enabled) {
-        System.out.printf("[GameConfig] setRealTimeScoring(%b)", enabled);
+        System.out.printf("[GameConfig] setRealTimeScoring(%b)%n", enabled);
         this.realTimeScoring = enabled;
     }
 
     public void setNumberOfPlayers(int count) {
         if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
-            System.out.printf("[GameConfig] setNumberOfPlayers(%d)", count);
+            System.out.printf("[GameConfig] setNumberOfPlayers(%d)%n", count);
             this.numberOfPlayers = count;
         } else {
             System.out.println("[GameConfig] Number of players must be between " + MIN_PLAYERS + " and " + MAX_PLAYERS);
@@ -81,5 +81,21 @@ public class GameConfig {
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
         this.numberOfPlayers = DEFAULT_PLAYERS;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "GameConfig {\n" +
+                "  Goal Score: %d\n" +
+                "  Turn Duration: %d seconds\n" +
+                "  Real-time Scoring: %s\n" +
+                "  Number of Players: %d\n" +
+                "}",
+            goalScore,
+            turnDurationSeconds,
+            realTimeScoring ? "enabled" : "disabled",
+            numberOfPlayers
+        );
     }
 }
