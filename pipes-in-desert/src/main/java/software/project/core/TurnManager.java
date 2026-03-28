@@ -20,6 +20,16 @@ public class TurnManager {
 
     }
 
+    public void suspendTurn() {
+        System.out.println("[TurnManager] suspendTurn()");
+        timer.stop();
+    }
+
+    public void resumeTurn() {
+        System.out.println("[TurnManager] resumeTurn()");
+        timer.start();
+    }
+
     public void endTurn() {
         System.out.println("[TurnManager] endTurn()");
     }

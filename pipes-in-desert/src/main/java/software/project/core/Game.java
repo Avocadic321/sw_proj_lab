@@ -57,10 +57,28 @@ public class Game {
 
     public void pauseGame() {
         System.out.println("[Game] pauseGame()\n");
+        if (!(state == GameState.RUNNING)) {
+            System.out.println("[Game] pauseGame() - You cannot pause a Game if it not RUNNING");
+            return;
+        }
+
+        System.out.println("[Game] state = PAUSED\n");
+        state = GameState.PAUSED;
+
+        turnManager.suspendTurn();
     }
 
     public void resumeGame() {
         System.out.println("[Game] resumeGame()\n");
+        if (!(state == GameState.PAUSED)) {
+            System.out.println("[Game] resumeGame() - You cannot resume a Game if it not PAUSED");
+            return;
+        }
+
+        System.out.println("[Game] state = RUNNING\n");
+        state = GameState.RUNNING;
+
+        turnManager.resumeTurn();
     }
 
     public void endGame() {

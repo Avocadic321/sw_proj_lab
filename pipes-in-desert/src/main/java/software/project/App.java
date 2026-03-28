@@ -1,6 +1,7 @@
 package software.project;
 
 import software.project.core.Game;
+import software.project.utils.GameState;
 
 import java.util.Scanner;
 
@@ -14,6 +15,7 @@ public class App {
             int choice = scanner.nextInt();
             switch (choice) {
                 case 1 -> startNewGame();
+                case 2 -> pauseResumeGame();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -52,5 +54,26 @@ public class App {
         Game game = new Game();
         game.startGame();
         System.out.println("Game Initialized Successfully");
+    }
+
+    private static void pauseResumeGame() {
+        System.out.println("\n===== 3. Pause/Resume Game =====");
+        Game game = new Game();
+        game.state = GameState.RUNNING;
+
+        while (true) {
+            System.out.println("\n1. Pause Game\n2. Resume Game\n3. Exit Scenario\n");
+            int choice = scanner.nextInt();
+            switch (choice) {
+                case 1 -> game.pauseGame();
+                case 2 -> game.resumeGame();
+                case 3 -> {
+                    System.out.println("Exiting...");
+                    return;
+                }
+                default -> System.out.println("Invalid choice");
+            }
+        }
+
     }
 }
