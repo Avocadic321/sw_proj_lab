@@ -29,12 +29,13 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public void breakElement() {
         System.out.println("[Pump] breakElement()");
+        this.isBroken = true;
     }
 
     @Override
     public boolean isBroken() {
         System.out.println("[Pump] isBroken()");
-        return false;
+        return this.isBroken;
     }
 
     @Override

@@ -5,6 +5,7 @@ import software.project.utils.GameState;
 import software.project.utils.Teams;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Game {
@@ -105,6 +106,7 @@ public class Game {
     }
 
     public void addElement(Element element) {
+        this.elements.add(element);
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
     }
 
@@ -169,4 +171,131 @@ public class Game {
         System.out.println("[Game] Plumber score = " + plumber.getScore());
         System.out.println("[Game] Saboteur score = " + saboteur.getScore());
     }
+
+    // UC-16
+
+    public void processRandomEvent() {
+        System.out.println("[Game] processRandomEvent()");
+
+        // Now this will actually return the pumps you added in App.java
+        List<Pump> pumpsToBreak = selectRandomWorkingPumps();
+        System.out.println("[Game] pumpsToBreak = " + pumpsToBreak.size());
+
+        for (Pump selectedPump : pumpsToBreak) {
+            System.out.println("[Game] Breaking pump: " + selectedPump);
+            selectedPump.breakElement();
+            // Note: Ensure your Pump class actually sets its isBroken variable to true!
+        }
+
+        // Now this will actually find the cisterns
+        List<Cistern> cisternList = getCisterns();
+        System.out.println("[Game] cisternList size = " + cisternList.size());
+
+        for (Cistern targetCistern : cisternList) {
+            boolean generatePipe = Math.random() > 0.5;
+            if (generatePipe) {
+                System.out.println("[Game] Generating Pipe from cistern: " + targetCistern);
+                Pipe newPipe = targetCistern.producePipe();
+                addElement(newPipe);
+            } else {
+                System.out.println("[Game] Generating Pump from cistern: " + targetCistern);
+                Pump newPump = targetCistern.producePump();
+                addElement(newPump);
+            }
+        }
+
+        updateGameState();
+        System.out.println("[Game] Game state updated after random event\n");
+    }
+
+    /**
+     * Finds all working pumps and randomly selects a subset of them to break.
+     */
+    private List<Pump> selectRandomWorkingPumps() {
+        System.out.println("[Game] selectRandomWorkingPumps()");
+        
+        // Filter the main list for working pumps
+        List<Pump> workingPumps = new ArrayList<>();
+        for (Element e : elements) {
+            if (e instanceof Pump && !((Pump) e).isBroken()) {
+                workingPumps.add((Pump) e);
+            }
+        }
+
+        // To make it "Random": Shuffle the list and take the first few
+        // For this example, let's say we break 50% of working pumps
+        Collections.shuffle(workingPumps);
+        int countToBreak = (int) Math.ceil(workingPumps.size() * 0.5);
+        
+        return workingPumps.subList(0, countToBreak);
+    }
+
+    /**
+     * Filters the elements list to return only Cisterns.
+     */
+    private List<Cistern> getCisterns() {
+        System.out.println("[Game] getCisterns()");
+        List<Cistern> cisterns = new ArrayList<>();
+        
+        for (Element e : elements) {
+            if (e instanceof Cistern) {
+                cisterns.add((Cistern) e);
+            }
+        }
+        return cisterns;
+    }
+
+    private void updateGameState() {
+        System.out.println("[Game] updateGameState()");
+    }
+
+
+    /* 
+    public void processRandomEvent() {
+        System.out.println("[Game] processRandomEvent()");
+
+        List<Pump> pumpsToBreak = selectRandomWorkingPumps();
+        System.out.println("[Game] pumpsToBreak = " + pumpsToBreak.size());
+
+        for (Pump selectedPump : pumpsToBreak) {
+            System.out.println("[Game] Breaking pump: " + selectedPump);
+            selectedPump.breakElement();
+            System.out.println("[Game] Pump state = broken");
+        }
+
+        List<Cistern> cisternList = getCisterns();
+        System.out.println("[Game] cisternList size = " + cisternList.size());
+
+        for (Cistern targetCistern : cisternList) {
+            boolean generatePipe = Math.random() > 0.5;
+            if (generatePipe) {
+                System.out.println("[Game] Generating Pipe from cistern: " + targetCistern);
+                Pipe newPipe = targetCistern.producePipe();
+                addElement(newPipe);
+            } else {
+                System.out.println("[Game] Generating Pump from cistern: " + targetCistern);
+                Pump newPump = targetCistern.producePump();
+                addElement(newPump);
+            }
+        }
+
+        updateGameState();
+        System.out.println("[Game] Game state updated after random event\n");
+    }
+
+    private List<Pump> selectRandomWorkingPumps() {
+        System.out.println("[Game] selectRandomWorkingPumps()");
+        // Returning empty list for skeleton
+        return new ArrayList<>();
+    }
+
+    private List<Cistern> getCisterns() {
+        System.out.println("[Game] getCisterns()");
+        // Returning empty list for skeleton
+        return new ArrayList<>();
+    }
+
+    private void updateGameState() {
+        System.out.println("[Game] updateGameState()");
+    } */
 }

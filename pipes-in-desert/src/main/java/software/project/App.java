@@ -7,6 +7,7 @@ import software.project.utils.Teams;
 import software.project.models.Cistern;
 import software.project.models.Pipe;
 import software.project.models.Plumber;
+import software.project.models.Pump;
 import software.project.models.Saboteur;
 import software.project.models.Team;
 
@@ -27,6 +28,7 @@ public class App {
                 case 3 -> pauseResumeGame();
                 case 13 -> sabotagePipeScenario();
                 case 14 -> calculateScoreScenario();
+                case 15 -> processRandomEventScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -152,5 +154,36 @@ public class App {
         game.calculateScore();  // this will print all steps
 
         System.out.println("\n===== Score Calculation Scenario Finished =====");
+    }
+
+    private static void processRandomEventScenario() {
+        System.out.println("\n===== 15. Process Random Event =====");
+
+        // Create a Game with default config
+        Game game = new Game();
+
+        // Add some pumps and cisterns for demo
+        Pump pump1 = new Pump();
+        Pump pump2 = new Pump();
+        Cistern cistern1 = new Cistern();
+        Cistern cistern2 = new Cistern();
+
+        game.addElement(pump1);
+        game.addElement(pump2);
+        game.addElement(cistern1);
+        game.addElement(cistern2);
+
+        // Initialize teams
+        game.plumber = new Team(Teams.PLUMBERS);
+        game.saboteur = new Team(Teams.SABOTEURS);
+
+        // Add dummy players
+        game.plumber.addPlayer(new Plumber());
+        game.saboteur.addPlayer(new Saboteur());
+
+        System.out.println("\n[Game] Starting random event processing...");
+        game.processRandomEvent();  // this will print all skeleton steps
+
+        System.out.println("\n===== Process Random Event Scenario Finished =====");
     }
 }
