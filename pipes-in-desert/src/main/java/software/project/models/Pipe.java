@@ -25,7 +25,12 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     @Override
     public boolean isBroken() {
         System.out.println("[Pipe] isBroken()");
-        return false;
+        
+        System.out.println("Is the pipe already broken? (yes/no)");
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        String answer = sc.nextLine();
+
+        return answer.equalsIgnoreCase("yes");
     }
 
     @Override

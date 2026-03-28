@@ -107,4 +107,22 @@ public class Game {
     public void addElement(Element element) {
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
     }
+
+    public void selectPipe(Pipe targetPipe) {
+        System.out.println("[Game] selectPipe() - " + targetPipe);
+    }
+
+    public void sabotagePipe(Pipe targetPipe) {
+        System.out.println("[Game] sabotagePipe()");
+
+        boolean broken = targetPipe.isBroken();
+
+        if (!broken) {
+            System.out.println("[Game] Pipe is functional -> sabotaging");
+            targetPipe.breakElement();
+            System.out.println("[Game] Result: sabotaged");
+        } else {
+            System.out.println("[Game] Pipe already leaking -> noChange");
+        }
+    }
 }

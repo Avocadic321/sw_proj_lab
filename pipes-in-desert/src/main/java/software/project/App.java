@@ -3,6 +3,7 @@ package software.project;
 import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.utils.GameState;
+import software.project.models.Pipe;
 
 import java.util.Scanner;
 
@@ -19,6 +20,7 @@ public class App {
                 case 1 -> startNewGame();
                 case 2 -> configureGame();
                 case 3 -> pauseResumeGame();
+                case 13 -> sabotagePipeScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -103,5 +105,20 @@ public class App {
             }
         }
 
+    }
+
+    private static void sabotagePipeScenario() {
+        System.out.println("\n===== 13. Sabotage Pipe =====");
+
+        Game game = new Game(config);
+        Pipe pipe = new Pipe();
+
+        System.out.println("[Saboteur] selecting a pipe");
+        game.selectPipe(pipe);
+
+        System.out.println("[Saboteur] sabotaging the pipe");
+        game.sabotagePipe(pipe);
+
+        System.out.println("===== Sabotage Scenario Finished =====");
     }
 }
