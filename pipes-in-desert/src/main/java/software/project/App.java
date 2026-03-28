@@ -3,7 +3,12 @@ package software.project;
 import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.utils.GameState;
+import software.project.utils.Teams;
+import software.project.models.Cistern;
 import software.project.models.Pipe;
+import software.project.models.Plumber;
+import software.project.models.Saboteur;
+import software.project.models.Team;
 
 import java.util.Scanner;
 
@@ -21,6 +26,7 @@ public class App {
                 case 2 -> configureGame();
                 case 3 -> pauseResumeGame();
                 case 13 -> sabotagePipeScenario();
+                case 14 -> calculateScoreScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -120,5 +126,31 @@ public class App {
         game.sabotagePipe(pipe);
 
         System.out.println("===== Sabotage Scenario Finished =====");
+    }
+
+    private static void calculateScoreScenario() {
+        System.out.println("\n===== 14. Calculate Score =====");
+
+        // Create a Game with default config
+        Game game = new Game();
+        
+        // Add some elements for demo
+        Cistern cistern1 = new Cistern();
+        Cistern cistern2 = new Cistern();
+        game.addElement(cistern1);
+        game.addElement(cistern2);
+
+        // Initialize teams
+        game.plumber = new Team(Teams.PLUMBERS);
+        game.saboteur = new Team(Teams.SABOTEURS);
+
+        // Add dummy players
+        game.plumber.addPlayer(new Plumber());
+        game.saboteur.addPlayer(new Saboteur());
+
+        System.out.println("\n[Game] Starting score calculation...");
+        game.calculateScore();  // this will print all steps
+
+        System.out.println("\n===== Score Calculation Scenario Finished =====");
     }
 }

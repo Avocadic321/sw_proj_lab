@@ -108,6 +108,8 @@ public class Game {
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
     }
 
+    // UC-14
+
     public void selectPipe(Pipe targetPipe) {
         System.out.println("[Game] selectPipe() - " + targetPipe);
     }
@@ -124,5 +126,47 @@ public class Game {
         } else {
             System.out.println("[Game] Pipe already leaking -> noChange");
         }
+    }
+
+    // UC-15
+
+    public void calculateScore() {
+        System.out.println("[Game] calculateScore()");
+
+        simulateWaterFlow();
+        Object flowReport = new Object();
+        System.out.println("[Game] flowReport generated");
+
+        // Simulate water reaching cisterns
+        for (Element element : elements) {
+            if (element instanceof Cistern) {
+                Cistern cistern = (Cistern) element;
+                cistern.receiveWater(10); // just a placeholder amount
+            }
+        }
+
+        int storedWaterTotal = getTotalStoredWater(flowReport);
+        plumber.addScore(storedWaterTotal);
+
+        int leakedWaterTotal = getTotalLeakedWater(flowReport);
+        saboteur.addScore(leakedWaterTotal);
+
+        updateDisplayedScores();
+    }
+
+    public int getTotalStoredWater(Object flowReport) {
+        System.out.println("[Game] getTotalStoredWater()");
+        return 42; // placeholder
+    }
+
+    public int getTotalLeakedWater(Object flowReport) {
+        System.out.println("[Game] getTotalLeakedWater()");
+        return 17; // placeholder
+    }
+
+    public void updateDisplayedScores() {
+        System.out.println("[Game] updateDisplayedScores()");
+        System.out.println("[Game] Plumber score = " + plumber.getScore());
+        System.out.println("[Game] Saboteur score = " + saboteur.getScore());
     }
 }
