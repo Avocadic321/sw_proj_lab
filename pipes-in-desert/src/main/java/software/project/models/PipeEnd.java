@@ -3,9 +3,15 @@ package software.project.models;
 public class PipeEnd {
     public Pipe pipe;
     public ActiveElement connectedTo;
-    public void connectsTo(ActiveElement element){}
-    public void disconnect(){}
+
+    public void connectsTo(ActiveElement element) {
+        System.out.println("[PipeEnd] connectsTo()");
+    }
+    public void disconnect() {
+        System.out.println("[PipeEnd] disconnect()");
+    }
     public boolean isFree() {
+        System.out.println("[PipeEnd] isFree()");
         return false;
     }
 }

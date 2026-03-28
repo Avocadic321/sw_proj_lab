@@ -5,13 +5,33 @@ import software.project.interfaces.IRepairable;
 
 public class Plumber extends Player {
     public ICarriable carriedItem;
-    public void repair(IRepairable target){}
-    public void extendPipeSystem() {}
-    public void pickUpPump(Cistern cistern) {}
-    public void pickUpPump(Pump pump){}
-    public void pickUpPipe(Cistern cistern){}
-    public void disconnect(PipeEnd end){}
-    public void connect(PipeEnd end, ActiveElement tgt){}
-    public void insertPumpIntoPipe(Pump pump, Pipe pipe){}
+
+    public void repair(IRepairable target) {
+        System.out.println("[Plumber] repair()");
+    }
+
+    public void extendPipeSystem() {
+        System.out.println("[Plumber] extendPipeSystem()");
+    }
+
+    public void pickUpPump(Cistern cistern) {
+        System.out.println("[Plumber] pickUpPump() - at Cistern");
+    }
+
+    public void pickUpPump(Pump pump) {
+        System.out.println("[Plumber] pickUpPump()");
+    }
+    public void pickUpPipe(Cistern cistern) {
+        System.out.println("[Plumber] pickUpPipe()");
+    }
+    public void disconnect(PipeEnd end) {
+        System.out.println("[Plumber] disconnect()");
+    }
+    public void connect(PipeEnd end, ActiveElement tgt) {
+        System.out.println("[Plumber] connect()");
+    }
+    public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
+        System.out.println("[Plumber] insertPumpIntoPipe()");
+    }
 
 }

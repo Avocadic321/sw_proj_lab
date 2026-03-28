@@ -1,5 +1,7 @@
 package software.project;
 
+import software.project.core.Game;
+
 import java.util.Scanner;
 
 public class App {
