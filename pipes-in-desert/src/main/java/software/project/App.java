@@ -6,10 +6,12 @@ import software.project.utils.GameState;
 import software.project.utils.Teams;
 import software.project.models.Cistern;
 import software.project.models.Pipe;
+import software.project.models.PipeEnd;
 import software.project.models.Plumber;
 import software.project.models.Pump;
 import software.project.models.Saboteur;
 import software.project.models.Team;
+import software.project.models.Spring;
 
 import java.util.Scanner;
 
@@ -30,6 +32,7 @@ public class App {
                 case 14 -> calculateScoreScenario();
                 case 15 -> processRandomEventScenario();
                 case 17 -> endGameScenario();
+                case 18 -> manageWaterflowScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -217,4 +220,38 @@ public class App {
         System.out.println("\n===== End Game Scenario Finished =====");
     }
 
+    private static void manageWaterflowScenario() {
+        System.out.println("\n===== 18. Manage Waterflow =====");
+        Game game = new Game();
+
+        // 1. Create components
+        Spring spring = new Spring();
+        spring.waterProductionRate = 5; // Set rate so generation > 0
+        
+        Pipe pipe = new Pipe();
+        Pump pump = new Pump();
+        Cistern cistern = new Cistern();
+
+        // 2. THE WIRING (Crucial step!)
+        spring.addPipe(pipe); // Connect Spring -> Pipe
+        
+        pipe.end1 = new PipeEnd();
+        pipe.end1.connectedTo = spring; 
+        
+        pipe.end2 = new PipeEnd();
+        pipe.end2.connectedTo = pump; // Connect Pipe -> Pump
+
+        pump.inputPipe = pipe.end2;
+        pump.outputPipe = new PipeEnd();
+        pump.outputPipe.connectedTo = cistern; // Connect Pump -> Cistern
+
+        // 3. Add to game
+        game.addElement(spring);
+        game.addElement(pipe);
+        game.addElement(pump);
+        game.addElement(cistern);
+
+        System.out.println("\n[Game] Starting waterflow simulation...");
+        game.simulateWaterFlow();
+    }
 }

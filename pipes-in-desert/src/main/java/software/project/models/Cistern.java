@@ -9,16 +9,16 @@ public class Cistern extends ActiveElement implements IConnectable {
     public int capacity;
 
     public void receiveWater(int amount) {
-        System.out.println("[Cistern] receiveWater()]");
+        System.out.println("[Cistern] receiveWater()");
     }
 
     public boolean isFull() {
-        System.out.println("[Cistern] isFull()]");
+        System.out.println("[Cistern] isFull()");
         return false;
     }
 
     public Pipe producePipe() {
-        System.out.println("[Cistern] producePipe()]");
+        System.out.println("[Cistern] producePipe()");
         return new Pipe();
     }
 
@@ -29,7 +29,7 @@ public class Cistern extends ActiveElement implements IConnectable {
 
     @Override
     public void connect(PipeEnd end) {
-        System.out.println("[Cistern] connect()]");
+        System.out.println("[Cistern] connect()");
     }
 
     @Override

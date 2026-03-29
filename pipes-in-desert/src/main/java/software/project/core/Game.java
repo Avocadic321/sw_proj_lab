@@ -97,10 +97,6 @@ public class Game {
         System.out.println("[Game] performRandomEvents()\n");
     }
 
-    public void simulateWaterFlow() {
-        System.out.println("[Game] simulateWaterFlow()\n");
-    }
-
     public void addElement(Element element) {
         this.elements.add(element);
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
@@ -274,5 +270,118 @@ public class Game {
 
     public void displayFinalResult(Team winner) {
         System.out.println("[Game] displayFinalResult() - Winner: " + winner.team);
-    }   
+    }  
+    
+    // UC18
+
+    private int storedWaterTotal = 0;
+    private int leakedWaterTotal = 0;
+    
+    public void simulateWaterFlow() {
+        System.out.println("[Game] simulateWaterFlow()");
+        
+        // Reset totals at the start of every simulation
+        storedWaterTotal = 0;
+        leakedWaterTotal = 0;
+
+        List<Spring> springs = getSprings();
+        System.out.println("[Game] Found " + springs.size() + " springs.");
+
+        for (Spring sourceSpring : springs) {
+            // Ensure water production isn't 0
+            int waterAmount = sourceSpring.generateWater();
+            if (waterAmount == 0) waterAmount = 500; // Default fallback for skeleton
+            
+            System.out.println("[Game] Spring generated: " + waterAmount + " units");
+
+            // BFS Queue to trace the flow
+            List<Pipe> pipeQueue = new ArrayList<>(sourceSpring.getConnectedPipes());
+
+            while (!pipeQueue.isEmpty()) {
+                Pipe activePipe = pipeQueue.remove(0);
+                System.out.println("[Game] Processing pipe: " + activePipe);
+
+                // Check 1: Leaking due to sabotage?
+                if (activePipe.isBroken()) {
+                    System.out.println("[Game] Flow Interrupted: Pipe is broken.");
+                    registerLeak(waterAmount);
+                } 
+                // Check 2: Leaking due to being unplugged?
+                else if (activePipe.hasFreeEnd()) {
+                    System.out.println("[Game] Flow Interrupted: Pipe has a free end.");
+                    registerLeak(waterAmount);
+                } 
+                // Check 3: Functional pipe
+                else {
+                    int forwardedAmount = activePipe.transferWater(waterAmount);
+                    
+                    // Find the next component
+                    Pump activePump = activePipe.getNextPump();
+                    if (activePump != null) {
+                        processPumpFlow(activePump, forwardedAmount, pipeQueue);
+                    } else {
+                        // If it's a functional pipe but leads nowhere, it's effectively a free end
+                        registerLeak(forwardedAmount);
+                    }
+                }
+            }
+        }
+        updateFlowTotals();
+    }
+
+    private void processPumpFlow(Pump activePump, int amount, List<Pipe> pipeQueue) {
+        // Check 1: Pump Health
+        if (activePump.isBroken()) {
+            System.out.println("[Game] Flow Interrupted: Pump is broken.");
+            // In many designs, a broken pump causes water to leak or just stop. 
+            // We'll count it as a leak for the Saboteurs.
+            registerLeak(amount);
+        } 
+        // Check 2: Pump Capacity
+        else if (activePump.isTankFull()) {
+            System.out.println("[Game] Flow Interrupted: Pump tank is full.");
+        } 
+        // Check 3: Pump is working
+        else {
+            int pumpedAmount = activePump.transferWater(amount);
+            
+            // Branch A: Water moves into the next pipe
+            Pipe outgoingPipe = activePump.getOutgoingPipe();
+            if (outgoingPipe != null) {
+                pipeQueue.add(outgoingPipe);
+                System.out.println("[Game] Water pumped into outgoing pipe.");
+            }
+
+            // Branch B: Pump is connected directly to a Cistern
+            if (activePump.isConnectedToCistern()) {
+                Cistern targetCistern = activePump.getTargetCistern();
+                if (targetCistern != null) {
+                    targetCistern.receiveWater(pumpedAmount);
+                    storedWaterTotal += pumpedAmount; // Score for Plumbers
+                    System.out.println("[Game] SUCCESS: Water reached target cistern!");
+                }
+            }
+        }
+    }
+
+    private List<Spring> getSprings() {
+        List<Spring> springs = new ArrayList<>();
+        for (Element e : elements) {
+            if (e instanceof Spring) springs.add((Spring) e);
+        }
+        return springs;
+    }
+
+    private void registerLeak(int amount) {
+        leakedWaterTotal += amount;
+        System.out.println("[Game] registerLeak() - Total leaked so far: " + leakedWaterTotal);
+    }
+
+    private void updateFlowTotals() {
+        System.out.println("\n[Game] --- Flow Simulation Results ---");
+        System.out.println("[Game] Total Water Stored (Plumbers): " + storedWaterTotal);
+        System.out.println("[Game] Total Water Leaked (Saboteurs): " + leakedWaterTotal);
+        System.out.println("[Game] --------------------------------\n");
+    }
+
 }
