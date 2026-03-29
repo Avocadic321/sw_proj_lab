@@ -29,6 +29,7 @@ public class App {
                 case 13 -> sabotagePipeScenario();
                 case 14 -> calculateScoreScenario();
                 case 15 -> processRandomEventScenario();
+                case 17 -> endGameScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -133,25 +134,21 @@ public class App {
     private static void calculateScoreScenario() {
         System.out.println("\n===== 14. Calculate Score =====");
 
-        // Create a Game with default config
         Game game = new Game();
         
-        // Add some elements for demo
         Cistern cistern1 = new Cistern();
         Cistern cistern2 = new Cistern();
         game.addElement(cistern1);
         game.addElement(cistern2);
 
-        // Initialize teams
         game.plumber = new Team(Teams.PLUMBERS);
         game.saboteur = new Team(Teams.SABOTEURS);
 
-        // Add dummy players
         game.plumber.addPlayer(new Plumber());
         game.saboteur.addPlayer(new Saboteur());
 
         System.out.println("\n[Game] Starting score calculation...");
-        game.calculateScore();  // this will print all steps
+        game.calculateScore();
 
         System.out.println("\n===== Score Calculation Scenario Finished =====");
     }
@@ -159,10 +156,8 @@ public class App {
     private static void processRandomEventScenario() {
         System.out.println("\n===== 15. Process Random Event =====");
 
-        // Create a Game with default config
         Game game = new Game();
 
-        // Add some pumps and cisterns for demo
         Pump pump1 = new Pump();
         Pump pump2 = new Pump();
         Cistern cistern1 = new Cistern();
@@ -173,17 +168,53 @@ public class App {
         game.addElement(cistern1);
         game.addElement(cistern2);
 
-        // Initialize teams
         game.plumber = new Team(Teams.PLUMBERS);
         game.saboteur = new Team(Teams.SABOTEURS);
 
-        // Add dummy players
         game.plumber.addPlayer(new Plumber());
         game.saboteur.addPlayer(new Saboteur());
 
         System.out.println("\n[Game] Starting random event processing...");
-        game.processRandomEvent();  // this will print all skeleton steps
+        game.processRandomEvent();
 
         System.out.println("\n===== Process Random Event Scenario Finished =====");
     }
+
+    private static void endGameScenario() {
+        System.out.println("\n===== 17. End Game =====");
+
+        Game game = new Game();
+        
+        Cistern cistern1 = new Cistern();
+        Cistern cistern2 = new Cistern();
+        game.addElement(cistern1);
+        game.addElement(cistern2);
+
+        game.plumber = new Team(Teams.PLUMBERS);
+        game.saboteur = new Team(Teams.SABOTEURS);
+
+        game.plumber.addPlayer(new Plumber());
+        game.saboteur.addPlayer(new Saboteur());
+
+        game.plumber.addScore(50);
+        game.saboteur.addScore(30);
+
+        System.out.println("\n[Game] Starting periodic winner check...");
+
+        for (int i = 0; i < 3; i++) {
+            System.out.println("\n[Game] Periodic check #" + (i+1));
+            game.checkWinner();
+
+            game.plumber.addScore(5);
+            game.saboteur.addScore(10);
+
+            if (game.state == GameState.FINALIZED) {
+                System.out.println("\n[Game] Game has ended, stopping periodic checks.");
+                break;
+            }
+        }
+
+        System.out.println("\n===== End Game Scenario Finished =====");
+    }
+
 }

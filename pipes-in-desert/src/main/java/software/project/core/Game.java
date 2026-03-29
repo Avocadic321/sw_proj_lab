@@ -89,10 +89,6 @@ public class Game {
         System.out.println("[Game] endGame()\n");
     }
 
-    public void checkWinner() {
-        System.out.println("[Game] checkWinner()\n");
-    }
-
     public void nextTurn() {
         System.out.println("[Game] nextTurn()\n");
     }
@@ -177,17 +173,14 @@ public class Game {
     public void processRandomEvent() {
         System.out.println("[Game] processRandomEvent()");
 
-        // Now this will actually return the pumps you added in App.java
         List<Pump> pumpsToBreak = selectRandomWorkingPumps();
         System.out.println("[Game] pumpsToBreak = " + pumpsToBreak.size());
 
         for (Pump selectedPump : pumpsToBreak) {
             System.out.println("[Game] Breaking pump: " + selectedPump);
             selectedPump.breakElement();
-            // Note: Ensure your Pump class actually sets its isBroken variable to true!
         }
 
-        // Now this will actually find the cisterns
         List<Cistern> cisternList = getCisterns();
         System.out.println("[Game] cisternList size = " + cisternList.size());
 
@@ -208,9 +201,6 @@ public class Game {
         System.out.println("[Game] Game state updated after random event\n");
     }
 
-    /**
-     * Finds all working pumps and randomly selects a subset of them to break.
-     */
     private List<Pump> selectRandomWorkingPumps() {
         System.out.println("[Game] selectRandomWorkingPumps()");
         
@@ -230,9 +220,6 @@ public class Game {
         return workingPumps.subList(0, countToBreak);
     }
 
-    /**
-     * Filters the elements list to return only Cisterns.
-     */
     private List<Cistern> getCisterns() {
         System.out.println("[Game] getCisterns()");
         List<Cistern> cisterns = new ArrayList<>();
@@ -249,53 +236,43 @@ public class Game {
         System.out.println("[Game] updateGameState()");
     }
 
+    // UC-17
 
-    /* 
-    public void processRandomEvent() {
-        System.out.println("[Game] processRandomEvent()");
+    public void checkWinner() {
+        System.out.println("[Game] checkWinner()");
+        
+        int plumberScore = plumber.getScore();
+        int saboteurScore = saboteur.getScore();
+        System.out.println("[Game] Plumber score = " + plumberScore);
+        System.out.println("[Game] Saboteur score = " + saboteurScore);
 
-        List<Pump> pumpsToBreak = selectRandomWorkingPumps();
-        System.out.println("[Game] pumpsToBreak = " + pumpsToBreak.size());
+        compareScores(plumberScore, saboteurScore);
+    }
 
-        for (Pump selectedPump : pumpsToBreak) {
-            System.out.println("[Game] Breaking pump: " + selectedPump);
-            selectedPump.breakElement();
-            System.out.println("[Game] Pump state = broken");
+    public void compareScores(int plumberScore, int saboteurScore) {
+        System.out.println("[Game] compareScores() - plumberScore: " + plumberScore + ", saboteurScore: " + saboteurScore);
+
+        // Example threshold for winning (just for skeleton)
+        int goalScore = config.getGoalScore();
+        if (plumberScore >= goalScore || saboteurScore >= goalScore) {
+            determineWinner();
+            ensureNoDrawCondition();
+            state = GameState.FINALIZED;
+            displayFinalResult(plumberScore > saboteurScore ? plumber : saboteur);
+        } else {
+            System.out.println("[Game] No winner yet - game keeps running");
         }
-
-        List<Cistern> cisternList = getCisterns();
-        System.out.println("[Game] cisternList size = " + cisternList.size());
-
-        for (Cistern targetCistern : cisternList) {
-            boolean generatePipe = Math.random() > 0.5;
-            if (generatePipe) {
-                System.out.println("[Game] Generating Pipe from cistern: " + targetCistern);
-                Pipe newPipe = targetCistern.producePipe();
-                addElement(newPipe);
-            } else {
-                System.out.println("[Game] Generating Pump from cistern: " + targetCistern);
-                Pump newPump = targetCistern.producePump();
-                addElement(newPump);
-            }
-        }
-
-        updateGameState();
-        System.out.println("[Game] Game state updated after random event\n");
     }
 
-    private List<Pump> selectRandomWorkingPumps() {
-        System.out.println("[Game] selectRandomWorkingPumps()");
-        // Returning empty list for skeleton
-        return new ArrayList<>();
+    public void determineWinner() {
+        System.out.println("[Game] determineWinner()");
     }
 
-    private List<Cistern> getCisterns() {
-        System.out.println("[Game] getCisterns()");
-        // Returning empty list for skeleton
-        return new ArrayList<>();
+    public void ensureNoDrawCondition() {
+        System.out.println("[Game] ensureNoDrawCondition()");
     }
 
-    private void updateGameState() {
-        System.out.println("[Game] updateGameState()");
-    } */
+    public void displayFinalResult(Team winner) {
+        System.out.println("[Game] displayFinalResult() - Winner: " + winner.team);
+    }   
 }
