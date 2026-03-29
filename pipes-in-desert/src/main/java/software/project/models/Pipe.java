@@ -13,8 +13,9 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     public boolean isBroken;
 
-    public void transferWater() {
-        System.out.println("[Pipe] transferWater()");
+    public int transferWater(int amount) {
+        System.out.println("[Pipe] transferWater(" + amount + ")");
+        return amount;
     }
 
     @Override
@@ -25,11 +26,29 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     @Override
     public boolean isBroken() {
         System.out.println("[Pipe] isBroken()");
-        return false;
+
+        System.out.println("Is the pipe already broken? (yes/no)");
+        java.util.Scanner sc = new java.util.Scanner(System.in);
+        String answer = sc.nextLine();
+
+        return answer.equalsIgnoreCase("yes");
     }
 
     @Override
     public void repair() {
         System.out.println("[Pipe] repair()");
+    }
+
+    public boolean hasFreeEnd() {
+        System.out.println("[Pipe] checking if ends are free...");
+        return end1.isFree() || end2.isFree();
+    }
+
+    public Pump getNextPump() {
+        System.out.println("[Pipe] getNextPump()");
+        if (end2.connectedTo instanceof Pump) {
+            return (Pump) end2.connectedTo;
+        }
+        return null; 
     }
 }

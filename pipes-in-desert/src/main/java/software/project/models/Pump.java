@@ -22,19 +22,22 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     public void setDirection(PipeEnd input, PipeEnd output) {
         System.out.println("[Pump] setDirection()");
     }
-    public void transferWater() {
-        System.out.println("[Pump] transferWater()");
+
+    public int transferWater(int amount) {
+        System.out.println("[Pump] transferWater(" + amount + ")");
+        return amount;
     }
 
     @Override
     public void breakElement() {
         System.out.println("[Pump] breakElement()");
+        this.isBroken = true;
     }
 
     @Override
     public boolean isBroken() {
         System.out.println("[Pump] isBroken()");
-        return false;
+        return this.isBroken;
     }
 
     @Override
@@ -56,5 +59,28 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public void repair() {
         System.out.println("[Pump] repair()");
+    }
+
+    public boolean isTankFull() {
+        System.out.println("[Pump] isTankFull()");
+        return false;
+    }
+
+    public Pipe getOutgoingPipe() {
+        System.out.println("[Pump] getOutgoingPipe()");
+        if (outputPipe != null && outputPipe.pipe != null) {
+            return outputPipe.pipe;
+        }
+        return null;
+    }
+
+    public boolean isConnectedToCistern() {
+        System.out.println("[Pump] isConnectedToCistern()");
+        return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
+    }
+
+    public Cistern getTargetCistern() {
+        System.out.println("[Pump] getTargetCistern()");
+        return new Cistern();
     }
 }
