@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
-    public List<PipeEnd> connections;
-
     public PipeEnd inputPipe;
     public PipeEnd outputPipe;
     public Pipe selectedInputPipe;

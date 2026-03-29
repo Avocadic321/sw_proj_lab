@@ -14,11 +14,15 @@ public class PipeEnd {
             return false;
         }
 
+        activeElement.connect(this);
         connectsTo(activeElement);
         return true;
     }
     public void disconnect() {
         System.out.println("[PipeEnd] disconnect()");
+        if (connectedTo != null) {
+            connectedTo.disconnect(this);
+        }
         connectedTo = null;
     }
     public boolean isFree() {

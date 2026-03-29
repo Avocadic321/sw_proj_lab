@@ -15,16 +15,24 @@ public class Spring extends ActiveElement implements IConnectable {
     @Override
     public void connect(PipeEnd end) {
         System.out.println("[Spring] connect()");
+        if (end == null) {
+            return;
+        }
+
+        if (!connections.contains(end)) {
+            connections.add(end);
+        }
     }
 
     @Override
     public void disconnect(PipeEnd end) {
         System.out.println("[Spring] disconnect()");
+        connections.remove(end);
     }
 
     @Override
     public List<PipeEnd> getConnections() {
         System.out.println("[Spring] getConnections()");
-        return List.of();
+        return connections;
     }
 }

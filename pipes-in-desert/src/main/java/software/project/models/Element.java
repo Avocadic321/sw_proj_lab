@@ -1,5 +1,6 @@
 package software.project.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Element {
@@ -9,6 +10,10 @@ public abstract class Element {
     public int y;
 
     public List<Player> occupants;
+
+    protected Element() {
+        occupants = new ArrayList<>();
+    }
 
     public void addOccupant(Player p) {
         System.out.println("[Element] addOccupant(Player p)");
@@ -29,6 +34,21 @@ public abstract class Element {
 
     public boolean validateConnection(Pipe selectedPipe, PipeEnd freeEnd) {
         System.out.println("[Element] validateConnection(selectedPipe, freeEnd)");
+        if (selectedPipe == null || freeEnd == null || freeEnd.pipe != selectedPipe) {
+            return false;
+        }
+
+        if (!(this instanceof ActiveElement)) {
+            return false;
+        }
+
+        if (this instanceof Pump pump) {
+            int currentConnections = pump.getConnections().size();
+            if (pump.maxConnections > 0 && currentConnections >= pump.maxConnections) {
+                return false;
+            }
+        }
+
         return true;
     }
 

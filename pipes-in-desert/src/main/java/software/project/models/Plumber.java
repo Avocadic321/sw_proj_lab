@@ -9,6 +9,9 @@ public class Plumber extends Player {
 
     public void repair(IRepairable target) {
         System.out.println("[Plumber] repair()");
+        if (target != null) {
+            target.repair();
+        }
     }
     public void setCarriedItem(ICarriable item) {
         System.out.println("[Plumber] setCarriedItem(item)");
@@ -20,7 +23,7 @@ public class Plumber extends Player {
             return false;
         }
 
-        game.selectDamagedPipe(targetPipe);
+        game.selectPipe(targetPipe);
         return game.repairPipe(targetPipe);
     }
     public boolean repairPump(Game game, Pump targetPump) {
@@ -29,7 +32,7 @@ public class Plumber extends Player {
             return false;
         }
 
-        game.selectBrokenPump(targetPump);
+        game.selectPump(targetPump);
         return game.repairPump(targetPump);
     }
 
@@ -43,13 +46,16 @@ public class Plumber extends Player {
 
     public void pickUpPump(Pump pump) {
         System.out.println("[Plumber] pickUpPump()");
-        carriedItem = pump;
+        setCarriedItem(pump);
     }
     public void pickUpPipe(Cistern cistern) {
         System.out.println("[Plumber] pickUpPipe()");
     }
     public void disconnect(PipeEnd end) {
         System.out.println("[Plumber] disconnect()");
+        if (end != null) {
+            end.disconnect();
+        }
     }
     public boolean disconnect(Game game, Pipe selectedPipe, PipeEnd selectedEnd) {
         System.out.println("[Plumber] disconnect(selectedPipe, selectedEnd)");
@@ -62,6 +68,9 @@ public class Plumber extends Player {
     }
     public void connect(PipeEnd end, ActiveElement tgt) {
         System.out.println("[Plumber] connect()");
+        if (end != null) {
+            end.connectTo(tgt);
+        }
     }
     public boolean connect(Game game, Pipe selectedPipe, PipeEnd freeEnd, Element targetElement) {
         System.out.println("[Plumber] connect(selectedPipe, freeEnd, targetElement)");
@@ -73,15 +82,8 @@ public class Plumber extends Player {
         game.selectTargetElement(targetElement);
         return game.connect(selectedPipe, freeEnd, targetElement);
     }
-    public Pump getCarriedItem() {
+    public ICarriable getCarriedItem() {
         System.out.println("[Plumber] getCarriedItem()");
-        if (carriedItem instanceof Pump pump) {
-            return pump;
-        }
-        return null;
-    }
-    public ICarriable getCarriedComponent() {
-        System.out.println("[Plumber] getCarriedComponent()");
         return carriedItem;
     }
     public void clearCarriedItem() {
@@ -102,7 +104,11 @@ public class Plumber extends Player {
     }
     public boolean requestComponent(Game game, Cistern sourceCistern) {
         System.out.println("[Plumber] requestComponent()");
-        if (game == null) {
+        if (game == null || sourceCistern == null) {
+            return false;
+        }
+
+        if (getCurrentPosition() != sourceCistern) {
             return false;
         }
 

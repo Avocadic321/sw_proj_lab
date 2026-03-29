@@ -122,20 +122,8 @@ public class Game {
         return this.selectedPipe;
     }
 
-    public Pipe selectDamagedPipe(Pipe targetPipe) {
-        System.out.println("[Game] selectDamagedPipe(targetPipe)");
-        this.selectedPipe = targetPipe;
-        return this.selectedPipe;
-    }
-
     public Pump selectPump(Pump targetPump) {
         System.out.println("[Game] selectPump(targetPump)");
-        this.selectedPump = targetPump;
-        return this.selectedPump;
-    }
-
-    public Pump selectBrokenPump(Pump targetPump) {
-        System.out.println("[Game] selectBrokenPump(targetPump)");
         this.selectedPump = targetPump;
         return this.selectedPump;
     }
@@ -229,8 +217,8 @@ public class Game {
             return false;
         }
 
-        Pump carriedPump = activePlumber.getCarriedItem();
-        if (carriedPump == null) {
+        var carriedItem = activePlumber.getCarriedItem();
+        if (!(carriedItem instanceof Pump carriedPump)) {
             System.out.println("[Game] insertPumpIntoPipe() - rejected");
             return false;
         }
@@ -333,7 +321,7 @@ public class Game {
             return false;
         }
 
-        if (activePlumber.getCarriedComponent() != null) {
+        if (activePlumber.getCarriedItem() != null) {
             System.out.println("[Game] requestComponent() - rejected");
             return false;
         }
