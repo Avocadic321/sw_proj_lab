@@ -1,0 +1,29 @@
+@startuml UC10_SetPumpDirection
+title UC-10: Set Pump Direction
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Player" as player
+participant "game:Game" as game
+participant "targetPump:Pump" as targetPump
+
+player -> game : selectPump(targetPump)
+player -> game : selectInputPipe(inputPipe)
+player -> game : selectOutputPipe(outputPipe)
+player -> game : setDirection(inputPipe,outputPipe)
+game -> targetPump : setDirection(inputPipe,outputPipe)
+targetPump -> targetPump : validateSingleInputOutput(inputPipe,outputPipe)
+targetPump --> game : valid/invalid
+
+alt exactly one input and one output
+    game -> targetPump : storeDirectionConfiguration()
+    targetPump --> game : directionUpdated
+    game --> player : success
+else invalid direction setup
+    game --> player : rejected
+end
+
+@enduml

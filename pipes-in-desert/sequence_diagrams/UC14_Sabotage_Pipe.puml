@@ -1,0 +1,26 @@
+@startuml UC14_SabotagePipe
+title UC-14: Sabotage Pipe
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Saboteur" as saboteur
+participant "game:Game" as game
+participant "targetPipe:Pipe" as targetPipe
+
+saboteur -> game : selectPipe(targetPipe)
+saboteur -> game : sabotagePipe(targetPipe)
+game -> targetPipe : isBroken()
+targetPipe --> game : true/false
+
+alt pipe is functional
+    game -> targetPipe : breakElement()
+    targetPipe --> game : state=damaged
+    game --> saboteur : sabotaged
+else pipe already leaking
+    game --> saboteur : noChange
+end
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml UC12_PickUpComponent
+title UC-12: Pick up Component
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Plumber" as plumber
+participant "game:Game" as game
+participant "sourceCistern:Cistern" as sourceCistern
+participant "activePlumber:Plumber" as activePlumber
+
+plumber -> game : selectCistern(sourceCistern)
+plumber -> game : requestComponent()
+
+game -> game : getActivePlayer()
+game --> game : activePlumber
+
+alt cistern produces pipe
+    game -> sourceCistern : producePipe()
+    sourceCistern --> game : newPipe
+    game -> activePlumber : setCarriedItem(newPipe)
+else cistern produces pump
+    game -> sourceCistern : producePump()
+    sourceCistern --> game : newPump
+    game -> activePlumber : setCarriedItem(newPump)
+end
+
+game --> plumber : componentReceived
+
+@enduml

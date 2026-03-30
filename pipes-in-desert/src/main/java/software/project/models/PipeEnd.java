@@ -10,6 +10,12 @@ public class PipeEnd {
         element.connect(this);
         System.out.println("    [PipeEnd] connectedTo = " + element.id);
     }
+
+    public void connectTo(ActiveElement element) {
+        System.out.println("[PipeEnd] connectTo()");
+        connectsTo(element);
+    }
+
     public void disconnect() {
         System.out.println("[PipeEnd] disconnect()");
         if (connectedTo != null) {

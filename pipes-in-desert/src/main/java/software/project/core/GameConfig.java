@@ -43,23 +43,15 @@ public class GameConfig {
         return numberOfPlayers;
     }
 
-    // Setters with validation
+    // Setters (skeleton print + assign)
     public void setGoalScore(int score) {
-        if (goalScore >= MIN_GOAL_SCORE &&  goalScore <= MAX_GOAL_SCORE) {
-            System.out.printf("[GameConfig] setGoalScore(%d)%n", score);
-            this.goalScore = score;
-        } else {
-            System.out.println("[GameConfig] Goal score must be >= " + MIN_GOAL_SCORE);
-        }
+        System.out.printf("[GameConfig] setGoalScore(%d)%n", score);
+        this.goalScore = score;
     }
 
     public void setTurnDurationSeconds(int seconds) {
-        if (turnDurationSeconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
-            System.out.printf("[GameConfig] setTurnDurationSeconds(%d)%n", seconds);
-            this.turnDurationSeconds = seconds;
-        } else {
-            System.out.println("[GameConfig] Turn duration must be >= " + MIN_TURN_DURATION);
-        }
+        System.out.printf("[GameConfig] setTurnDurationSeconds(%d)%n", seconds);
+        this.turnDurationSeconds = seconds;
     }
 
     public void setRealTimeScoring(boolean enabled) {
@@ -68,12 +60,8 @@ public class GameConfig {
     }
 
     public void setNumberOfPlayers(int count) {
-        if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
-            System.out.printf("[GameConfig] setNumberOfPlayers(%d)%n", count);
-            this.numberOfPlayers = count;
-        } else {
-            System.out.println("[GameConfig] Number of players must be between " + MIN_PLAYERS + " and " + MAX_PLAYERS);
-        }
+        System.out.printf("[GameConfig] setNumberOfPlayers(%d)%n", count);
+        this.numberOfPlayers = count;
     }
 
     public void resetToDefault() {

@@ -1,0 +1,21 @@
+@startuml UC7_DisconnectPipe
+title UC-7: Disconnect Pipe End
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Plumber" as plumber
+participant "game:Game" as game
+participant "selectedPipe:Pipe" as selectedPipe
+
+plumber -> game : selectPipe(selectedPipe)
+plumber -> game : disconnect(selectedPipe, selectedEnd)
+game -> selectedPipe : disconnect(selectedEnd)
+selectedPipe -> selectedPipe : removeConnection(selectedEnd)
+selectedPipe --> game : endpointDisconnected
+game -> game : updatePipeNetworkStructure()
+game --> plumber : disconnectApplied
+
+@enduml

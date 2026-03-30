@@ -1,0 +1,27 @@
+
+@startuml UC13_RepairPump
+title UC-13: Handle Pipe System\nRepair Pump
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Plumber" as plumber
+participant "game:Game" as game
+participant "targetPump:Pump" as targetPump
+
+plumber -> game : selectBrokenPump(targetPump)
+plumber -> game : repairPump(targetPump)
+game -> targetPump : isBroken()
+targetPump --> game : true/false
+
+alt pump is broken
+    game -> targetPump : repair()
+    targetPump --> game : working
+    game --> plumber : repaired
+else pump already working
+    game --> plumber : noChange
+end
+
+@enduml

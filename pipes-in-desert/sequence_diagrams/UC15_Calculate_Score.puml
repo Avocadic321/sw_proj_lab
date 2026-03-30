@@ -1,0 +1,35 @@
+
+@startuml UC15_CalculateScore
+title UC-15: Calculate Score
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+participant "game:Game" as game
+participant "plumberTeam:Team" as plumberTeam
+participant "saboteurTeam:Team" as saboteurTeam
+participant "targetCistern:Cistern" as targetCistern
+
+game -> game : simulateWaterFlow()
+game --> game : flowReport
+
+loop water reaches a cistern
+    game -> targetCistern : receiveWater(amount)
+end
+
+game -> game : getTotalStoredWater(flowReport)
+game --> game : storedWaterTotal
+
+game -> plumberTeam : addScore(storedWaterTotal)
+
+game -> game : getTotalLeakedWater(flowReport)
+game --> game : leakedWaterTotal
+
+game -> saboteurTeam : addScore(leakedWaterTotal)
+
+game -> game : updateDisplayedScores()
+
+@enduml
+

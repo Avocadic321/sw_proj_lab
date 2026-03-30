@@ -1,12 +1,12 @@
 package software.project.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
     public List<PipeEnd> connections;
@@ -35,24 +35,34 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         outputPipe = new PipeEnd();
         isBroken = false;
     }
+
     public boolean setDirection(PipeEnd input, PipeEnd output) {
         System.out.println("[Pump] setDirection()");
-
-        boolean valid = input != null
-            && output != null
-            && input != output
-            && input.connectedTo == this
-            && output.connectedTo == this;
-
-        System.out.println("[Pump] validateSingleInputOutput(inputPipe, outputPipe) -> " + valid);
+        boolean valid = validateSingleInputOutput(input, output);
         if (!valid) {
             return false;
         }
-
         inputPipe = input;
         outputPipe = output;
-        System.out.println("[Pump] storeDirectionConfiguration()");
+        storeDirectionConfiguration();
         return true;
+    }
+
+    public boolean setDirection(Pipe input, Pipe output) {
+        System.out.println("[Pump] setDirection(inputPipe,outputPipe)");
+        if (input == null || output == null) {
+            return false;
+        }
+        return setDirection(input.end1, output.end1);
+    }
+
+    public boolean validateSingleInputOutput(PipeEnd input, PipeEnd output) {
+        System.out.println("[Pump] validateSingleInputOutput(inputPipe,outputPipe)");
+        return input != null && output != null && input != output;
+    }
+
+    public void storeDirectionConfiguration() {
+        System.out.println("[Pump] storeDirectionConfiguration()");
     }
 
     public int transferWater(int amount) {

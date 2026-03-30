@@ -1,0 +1,26 @@
+@startuml UC11_RepairPipe
+title UC-11: Repair Pipe
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Plumber" as plumber
+participant "game:Game" as game
+participant "targetPipe:Pipe" as targetPipe
+
+plumber -> game : selectDamagedPipe(targetPipe)
+plumber -> game : repairPipe(targetPipe)
+game -> targetPipe : isBroken()
+targetPipe --> game : true/false
+
+alt pipe is leaking
+    game -> targetPipe : repair()
+    targetPipe --> game : functional
+    game --> plumber : repaired
+else pipe already functional
+    game --> plumber : noChange
+end
+
+@enduml

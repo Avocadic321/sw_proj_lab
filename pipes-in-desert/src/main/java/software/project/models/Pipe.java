@@ -59,24 +59,26 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return end1.isFree() || end2.isFree();
     }
 
+    public void disconnect(PipeEnd selectedEnd) {
+        System.out.println("[Pipe] disconnect(selectedEnd)");
+        removeConnection(selectedEnd);
+    }
+
+    public void removeConnection(PipeEnd selectedEnd) {
+        System.out.println("[Pipe] removeConnection(selectedEnd)");
+        if (selectedEnd != null) {
+            selectedEnd.disconnect();
+        }
+    }
+
     public Pipe[] splitForPump(Pump carriedPump) {
         System.out.println("[Pipe] splitForPump(carriedPump)");
 
         Pipe leftPipe = new Pipe(id == null ? "PIPE_LEFT" : id + "_LEFT");
         Pipe rightPipe = new Pipe(id == null ? "PIPE_RIGHT" : id + "_RIGHT");
 
-        leftPipe.end1.connectedTo = this.end1.connectedTo;
-        if (leftPipe.end1.connectedTo != null) {
-            leftPipe.end1.connectedTo.connect(leftPipe.end1);
-        }
-
-        rightPipe.end2.connectedTo = this.end2.connectedTo;
-        if (rightPipe.end2.connectedTo != null) {
-            rightPipe.end2.connectedTo.connect(rightPipe.end2);
-        }
-
-        leftPipe.end2.connectsTo(carriedPump);
-        rightPipe.end1.connectsTo(carriedPump);
+        leftPipe.end2.connectTo(carriedPump);
+        rightPipe.end1.connectTo(carriedPump);
 
         return new Pipe[]{leftPipe, rightPipe};
     }

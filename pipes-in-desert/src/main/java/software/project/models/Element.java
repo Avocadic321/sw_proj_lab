@@ -46,6 +46,11 @@ public abstract class Element {
         return true; // by default, any number of players can occupy
     }
 
+    public boolean validateConnection(Pipe selectedPipe, PipeEnd freeEnd) {
+        System.out.println("[Element] validateConnection(selectedPipe, freeEnd)");
+        return true;
+    }
+
 
 
 }

@@ -1,0 +1,25 @@
+@startuml UC5_EndTurn
+title UC-5: End Turn
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Player" as player
+participant "turnManager:TurnManager" as turnManager
+participant "turnTimer:Timer" as turnTimer
+participant "game:Game" as game
+
+alt player finishes actions
+    player -> turnManager : signalEndTurn()
+else timer expires
+    turnTimer -> turnManager : timerExpired()
+end
+
+turnManager -> turnManager : endTurn()
+turnManager -> turnTimer : stop()
+turnManager -> game : updateGameState()
+turnManager -> turnManager : nextPlayer()
+
+@enduml

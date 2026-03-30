@@ -1,0 +1,28 @@
+@startuml UC3_PauseResumeGame
+title UC-3: Pause / Resume Game
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 220
+skinparam defaultFontSize 12
+
+actor "Player" as player
+participant "game:Game" as game
+participant "turnManager:TurnManager" as turnManager
+participant "turnTimer:Timer" as turnTimer
+
+player -> game : pauseCommand()
+game -> game : state=PAUSED
+game -> turnManager : suspendCurrentTurn()
+turnManager -> turnManager : pauseActiveTurn()
+turnManager -> turnTimer : stop()
+game -> game : blockGameplayInteractions()
+
+player -> game : resumeCommand()
+game -> game : state=RUNNING
+game -> turnManager : continueCurrentTurn()
+turnManager -> turnManager : restorePreviouslyActivePlayer()
+turnManager -> turnTimer : start()
+game --> player : gameContinues
+
+@enduml
