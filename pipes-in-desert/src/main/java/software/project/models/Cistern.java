@@ -30,11 +30,15 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public void connect(PipeEnd end) {
         System.out.println("[Cistern] connect()");
+        if (!connections.contains(end)) {
+            connections.add(end);
+        }
     }
 
     @Override
     public void disconnect(PipeEnd end) {
         System.out.println("[Cistern] disconnect()");
+        connections.remove(end);
     }
 
     @Override

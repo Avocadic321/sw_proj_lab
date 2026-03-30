@@ -8,6 +8,7 @@ public class Plumber extends Player {
 
     public void repair(IRepairable target) {
         System.out.println("[Plumber] repair()");
+        target.repair();
     }
 
     public void extendPipeSystem() {
@@ -25,10 +26,26 @@ public class Plumber extends Player {
         System.out.println("[Plumber] pickUpPipe()");
     }
     public void disconnect(PipeEnd end) {
-        System.out.println("[Plumber] disconnect()");
+        System.out.println("[Plumber] disconnect(end)");
+        end.disconnect();
+        System.out.println("[Plumber] Pipe end disconnected");
     }
     public void connect(PipeEnd end, ActiveElement tgt) {
         System.out.println("[Plumber] connect()");
+        end.connectsTo(tgt);
+        System.out.println("[Plumber] Pipe end connected");
+    }
+    public ICarriable getCarriedItem() {
+        System.out.println("[Plumber] getCarriedItem()");
+        return carriedItem;
+    }
+    public void setCarriedItem(ICarriable item) {
+        System.out.println("[Plumber] setCarriedItem()");
+        carriedItem = item;
+    }
+    public void clearCarriedItem() {
+        System.out.println("[Plumber] clearCarriedItem()");
+        carriedItem = null;
     }
     public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
         System.out.println("[Plumber] insertPumpIntoPipe()");
