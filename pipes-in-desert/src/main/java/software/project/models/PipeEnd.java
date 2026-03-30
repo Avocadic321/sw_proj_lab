@@ -9,6 +9,11 @@ public class PipeEnd {
     }
     public void disconnect() {
         System.out.println("[PipeEnd] disconnect()");
+        if (connectedTo != null) {
+            connectedTo.disconnect(this);
+            connectedTo = null;
+        }
+        System.out.println("    [PipeEnd] connectedTo = null");
     }
     public boolean isFree() {
         System.out.println("[PipeEnd] isFree()");

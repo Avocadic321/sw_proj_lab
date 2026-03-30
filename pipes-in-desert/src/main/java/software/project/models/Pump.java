@@ -5,6 +5,7 @@ import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
@@ -18,6 +19,24 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     public int maxConnections;
 
     public boolean isBroken;
+
+    public Pump() {
+        super();
+        connections = new ArrayList<>();
+        inputPipe = new PipeEnd();
+        outputPipe = new PipeEnd();
+        isBroken = false;
+    }
+
+    public Pump(String id) {
+        super(id);
+        this.connections = new ArrayList<>();
+        inputPipe = new PipeEnd();
+        outputPipe = new PipeEnd();
+        isBroken = false;
+    }
+
+
 
     public void setDirection(PipeEnd input, PipeEnd output) {
         System.out.println("[Pump] setDirection()");
@@ -43,11 +62,13 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public void connect(PipeEnd end) {
         System.out.println("[Pump] connect()");
+        connections.add(end);
     }
 
     @Override
     public void disconnect(PipeEnd end) {
         System.out.println("[Pump] disconnect()");
+        connections.remove(end);
     }
 
     @Override

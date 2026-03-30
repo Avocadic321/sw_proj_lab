@@ -25,7 +25,9 @@ public class Plumber extends Player {
         System.out.println("[Plumber] pickUpPipe()");
     }
     public void disconnect(PipeEnd end) {
-        System.out.println("[Plumber] disconnect()");
+        System.out.println("[Plumber] disconnect(end)");
+        end.disconnect();
+        System.out.println("[Plumber] Pipe end disconnected");
     }
     public void connect(PipeEnd end, ActiveElement tgt) {
         System.out.println("[Plumber] connect()");

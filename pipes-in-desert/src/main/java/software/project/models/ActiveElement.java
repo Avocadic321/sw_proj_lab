@@ -20,6 +20,11 @@ public abstract class ActiveElement extends Element {
         this.connections = new ArrayList<>();
     }
 
+    public void disconnect(PipeEnd end) {
+        System.out.println("[ActiveElement] disconnect(this)");
+        connections.remove(end);
+    }
+
     @Override
     public boolean canOccupy() {
         return true;

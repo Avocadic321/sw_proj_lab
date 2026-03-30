@@ -23,6 +23,7 @@ public class App {
                 case 3 -> pauseResumeGameScenario();
                 case 4 -> movePlayerScenario();
                 case 5 -> endTurnScenario();
+                case 6 -> disconnectPipeEndScenario();
                 case 13 -> sabotagePipeScenario();
                 case 14 -> calculateScoreScenario();
                 case 15 -> processRandomEventScenario();
@@ -179,6 +180,24 @@ public class App {
         } else {
             System.out.println("Invalid choice.");
         }
+    }
+
+    private static void disconnectPipeEndScenario() {
+        System.out.println("\n===== Disconnect Pipe End =====");
+
+        // Create a plumber
+        Plumber plumber = new Plumber();
+
+        // Create a pipe end (normally part of a pipe)
+        Pipe pipe = new Pipe("PIPE1");
+        PipeEnd end = pipe.end1;
+
+        // Optionally, connect it to something to show disconnection
+        ActiveElement dummy = new Pump("PUMP1");
+        end.connectsTo(dummy);
+
+        // Call disconnect
+        plumber.disconnect(end);
     }
 
 
