@@ -8,10 +8,37 @@ import software.project.utils.Teams;
 
 import java.util.Scanner;
 
+/**
+ * Command-line skeleton application for testing Pipes in the Desert scenarios.
+ *
+ * <p>Presents a numbered menu allowing users to execute individual test scenarios
+ * that correspond to the use cases defined in the analysis model. Each scenario
+ * simulates a specific gameplay action and prints the internal method calls to
+ * verify correct behavior of the domain model.</p>
+ *
+ * <p>This skeleton serves as a verification tool only and does not provide a
+ * graphical user interface.</p>
+ *
+ * @author Artem Monakhov
+ * @author Diego Gomes
+ * @author Dimitrija Krstev
+ * @author Hussein Serageldin
+ * @author Ruba Alkhaldi
+ * @version 1.0
+ * @since 2026-03-30
+ */
 public class App {
     public static final Scanner scanner = new Scanner(System.in);
     private static final GameConfig config = new GameConfig();
 
+    /**
+     * Entry point of the skeleton application.
+     *
+     * <p>Displays the main menu and executes the selected test scenario in a loop
+     * until the user chooses to exit.</p>
+     *
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
 
         while (true) {

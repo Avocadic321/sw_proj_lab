@@ -1,11 +1,48 @@
 package software.project.models;
 
-import software.project.App;
-
 import java.util.Scanner;
 
+/**
+ * An abstract base class representing a participant in the game.
+ * <p>
+ * A player can move between connected elements in the pipe network and perform
+ * actions depending on their role. Players belong to either the plumber team
+ * or the saboteur team, as defined by the {@link Team} class.
+ * </p>
+ * <p>
+ * Movement is restricted to adjacent elements that are directly connected
+ * in the pipe network. Occupancy rules are enforced by each element's
+ * {@link Element#canOccupy()} method: pipes allow at most one player at a time,
+ * while pumps and other active elements may hold multiple players simultaneously.
+ * </p>
+ *
+ * @see Element
+ * @see Team
+ * @see Plumber
+ * @see Saboteur
+ * @since 1.0
+ */
 public abstract class Player {
     public Element currentPosition;
+
+    /**
+     * Attempts to move the player from their current position to the specified target element.
+     * <p>
+     * The move is valid only if the following conditions are met:
+     * <ul>
+     *   <li>The target is directly connected to the current position</li>
+     *   <li>The target element's {@link Element#canOccupy()} method returns {@code true}</li>
+     * </ul>
+     * </p>
+     * <p>
+     * This implementation includes interactive user input to simulate adjacency checking
+     * for skeleton/verification purposes. In the final implementation, adjacency should
+     * be determined automatically based on the pipe network topology.
+     * </p>
+     *
+     * @param target the element to move to; must be directly connected to the current position
+     * @return {@code true} if the move succeeded, {@code false} otherwise
+     */
     public boolean moveTo(Element target) {
         System.out.println("[Player] moveTo(" + target.getClass().getSimpleName() + ")");
 
@@ -41,6 +78,27 @@ public abstract class Player {
         System.out.println("Move successful.");
         return true;
     }
+
+    /**
+     * Sets or changes the direction of the specified pump.
+     * <p>
+     * This method allows a player to configure a pump by selecting one input pipe
+     * and one output pipe. The operation succeeds only if both pipes are connected
+     * to the pump and are distinct.
+     * </p>
+     * <p>
+     * For plumbers, this is used to optimize water flow toward cisterns.
+     * For saboteurs, this is used to reroute water toward disconnected pipes
+     * or loops away from the destination.
+     * </p>
+     *
+     * @param pump the pump whose direction is to be changed
+     * @param in   the pipe to be designated as the water input
+     * @param out  the pipe to be designated as the water output
+     * @return {@code true} if the direction was successfully changed,
+     *         {@code false} otherwise (e.g., if pipes are not connected
+     *         to the pump or input and output are the same)
+     */
     public boolean changePumpDirection(Pump pump, Pipe in, Pipe out) {
         System.out.println("[Player] changePumpDirection(pump, in, out)");
         if (pump == null || in == null || out == null) {
