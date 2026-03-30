@@ -2,21 +2,14 @@ package software.project;
 
 import software.project.core.Game;
 import software.project.core.GameConfig;
+import software.project.models.*;
 import software.project.utils.GameState;
 import software.project.utils.Teams;
-import software.project.models.Cistern;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
-import software.project.models.Plumber;
-import software.project.models.Pump;
-import software.project.models.Saboteur;
-import software.project.models.Team;
-import software.project.models.Spring;
 
 import java.util.Scanner;
 
 public class App {
-    private static final Scanner scanner = new Scanner(System.in);
+    public static final Scanner scanner = new Scanner(System.in);
     private static final GameConfig config = new GameConfig();
 
     public static void main(String[] args) {
@@ -118,11 +111,52 @@ public class App {
             }
         }
     }
+
     private static void movePlayerScenario() {
         System.out.println("\n===== 4. Move Player =====");
-        Game game = new Game(config);
 
+        // Create a player (the one who will move)
+        Player player = new Plumber();
 
+        // Create elements: one origin, two targets
+        Element origin = new Pipe("PIPE_ORIGIN");
+        Element freeTarget = new Pipe("PIPE_FREE");
+        Element occupiedTarget = new Pipe("PIPE_OCCUPIED");
+
+        // Occupied target already has an occupant
+        Player occupant = new Plumber();
+        occupiedTarget.addOccupant(occupant);
+        occupant.currentPosition = occupiedTarget;
+
+        // Place player at origin
+        player.currentPosition = origin;
+        origin.addOccupant(player);
+
+        // Show available targets
+        System.out.println("Current position: " + origin.id);
+        System.out.println("Available targets:");
+        System.out.println("  - " + freeTarget.id + " (FREE)");
+        System.out.println("  - " + occupiedTarget.id + " (OCCUPIED)");
+        System.out.print("Enter target element ID: ");
+        String targetId = scanner.next();
+
+        // Find the selected target
+        Element selected = null;
+        if (targetId.equals(freeTarget.id)) {
+            selected = freeTarget;
+        } else if (targetId.equals(occupiedTarget.id)) {
+            selected = occupiedTarget;
+        } else if (targetId.equals(origin.id)) {
+            selected = origin; // can stay, but we treat as moving to itself (invalid)
+        }
+
+        if (selected == null) {
+            System.out.println("Target not found.");
+            return;
+        }
+
+        // Perform the move – the method will ask about adjacency and handle occupancy
+        player.moveTo(selected);
     }
 
     private static void endTurnScenario() {

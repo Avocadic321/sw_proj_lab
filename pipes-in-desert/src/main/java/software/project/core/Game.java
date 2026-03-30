@@ -89,9 +89,13 @@ public class Game {
         System.out.println("[Game] endGame()\n");
     }
 
-    public void nextTurn() {
-        System.out.println("[Game] nextTurn()\n");
-        turnManager.startTurn();
+    public Element getElementById(String id) {
+        for (Element e : elements) {
+            if (e.id != null && e.id.equals(id)) {
+                return e;
+            }
+        }
+        return null;
     }
 
     public void performRandomEvents() {

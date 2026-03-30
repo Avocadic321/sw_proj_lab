@@ -13,6 +13,20 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     public boolean isBroken;
 
+    public Pipe() {
+        super();
+        this.isBroken = false;
+        this.end1 = new PipeEnd();
+        this.end2 = new PipeEnd();
+    }
+
+    public Pipe(String id) {
+        super(id);
+        this.isBroken = false;
+        this.end1 = new PipeEnd();
+        this.end2 = new PipeEnd();
+    }
+
     public int transferWater(int amount) {
         System.out.println("[Pipe] transferWater(" + amount + ")");
         return amount;
@@ -50,5 +64,12 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
             return (Pump) end2.connectedTo;
         }
         return null; 
+    }
+
+    @Override
+    public boolean canOccupy() {
+        boolean can = occupants.isEmpty();
+        System.out.println("[Pipe] canOccupy() -> " + can);
+        return can;
     }
 }
