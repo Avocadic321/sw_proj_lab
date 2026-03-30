@@ -35,11 +35,24 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         outputPipe = new PipeEnd();
         isBroken = false;
     }
-
-
-
-    public void setDirection(PipeEnd input, PipeEnd output) {
+    public boolean setDirection(PipeEnd input, PipeEnd output) {
         System.out.println("[Pump] setDirection()");
+
+        boolean valid = input != null
+            && output != null
+            && input != output
+            && input.connectedTo == this
+            && output.connectedTo == this;
+
+        System.out.println("[Pump] validateSingleInputOutput(inputPipe, outputPipe) -> " + valid);
+        if (!valid) {
+            return false;
+        }
+
+        inputPipe = input;
+        outputPipe = output;
+        System.out.println("[Pump] storeDirectionConfiguration()");
+        return true;
     }
 
     public int transferWater(int amount) {
@@ -62,7 +75,9 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public void connect(PipeEnd end) {
         System.out.println("[Pump] connect()");
-        connections.add(end);
+        if (!connections.contains(end)) {
+            connections.add(end);
+        }
     }
 
     @Override
@@ -74,12 +89,13 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public List<PipeEnd> getConnections() {
         System.out.println("[Pump] getConnections()");
-        return List.of();
+        return connections;
     }
 
     @Override
     public void repair() {
         System.out.println("[Pump] repair()");
+        this.isBroken = false;
     }
 
     public boolean isTankFull() {

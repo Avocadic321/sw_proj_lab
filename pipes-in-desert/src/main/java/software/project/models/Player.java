@@ -43,6 +43,13 @@ public abstract class Player {
     }
     public boolean changePumpDirection(Pump pump, Pipe in, Pipe out) {
         System.out.println("[Player] changePumpDirection(pump, in, out)");
-        return false;
+        if (pump == null || in == null || out == null) {
+            return false;
+        }
+
+        PipeEnd inputEnd = in.end1 != null && in.end1.connectedTo == pump ? in.end1 : in.end2;
+        PipeEnd outputEnd = out.end1 != null && out.end1.connectedTo == pump ? out.end1 : out.end2;
+
+        return pump.setDirection(inputEnd, outputEnd);
     }
 }

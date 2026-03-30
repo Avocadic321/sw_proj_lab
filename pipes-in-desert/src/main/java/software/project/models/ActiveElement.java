@@ -20,9 +20,21 @@ public abstract class ActiveElement extends Element {
         this.connections = new ArrayList<>();
     }
 
+    public void connect(PipeEnd end) {
+        System.out.println("[ActiveElement] connect(this)");
+        if (!connections.contains(end)) {
+            connections.add(end);
+        }
+    }
+
     public void disconnect(PipeEnd end) {
         System.out.println("[ActiveElement] disconnect(this)");
         connections.remove(end);
+    }
+
+    public List<PipeEnd> getConnections() {
+        System.out.println("[ActiveElement] getConnections()");
+        return connections;
     }
 
     @Override

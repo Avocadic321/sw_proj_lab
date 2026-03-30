@@ -107,6 +107,167 @@ public class Game {
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
     }
 
+    public boolean connect(Pipe selectedPipe, PipeEnd freeEnd, ActiveElement targetElement) {
+        System.out.println("[Game] connect(selectedPipe, freeEnd, targetElement)");
+
+        boolean validPipeEnd = selectedPipe != null
+            && (selectedPipe.end1 == freeEnd || selectedPipe.end2 == freeEnd);
+        if (!validPipeEnd) {
+            System.out.println("[Game] Rejected: selected pipe does not own the selected pipe end");
+            return false;
+        }
+
+        boolean free = freeEnd.isFree();
+        if (!free) {
+            System.out.println("[Game] Rejected: end already connected");
+            return false;
+        }
+
+        System.out.println("[Game] validate targetElement connection");
+        if (targetElement.getConnections().contains(freeEnd)) {
+            System.out.println("[Game] Rejected: this pipe end is already registered on target");
+            return false;
+        }
+
+        if (targetElement instanceof Pump pump
+            && pump.maxConnections > 0
+            && pump.getConnections().size() >= pump.maxConnections) {
+            System.out.println("[Game] Rejected: target pump has no free connection slots");
+            return false;
+        }
+
+        freeEnd.connectsTo(targetElement);
+        System.out.println("[Game] updatePipeNetworkStructure()");
+        return true;
+    }
+
+    public boolean insertPumpIntoPipe(Plumber activePlumber, Pipe targetPipe) {
+        System.out.println("[Game] insertPumpIntoPipe(targetPipe)");
+
+        if (activePlumber == null || targetPipe == null) {
+            System.out.println("[Game] Rejected: missing plumber or target pipe");
+            return false;
+        }
+
+        Object carriedItem = activePlumber.getCarriedItem();
+        if (!(carriedItem instanceof Pump carriedPump)) {
+            System.out.println("[Game] Rejected: carried item is not a pump");
+            return false;
+        }
+
+        Pipe[] splitPipes = targetPipe.splitForPump(carriedPump);
+        Pipe leftPipe = splitPipes[0];
+        Pipe rightPipe = splitPipes[1];
+
+        carriedPump.setDirection(leftPipe.end2, rightPipe.end1);
+        activePlumber.clearCarriedItem();
+
+        elements.remove(targetPipe);
+        addElement(leftPipe);
+        addElement(rightPipe);
+        addElement(carriedPump);
+
+        System.out.println("[Game] updateConnections()");
+        return true;
+    }
+
+    public boolean setPumpDirection(Player player, Pump targetPump, Pipe inputPipe, Pipe outputPipe) {
+        System.out.println("[Game] setDirection(inputPipe, outputPipe)");
+
+        if (player == null || targetPump == null || inputPipe == null || outputPipe == null) {
+            System.out.println("[Game] Rejected: missing player, pump, or pipes");
+            return false;
+        }
+
+        boolean updated = player.changePumpDirection(targetPump, inputPipe, outputPipe);
+        if (updated) {
+            System.out.println("[Game] directionUpdated");
+            return true;
+        }
+
+        System.out.println("[Game] Rejected: invalid direction setup");
+        return false;
+    }
+
+    public boolean repairPipe(Plumber plumber, Pipe targetPipe) {
+        System.out.println("[Game] repairPipe(targetPipe)");
+
+        if (plumber == null || targetPipe == null) {
+            System.out.println("[Game] Rejected: missing plumber or target pipe");
+            return false;
+        }
+
+        boolean broken = targetPipe.isBroken();
+        if (!broken) {
+            System.out.println("[Game] No change: pipe already functional");
+            return false;
+        }
+
+        plumber.repair(targetPipe);
+        System.out.println("[Game] Pipe repaired");
+        return true;
+    }
+
+    public void selectPump(Pump targetPump) {
+        System.out.println("[Game] selectPump() - " + targetPump);
+    }
+
+    public boolean repairPump(Plumber plumber, Pump targetPump) {
+        System.out.println("[Game] repairPump(targetPump)");
+
+        if (plumber == null || targetPump == null) {
+            System.out.println("[Game] Rejected: missing plumber or target pump");
+            return false;
+        }
+
+        boolean broken = targetPump.isBroken();
+        if (!broken) {
+            System.out.println("[Game] No change: pump already working");
+            return false;
+        }
+
+        plumber.repair(targetPump);
+        System.out.println("[Game] Pump repaired");
+        return true;
+    }
+
+    public Plumber getActivePlayer() {
+        System.out.println("[Game] getActivePlayer()");
+        if (turnManager.currentPlayer instanceof Plumber activePlumber) {
+            return activePlumber;
+        }
+        return null;
+    }
+
+    public void selectCistern(Cistern sourceCistern) {
+        System.out.println("[Game] selectCistern() - " + sourceCistern);
+    }
+
+    public boolean requestComponent(Cistern sourceCistern, boolean requestPump) {
+        System.out.println("[Game] requestComponent()");
+
+        if (sourceCistern == null) {
+            System.out.println("[Game] Rejected: missing cistern");
+            return false;
+        }
+
+        Plumber activePlumber = getActivePlayer();
+        if (activePlumber == null) {
+            System.out.println("[Game] Rejected: no active plumber");
+            return false;
+        }
+
+        if (requestPump) {
+            Pump newPump = sourceCistern.producePump();
+            activePlumber.setCarriedItem(newPump);
+        } else {
+            Pipe newPipe = sourceCistern.producePipe();
+            activePlumber.setCarriedItem(newPipe);
+        }
+
+        return true;
+    }
+
     // UC-14
     public void selectPipe(Pipe targetPipe) {
         System.out.println("[Game] selectPipe() - " + targetPipe);

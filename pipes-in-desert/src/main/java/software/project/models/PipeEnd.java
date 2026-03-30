@@ -6,6 +6,9 @@ public class PipeEnd {
 
     public void connectsTo(ActiveElement element) {
         System.out.println("[PipeEnd] connectsTo()");
+        connectedTo = element;
+        element.connect(this);
+        System.out.println("    [PipeEnd] connectedTo = " + element.id);
     }
     public void disconnect() {
         System.out.println("[PipeEnd] disconnect()");
@@ -17,6 +20,6 @@ public class PipeEnd {
     }
     public boolean isFree() {
         System.out.println("[PipeEnd] isFree()");
-        return false;
+        return connectedTo == null;
     }
 }

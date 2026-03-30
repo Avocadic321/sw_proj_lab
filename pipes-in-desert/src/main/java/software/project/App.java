@@ -24,6 +24,12 @@ public class App {
                 case 4 -> movePlayerScenario();
                 case 5 -> endTurnScenario();
                 case 6 -> disconnectPipeEndScenario();
+                case 7 -> connectPipeEndScenario();
+                case 8 -> insertPumpIntoPipeScenario();
+                case 9 -> setPumpDirectionScenario();
+                case 10 -> repairPipeScenario();
+                case 11 -> pickUpComponentScenario();
+                case 12 -> repairPumpScenario();
                 case 13 -> sabotagePipeScenario();
                 case 14 -> calculateScoreScenario();
                 case 15 -> processRandomEventScenario();
@@ -198,6 +204,202 @@ public class App {
 
         // Call disconnect
         plumber.disconnect(end);
+    }
+
+    private static void connectPipeEndScenario() {
+        System.out.println("\n===== Connect Pipe End =====");
+
+        Game game = new Game(config);
+        Plumber plumber = new Plumber();
+
+        Pipe selectedPipe = new Pipe("PIPE1");
+        ActiveElement targetPump = new Pump("PUMP1");
+        ActiveElement targetCistern = new Cistern();
+        targetCistern.id = "CISTERN1";
+        ActiveElement targetSpring = new Spring();
+        targetSpring.id = "SPRING1";
+        ((Pump) targetPump).maxConnections = 2;
+
+        game.addElement(selectedPipe);
+        game.addElement(targetPump);
+        game.addElement(targetCistern);
+        game.addElement(targetSpring);
+
+        System.out.println("Select free pipe end:");
+        System.out.println("1. end1");
+        System.out.println("2. end2");
+        int endChoice = scanner.nextInt();
+        PipeEnd freeEnd = endChoice == 2 ? selectedPipe.end2 : selectedPipe.end1;
+
+        System.out.println("Select target element:");
+        System.out.println("1. PUMP1");
+        System.out.println("2. CISTERN1");
+        System.out.println("3. SPRING1");
+        int targetChoice = scanner.nextInt();
+
+        ActiveElement targetElement = switch (targetChoice) {
+            case 1 -> targetPump;
+            case 2 -> targetCistern;
+            case 3 -> targetSpring;
+            default -> null;
+        };
+
+        if (targetElement == null) {
+            System.out.println("Invalid target selection.");
+            return;
+        }
+
+        boolean success = game.connect(selectedPipe, freeEnd, targetElement);
+        if (success) {
+            System.out.println("Pipe end connected successfully.");
+        } else {
+            System.out.println("Connection rejected.");
+        }
+    }
+
+    private static void insertPumpIntoPipeScenario() {
+        System.out.println("\n===== Insert Pump Into Pipe =====");
+
+        Game game = new Game(config);
+        Plumber activePlumber = new Plumber();
+        Pipe targetPipe = new Pipe("PIPE1");
+        Pump carriedPump = new Pump("PUMP1");
+
+        ActiveElement leftElement = new Spring();
+        leftElement.id = "SPRING1";
+        ActiveElement rightElement = new Cistern();
+        rightElement.id = "CISTERN1";
+
+        targetPipe.end1.connectsTo(leftElement);
+        targetPipe.end2.connectsTo(rightElement);
+        activePlumber.carriedItem = carriedPump;
+
+        game.addElement(leftElement);
+        game.addElement(rightElement);
+        game.addElement(targetPipe);
+
+        System.out.println("[Plumber] selecting a pipe");
+        game.selectPipe(targetPipe);
+
+        boolean success = game.insertPumpIntoPipe(activePlumber, targetPipe);
+        if (success) {
+            System.out.println("The pump was inserted into the pipe.");
+        } else {
+            System.out.println("Pump insertion rejected.");
+        }
+    }
+
+    private static void setPumpDirectionScenario() {
+        System.out.println("\n===== Set Pump Direction =====");
+
+        Game game = new Game(config);
+        Player player = new Plumber();
+        Pump targetPump = new Pump("PUMP1");
+        Pipe inputPipe = new Pipe("PIPE_IN");
+        Pipe outputPipe = new Pipe("PIPE_OUT");
+
+        inputPipe.end2.connectsTo(targetPump);
+        outputPipe.end1.connectsTo(targetPump);
+
+        game.addElement(targetPump);
+        game.addElement(inputPipe);
+        game.addElement(outputPipe);
+
+        System.out.println("[Player] selectPump(targetPump)");
+        System.out.println("Available pipes:");
+        System.out.println("1. PIPE_IN");
+        System.out.println("2. PIPE_OUT");
+
+        System.out.print("Select input pipe (1/2): ");
+        int inputChoice = scanner.nextInt();
+        Pipe selectedInput = inputChoice == 2 ? outputPipe : inputPipe;
+
+        System.out.print("Select output pipe (1/2): ");
+        int outputChoice = scanner.nextInt();
+        Pipe selectedOutput = outputChoice == 1 ? inputPipe : outputPipe;
+
+        boolean success = game.setPumpDirection(player, targetPump, selectedInput, selectedOutput);
+        if (success) {
+            System.out.println("Pump direction updated.");
+        } else {
+            System.out.println("Invalid input/output selection.");
+        }
+    }
+
+    private static void repairPipeScenario() {
+        System.out.println("\n===== Repair Pipe =====");
+
+        Game game = new Game(config);
+        Plumber plumber = new Plumber();
+        Pipe targetPipe = new Pipe("PIPE1");
+
+        System.out.print("Is the selected pipe broken? (y/n): ");
+        boolean broken = scanner.next().equalsIgnoreCase("y");
+        if (broken) {
+            targetPipe.breakElement();
+        }
+
+        System.out.println("[Plumber] selectDamagedPipe(targetPipe)");
+        game.selectPipe(targetPipe);
+
+        boolean repaired = game.repairPipe(plumber, targetPipe);
+        if (repaired) {
+            System.out.println("Pipe repaired successfully.");
+        } else {
+            System.out.println("Pipe is not broken.");
+        }
+    }
+
+    private static void pickUpComponentScenario() {
+        System.out.println("\n===== Pick Up Component =====");
+
+        Game game = new Game(config);
+        Cistern sourceCistern = new Cistern();
+        sourceCistern.id = "CISTERN1";
+        Plumber activePlumber = new Plumber();
+        game.turnManager.currentPlayer = activePlumber;
+
+        game.addElement(sourceCistern);
+
+        System.out.println("[Plumber] selectCistern(sourceCistern)");
+        game.selectCistern(sourceCistern);
+
+        System.out.println("What component do you want to pick up?");
+        System.out.println("1. Pipe");
+        System.out.println("2. Pump");
+        int choice = scanner.nextInt();
+
+        boolean requestPump = choice == 2;
+        boolean received = game.requestComponent(sourceCistern, requestPump);
+        if (received) {
+            System.out.println("Component received.");
+        } else {
+            System.out.println("No component received.");
+        }
+    }
+
+    private static void repairPumpScenario() {
+        System.out.println("\n===== Repair Pump =====");
+
+        Game game = new Game(config);
+        Plumber plumber = new Plumber();
+        Pump targetPump = new Pump("PUMP1");
+
+        System.out.print("Is the selected pump broken? (y/n): ");
+        boolean broken = scanner.next().equalsIgnoreCase("y");
+        if (broken) {
+            targetPump.breakElement();
+        }
+
+        System.out.println("[Plumber] selectBrokenPump(targetPump)");
+        game.selectPump(targetPump);
+
+        boolean repaired = game.repairPump(plumber, targetPump);
+        if (repaired) {
+            System.out.println("Pump repaired successfully.");
+        } else {
+            System.out.println("Pump is not broken.");
+        }
     }
 
 
