@@ -11,5 +11,5 @@ cd pipes-in-desert; .\mvnw.cmd compile exec:java -Dexec.args="arg1 arg2"
 ```bash
 cd pipes-in-desert &&  ./mvnw compile exec:java -Dexec.args="arg1 arg2"
 ```
-
+The `-Dexec.args="arg1 arg2"` is an optional command line argument in case the program accept command line arguments.
 **Note**: In order to do any Maven command please make sure that you are in the `pipes-in-desert` directory
