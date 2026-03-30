@@ -1,23 +1,22 @@
 package software.project.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import software.project.models.ActiveElement;
 import software.project.models.Cistern;
 import software.project.models.Element;
 import software.project.models.Pipe;
 import software.project.models.PipeEnd;
-import software.project.models.Plumber;
 import software.project.models.Player;
+import software.project.models.Plumber;
 import software.project.models.Pump;
-import software.project.models.Saboteur;
 import software.project.models.Spring;
 import software.project.models.Team;
 import software.project.utils.GameState;
-import software.project.utils.Teams;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Game {
+    // Facade class delegating responsibilities to subsystem components.
     public TurnManager turnManager;
     public List<Element> elements;
     public Team saboteur;
@@ -25,12 +24,27 @@ public class Game {
     public GameState state;
     public GameConfig config;
 
+    final Renderer renderer;
+    final AudioSystem audioSystem;
+    final InputSystem inputSystem;
+    final GameLogic gameLogic;
+
+    private void log(String message) {
+        System.out.println("[Game] " + message);
+    }
+
     public Game(GameConfig config) {
         this.elements = new ArrayList<>();
         this.turnManager = new TurnManager();
         this.state = GameState.INITIALIZING;
         this.config = config;
-        System.out.println("[Game] Game() created");
+
+        this.renderer = new Renderer();
+        this.audioSystem = new AudioSystem();
+        this.inputSystem = new InputSystem();
+        this.gameLogic = new GameLogic();
+
+        log("Game() created");
     }
 
     public Game() {
@@ -38,503 +52,263 @@ public class Game {
     }
 
     public void startNewGameCommand() {
-        System.out.println("[Game] startNewGameCommand()");
-        startGame();
+        inputSystem.startNewGameCommand(this);
     }
 
     public void startGame() {
-        System.out.println("[Game] startGame()");
-        System.out.println("[Game] state=INITIALIZING");
-        state = GameState.INITIALIZING;
-
-        prepareGameSession();
-        addElement(new Spring());
-        addElement(new Cistern());
-        addElement(new Pump());
-
-        createTeams();
-        setGoalScore(config.getGoalScore());
-
-        turnManager.initialize();
-
-        System.out.println("[Game] state=RUNNING");
-        state = GameState.RUNNING;
+        gameLogic.startGame(this);
     }
 
     public void prepareGameSession() {
-        System.out.println("[Game] prepareGameSession()");
+        gameLogic.prepareGameSession(this);
     }
 
     public void createTeams() {
-        System.out.println("[Game] createTeams(plumberTeam,saboteurTeam)");
-        plumber = new Team(Teams.PLUMBERS);
-        saboteur = new Team(Teams.SABOTEURS);
-
-        for (int i = 0; i < config.getNumberOfPlayers(); i++) {
-            if (i % 2 == 0) {
-                plumber.addPlayer(new Plumber());
-            } else {
-                saboteur.addPlayer(new Saboteur());
-            }
-        }
+        gameLogic.createTeams(this);
     }
 
     public void setGoalScore(int targetScore) {
-        System.out.println("[Game] setGoalScore(" + targetScore + ")");
-        config.setGoalScore(targetScore);
+        gameLogic.setGoalScore(this, targetScore);
     }
 
     public void initiateConfiguration() {
-        System.out.println("[Game] initiateConfiguration()");
+        inputSystem.initiateConfiguration();
     }
 
     public void enterTargetScore(int goalScore) {
-        System.out.println("[Game] enterTargetScore(" + goalScore + ")");
-        setGoalScore(goalScore);
+        gameLogic.enterTargetScore(this, goalScore);
     }
 
     public void enterTurnDuration(int duration) {
-        System.out.println("[Game] enterTurnDuration(" + duration + ")");
-        turnManager.setTimerDuration(duration);
+        gameLogic.enterTurnDuration(this, duration);
     }
 
     public void setNumberOfPlayers(int playerCount) {
-        System.out.println("[Game] setNumberOfPlayers(" + playerCount + ")");
-        config.setNumberOfPlayers(playerCount);
+        gameLogic.setNumberOfPlayers(this, playerCount);
     }
 
     public void setRealtimeScoring(boolean enabled) {
-        System.out.println("[Game] setRealtimeScoring(" + enabled + ")");
-        storeRealtimeScoringSetting(enabled);
+        gameLogic.setRealtimeScoring(this, enabled);
     }
 
     public void storeRealtimeScoringSetting(boolean enabled) {
-        System.out.println("[Game] storeRealtimeScoringSetting(" + enabled + ")");
-        config.setRealTimeScoring(enabled);
+        gameLogic.storeRealtimeScoringSetting(this, enabled);
     }
 
     public boolean validateConfiguration() {
-        System.out.println("[Game] validateConfiguration()");
-        return true;
+        return gameLogic.validateConfiguration(this.config);
     }
 
     public void saveConfiguration() {
-        System.out.println("[Game] saveConfiguration()");
+        gameLogic.saveConfiguration(this);
     }
 
     public void pauseCommand() {
-        System.out.println("[Game] pauseCommand()");
-        pauseGame();
+        inputSystem.pauseCommand(this);
     }
 
     public void resumeCommand() {
-        System.out.println("[Game] resumeCommand()");
-        resumeGame();
+        inputSystem.resumeCommand(this);
     }
 
     public void pauseGame() {
-        System.out.println("[Game] state=PAUSED");
-        state = GameState.PAUSED;
-        turnManager.suspendCurrentTurn();
-        blockGameplayInteractions();
+        gameLogic.pauseGame(this);
     }
 
     public void resumeGame() {
-        System.out.println("[Game] state=RUNNING");
-        state = GameState.RUNNING;
-        turnManager.continueCurrentTurn();
+        gameLogic.resumeGame(this);
     }
 
     public void blockGameplayInteractions() {
-        System.out.println("[Game] blockGameplayInteractions()");
+        gameLogic.blockGameplayInteractions(this);
     }
 
     public void endGame() {
-        System.out.println("[Game] endGame()");
+        gameLogic.endGame(this);
     }
 
     public void selectTargetAdjacentElement(Element targetElement) {
-        System.out.println("[Game] selectTargetAdjacentElement(" + targetElement + ")");
+        inputSystem.selectTargetAdjacentElement(targetElement);
     }
 
     public boolean moveTo(Player player, Element targetElement) {
-        System.out.println("[Game] moveTo(targetElement)");
-        Element currentElement = player == null ? null : player.currentPosition;
-        isDirectlyConnected(currentElement, targetElement);
-        if (targetElement != null) {
-            targetElement.canOccupy();
-            if (currentElement != null) {
-                currentElement.removeOccupant(player);
-            }
-            targetElement.addOccupant(player);
+        if (!(player instanceof Plumber activePlumber)) {
+            log("moveTo rejected: player is not a Plumber");
+            return false;
         }
-        return true;
+        return gameLogic.moveTo(this, activePlumber, targetElement);
     }
 
     public boolean isDirectlyConnected(Element currentElement, Element targetElement) {
-        System.out.println("[Game] isDirectlyConnected(currentElement,targetElement)");
-        return true;
+        return gameLogic.isDirectlyConnected(currentElement, targetElement);
     }
 
     public Element getElementById(String id) {
-        System.out.println("[Game] getElementById(" + id + ")");
-        for (Element element : elements) {
-            if (element.id != null && element.id.equals(id)) {
-                return element;
-            }
-        }
-        return null;
+        return gameLogic.getElementById(this, id);
     }
 
     public void addElement(Element element) {
-        System.out.println("[Game] addElement(" + element.getClass().getSimpleName() + ")");
-        elements.add(element);
+        gameLogic.addElement(this, element);
     }
 
     public void performRandomEvents() {
-        System.out.println("[Game] performRandomEvents()");
-        List<Pump> pumpsToBreak = selectRandomWorkingPumps();
-        for (Pump selectedPump : pumpsToBreak) {
-            selectedPump.breakElement();
-        }
-
-        List<Cistern> cisternList = getCisterns();
-        for (int i = 0; i < cisternList.size(); i++) {
-            Cistern targetCistern = cisternList.get(i);
-            if (i % 2 == 0) {
-                addElement(targetCistern.producePipe());
-            } else {
-                addElement(targetCistern.producePump());
-            }
-        }
-
-        updateGameState();
+        gameLogic.performRandomEvents(this);
     }
 
     public void processRandomEvent() {
-        System.out.println("[Game] processRandomEvent()");
+        log("processRandomEvent()");
         performRandomEvents();
     }
 
     public List<Pump> selectRandomWorkingPumps() {
-        System.out.println("[Game] selectRandomWorkingPumps()");
-        List<Pump> result = new ArrayList<>();
-        for (Element element : elements) {
-            if (element instanceof Pump pump && !pump.isBroken()) {
-                result.add(pump);
-            }
-        }
-        return result;
+        return gameLogic.selectRandomWorkingPumps(this);
     }
 
     public List<Cistern> getCisterns() {
-        System.out.println("[Game] getCisterns()");
-        List<Cistern> cisterns = new ArrayList<>();
-        for (Element element : elements) {
-            if (element instanceof Cistern cistern) {
-                cisterns.add(cistern);
-            }
-        }
-        return cisterns;
+        return gameLogic.getCisterns(this);
     }
 
     public void updateGameState() {
-        System.out.println("[Game] updateGameState()");
+        gameLogic.updateGameState(this);
     }
 
     public void selectPipe(Pipe targetPipe) {
-        System.out.println("[Game] selectPipe(" + targetPipe + ")");
+        inputSystem.selectPipe(targetPipe);
     }
 
     public void selectFreePipeEnd(PipeEnd freeEnd) {
-        System.out.println("[Game] selectFreePipeEnd(" + freeEnd + ")");
+        inputSystem.selectFreePipeEnd(freeEnd);
     }
 
     public void selectTargetElement(ActiveElement targetElement) {
-        System.out.println("[Game] selectTargetElement(" + targetElement + ")");
+        inputSystem.selectTargetElement(targetElement);
     }
 
     public boolean disconnect(Pipe selectedPipe, PipeEnd selectedEnd) {
-        System.out.println("[Game] disconnect(selectedPipe, selectedEnd)");
-        if (selectedPipe != null && selectedEnd != null) {
-            selectedPipe.disconnect(selectedEnd);
-        }
-        updatePipeNetworkStructure();
-        return true;
+        return gameLogic.disconnect(this, selectedPipe, selectedEnd);
     }
 
     public boolean connect(Pipe selectedPipe, PipeEnd freeEnd, ActiveElement targetElement) {
-        System.out.println("[Game] connect(selectedPipe, freeEnd, targetElement)");
-        if (freeEnd != null) {
-            freeEnd.isFree();
-            if (targetElement != null) {
-                targetElement.validateConnection(selectedPipe, freeEnd);
-                freeEnd.connectTo(targetElement);
-            }
-        }
-        updatePipeNetworkStructure();
-        return true;
+        return gameLogic.connect(this, selectedPipe, freeEnd, targetElement);
     }
 
     public void updatePipeNetworkStructure() {
-        System.out.println("[Game] updatePipeNetworkStructure()");
+        gameLogic.updatePipeNetworkStructure(this);
     }
 
     public boolean insertPumpIntoPipe(Plumber activePlumber, Pipe targetPipe) {
-        System.out.println("[Game] insertPumpIntoPipe(targetPipe)");
-        if (activePlumber == null || targetPipe == null) {
-            return false;
-        }
-
-        Object carried = activePlumber.getCarriedItem();
-        if (!(carried instanceof Pump carriedPump)) {
-            return false;
-        }
-
-        Pipe[] splitPipes = targetPipe.splitForPump(carriedPump);
-        carriedPump.setDirection(splitPipes[0], splitPipes[1]);
-        activePlumber.clearCarriedItem();
-
-        addElement(splitPipes[0]);
-        addElement(splitPipes[1]);
-        addElement(carriedPump);
-        updateConnections();
-        return true;
+        return gameLogic.insertPumpIntoPipe(this, activePlumber, targetPipe);
     }
 
     public void updateConnections() {
-        System.out.println("[Game] updateConnections()");
+        gameLogic.updateConnections(this);
     }
 
     public void selectPump(Pump targetPump) {
-        System.out.println("[Game] selectPump(" + targetPump + ")");
+        inputSystem.selectPump(targetPump);
     }
 
     public void selectInputPipe(Pipe inputPipe) {
-        System.out.println("[Game] selectInputPipe(" + inputPipe + ")");
+        inputSystem.selectInputPipe(inputPipe);
     }
 
     public void selectOutputPipe(Pipe outputPipe) {
-        System.out.println("[Game] selectOutputPipe(" + outputPipe + ")");
+        inputSystem.selectOutputPipe(outputPipe);
     }
 
     public boolean setPumpDirection(Player player, Pump targetPump, Pipe inputPipe, Pipe outputPipe) {
-        System.out.println("[Game] setDirection(inputPipe,outputPipe)");
-        if (targetPump == null || inputPipe == null || outputPipe == null) {
+        if (!(player instanceof Plumber activePlumber)) {
+            log("setPumpDirection rejected: player is not a Plumber");
             return false;
         }
-        return targetPump.setDirection(inputPipe, outputPipe);
+        return gameLogic.setPumpDirection(this, activePlumber, targetPump, inputPipe, outputPipe);
     }
 
     public void selectDamagedPipe(Pipe targetPipe) {
-        System.out.println("[Game] selectDamagedPipe(" + targetPipe + ")");
+        inputSystem.selectDamagedPipe(targetPipe);
     }
 
     public boolean repairPipe(Plumber plumberPlayer, Pipe targetPipe) {
-        System.out.println("[Game] repairPipe(targetPipe)");
-        if (targetPipe == null) {
-            return false;
-        }
-        if (targetPipe.isBroken()) {
-            targetPipe.repair();
-            return true;
-        }
-        return false;
+        return gameLogic.repairPipe(this, targetPipe);
     }
 
     public void selectCistern(Cistern sourceCistern) {
-        System.out.println("[Game] selectCistern(" + sourceCistern + ")");
+        inputSystem.selectCistern(sourceCistern);
     }
 
     public boolean requestComponent(Cistern sourceCistern, boolean requestPump) {
-        System.out.println("[Game] requestComponent()");
-        if (sourceCistern == null) {
-            return false;
-        }
-
-        Plumber activePlumber = getActivePlayer();
-        if (activePlumber == null) {
-            return false;
-        }
-
-        if (requestPump) {
-            activePlumber.setCarriedItem(sourceCistern.producePump());
-        } else {
-            activePlumber.setCarriedItem(sourceCistern.producePipe());
-        }
-        return true;
+        return gameLogic.requestComponent(this, sourceCistern, requestPump);
     }
 
-    public Plumber getActivePlayer() {
-        System.out.println("[Game] getActivePlayer()");
-        if (turnManager.currentPlayer instanceof Plumber activePlumber) {
-            return activePlumber;
-        }
-        return null;
+    public Player getActivePlayer() {
+        return gameLogic.getActivePlumber(turnManager);
     }
 
     public void selectBrokenPump(Pump targetPump) {
-        System.out.println("[Game] selectBrokenPump(" + targetPump + ")");
+        inputSystem.selectBrokenPump(targetPump);
     }
 
     public boolean repairPump(Plumber plumberPlayer, Pump targetPump) {
-        System.out.println("[Game] repairPump(targetPump)");
-        if (targetPump == null) {
-            return false;
-        }
-        if (targetPump.isBroken()) {
-            targetPump.repair();
-            return true;
-        }
-        return false;
+        return gameLogic.repairPump(this, targetPump);
     }
 
     public void sabotagePipe(Pipe targetPipe) {
-        System.out.println("[Game] sabotagePipe(targetPipe)");
-        if (targetPipe != null && !targetPipe.isBroken()) {
-            targetPipe.breakElement();
-        }
+        gameLogic.sabotagePipe(this, targetPipe);
     }
 
     public void calculateScore() {
-        System.out.println("[Game] calculateScore()");
-        simulateWaterFlow();
-        Object flowReport = new Object();
-
-        for (Element element : elements) {
-            if (element instanceof Cistern cistern) {
-                cistern.receiveWater(1);
-            }
-        }
-
-        int storedWaterTotal = getTotalStoredWater(flowReport);
-        int leakedWaterTotal = getTotalLeakedWater(flowReport);
-
-        if (plumber != null) {
-            plumber.addScore(storedWaterTotal);
-        }
-        if (saboteur != null) {
-            saboteur.addScore(leakedWaterTotal);
-        }
-
-        updateDisplayedScores();
+        gameLogic.calculateScore(this);
     }
 
     public int getTotalStoredWater(Object flowReport) {
-        System.out.println("[Game] getTotalStoredWater(flowReport)");
-        return 1;
+        return gameLogic.getTotalStoredWater(this, flowReport);
     }
 
     public int getTotalLeakedWater(Object flowReport) {
-        System.out.println("[Game] getTotalLeakedWater(flowReport)");
-        return 1;
+        return gameLogic.getTotalLeakedWater(this, flowReport);
     }
 
     public void updateDisplayedScores() {
-        System.out.println("[Game] updateDisplayedScores()");
+        gameLogic.updateDisplayedScores(this);
     }
 
     public void checkWinner() {
-        System.out.println("[Game] checkWinner()");
-        int plumberScore = plumber == null ? 0 : plumber.getScore();
-        int saboteurScore = saboteur == null ? 0 : saboteur.getScore();
-        compareScores(plumberScore, saboteurScore);
+        gameLogic.checkWinner(this);
     }
 
     public void compareScores(int plumberScore, int saboteurScore) {
-        System.out.println("[Game] compareScores(plumberScore, saboteurScore)");
-        if (plumberScore >= config.getGoalScore() || saboteurScore >= config.getGoalScore()) {
-            determineWinner();
-            ensureNoDrawCondition();
-            System.out.println("[Game] state=FINISHED");
-            state = GameState.FINALIZED;
-            displayFinalResult(plumberScore >= saboteurScore ? plumber : saboteur);
-        }
+        gameLogic.compareScores(this, plumberScore, saboteurScore);
     }
 
     public void determineWinner() {
-        System.out.println("[Game] determineWinner()");
+        gameLogic.determineWinner(this);
     }
 
     public void ensureNoDrawCondition() {
-        System.out.println("[Game] ensureNoDrawCondition()");
+        gameLogic.ensureNoDrawCondition(this);
     }
 
     public void displayFinalResult(Team winner) {
-        System.out.println("[Game] displayFinalResult(winner)");
+        gameLogic.displayFinalResult(this, winner);
     }
 
     public void simulateWaterFlow() {
-        System.out.println("[Game] simulateWaterFlow()");
-
-        List<Spring> springList = getSprings();
-        for (Spring sourceSpring : springList) {
-            int waterAmount = sourceSpring.generateWater();
-            List<Pipe> pipeQueue = new ArrayList<>(sourceSpring.getConnectedPipes());
-
-            while (!pipeQueue.isEmpty()) {
-                Pipe activePipe = pipeQueue.remove(0);
-                if (activePipe.isBroken() || activePipe.hasFreeEnd()) {
-                    registerLeak(activePipe);
-                    continue;
-                }
-
-                int forwardedAmount = activePipe.transferWater(waterAmount);
-                Pump activePump = activePipe.getNextPump();
-                if (activePump == null) {
-                    registerLeak(activePipe);
-                    continue;
-                }
-
-                if (activePump.isBroken()) {
-                    System.out.println("[Game] activePump is broken");
-                    continue;
-                }
-
-                if (activePump.isTankFull()) {
-                    System.out.println("[Game] activePump tank is full");
-                    continue;
-                }
-
-                int pumpedAmount = activePump.transferWater(forwardedAmount);
-                Pipe outgoingPipe = activePump.getOutgoingPipe();
-                enqueuePipe(pipeQueue, outgoingPipe);
-
-                if (activePump.isConnectedToCistern()) {
-                    Cistern targetCistern = activePump.getTargetCistern();
-                    if (targetCistern != null) {
-                        targetCistern.receiveWater(pumpedAmount);
-                    }
-                }
-            }
-        }
-
-        updateFlowTotals(getTotalStoredWater(null), getTotalLeakedWater(null));
+        gameLogic.simulateWaterFlow(this);
     }
 
     public List<Spring> getSprings() {
-        System.out.println("[Game] getSprings()");
-        List<Spring> springs = new ArrayList<>();
-        for (Element element : elements) {
-            if (element instanceof Spring spring) {
-                springs.add(spring);
-            }
-        }
-        return springs;
+        return gameLogic.getSprings(this);
     }
 
     public void registerLeak(Pipe activePipe) {
-        System.out.println("[Game] registerLeak(activePipe)");
+        gameLogic.registerLeak(this, activePipe);
     }
 
     public void enqueuePipe(List<Pipe> pipeQueue, Pipe outgoingPipe) {
-        System.out.println("[Game] enqueuePipe(outgoingPipe)");
-        if (outgoingPipe != null) {
-            pipeQueue.add(outgoingPipe);
-        }
+        gameLogic.enqueuePipe(this, pipeQueue, outgoingPipe);
     }
 
     public void updateFlowTotals(int storedWaterTotal, int leakedWaterTotal) {
-        System.out.println("[Game] updateFlowTotals(storedWaterTotal, leakedWaterTotal)");
+        gameLogic.updateFlowTotals(this, storedWaterTotal, leakedWaterTotal);
     }
 }

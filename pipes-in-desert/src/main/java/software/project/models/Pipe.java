@@ -18,8 +18,6 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         this.isBroken = false;
         this.end1 = new PipeEnd();
         this.end2 = new PipeEnd();
-        this.end1.pipe = this;
-        this.end2.pipe = this;
     }
 
     public Pipe(String id) {
@@ -27,11 +25,19 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         this.isBroken = false;
         this.end1 = new PipeEnd();
         this.end2 = new PipeEnd();
-        this.end1.pipe = this;
-        this.end2.pipe = this;
+    }
+
+    private void ensureEndOwners() {
+        if (end1.pipe == null) {
+            end1.pipe = this;
+        }
+        if (end2.pipe == null) {
+            end2.pipe = this;
+        }
     }
 
     public int transferWater(int amount) {
+        ensureEndOwners();
         System.out.println("[Pipe] transferWater(" + amount + ")");
         return amount;
     }
@@ -55,16 +61,19 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     }
 
     public boolean hasFreeEnd() {
+        ensureEndOwners();
         System.out.println("[Pipe] checking if ends are free...");
         return end1.isFree() || end2.isFree();
     }
 
     public void disconnect(PipeEnd selectedEnd) {
+        ensureEndOwners();
         System.out.println("[Pipe] disconnect(selectedEnd)");
         removeConnection(selectedEnd);
     }
 
     public void removeConnection(PipeEnd selectedEnd) {
+        ensureEndOwners();
         System.out.println("[Pipe] removeConnection(selectedEnd)");
         if (selectedEnd != null) {
             selectedEnd.disconnect();
@@ -72,6 +81,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     }
 
     public Pipe[] splitForPump(Pump carriedPump) {
+        ensureEndOwners();
         System.out.println("[Pipe] splitForPump(carriedPump)");
 
         Pipe leftPipe = new Pipe(id == null ? "PIPE_LEFT" : id + "_LEFT");
@@ -84,9 +94,10 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     }
 
     public Pump getNextPump() {
+        ensureEndOwners();
         System.out.println("[Pipe] getNextPump()");
-        if (end2.connectedTo instanceof Pump) {
-            return (Pump) end2.connectedTo;
+        if (end2.connectedTo instanceof Pump connectedPump) {
+            return connectedPump;
         }
         return null; 
     }

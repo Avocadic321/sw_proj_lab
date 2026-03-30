@@ -1,6 +1,5 @@
 package software.project.models;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import software.project.interfaces.IBreakable;
@@ -9,8 +8,6 @@ import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
 
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
-    public List<PipeEnd> connections;
-
     public PipeEnd inputPipe;
     public PipeEnd outputPipe;
 
@@ -22,7 +19,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
 
     public Pump() {
         super();
-        connections = new ArrayList<>();
         inputPipe = new PipeEnd();
         outputPipe = new PipeEnd();
         isBroken = false;
@@ -30,7 +26,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
 
     public Pump(String id) {
         super(id);
-        this.connections = new ArrayList<>();
         inputPipe = new PipeEnd();
         outputPipe = new PipeEnd();
         isBroken = false;

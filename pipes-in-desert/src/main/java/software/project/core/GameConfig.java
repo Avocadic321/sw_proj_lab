@@ -73,13 +73,15 @@ public class GameConfig {
 
     @Override
     public String toString() {
+        String format = """
+            GameConfig {
+              Goal Score: %d
+              Turn Duration: %d seconds
+              Real-time Scoring: %s
+              Number of Players: %d
+            }""";
         return String.format(
-            "GameConfig {\n" +
-                "  Goal Score: %d\n" +
-                "  Turn Duration: %d seconds\n" +
-                "  Real-time Scoring: %s\n" +
-                "  Number of Players: %d\n" +
-                "}",
+            format,
             goalScore,
             turnDurationSeconds,
             realTimeScoring ? "enabled" : "disabled",
