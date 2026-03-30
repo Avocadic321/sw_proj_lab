@@ -74,7 +74,7 @@ public class Game {
 
     public void resumeGame() {
         System.out.println("[Game] resumeGame()\n");
-        if (!(state == GameState.PAUSED)) {
+        if (state != GameState.PAUSED) {
             System.out.println("[Game] resumeGame() - You cannot resume a Game if it not PAUSED");
             return;
         }
@@ -91,6 +91,7 @@ public class Game {
 
     public void nextTurn() {
         System.out.println("[Game] nextTurn()\n");
+        turnManager.startTurn();
     }
 
     public void performRandomEvents() {
@@ -103,7 +104,6 @@ public class Game {
     }
 
     // UC-14
-
     public void selectPipe(Pipe targetPipe) {
         System.out.println("[Game] selectPipe() - " + targetPipe);
     }
@@ -279,7 +279,7 @@ public class Game {
     
     public void simulateWaterFlow() {
         System.out.println("[Game] simulateWaterFlow()");
-        
+
         // Reset totals at the start of every simulation
         storedWaterTotal = 0;
         leakedWaterTotal = 0;

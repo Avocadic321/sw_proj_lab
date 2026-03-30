@@ -16,6 +16,9 @@ public class TurnManager {
     public void startTurn() {
         System.out.println("[TurnManager] startTurn()");
         timer.start();
+
+        System.out.println("[TurnManager] isRunning = true");
+        isRunning = true;
     }
 
     public void suspendTurn() {
@@ -30,6 +33,10 @@ public class TurnManager {
 
     public void endTurn() {
         System.out.println("[TurnManager] endTurn()");
+        timer.stop();
+        isRunning = false;
+        System.out.println("[TurnManager] isRunning = false");
+        nextPlayer();
     }
 
     public void nextPlayer() {
@@ -38,5 +45,14 @@ public class TurnManager {
 
     public void setTimerDuration(int seconds) {
         timer.setTurnDuration(seconds);
+    }
+
+    public void playerEndsTurn() {
+        System.out.println("[TurnManager] playerEndsTurn()");
+    }
+
+    public void timeExpired() {
+        System.out.println("[TurnManager] timeExpired()");
+        endTurn();
     }
 }

@@ -25,14 +25,16 @@ public class App {
             printMainMenu();
             int choice = scanner.nextInt();
             switch (choice) {
-                case 1 -> startNewGame();
-                case 2 -> configureGame();
-                case 3 -> pauseResumeGame();
+                case 1 -> startNewGameScenario();
+                case 2 -> configureGameScenario();
+                case 3 -> pauseResumeGameScenario();
+                case 4 -> movePlayerScenario();
+                case 5 -> endTurnScenario();
                 case 13 -> sabotagePipeScenario();
                 case 14 -> calculateScoreScenario();
                 case 15 -> processRandomEventScenario();
-                case 17 -> endGameScenario();
-                case 18 -> manageWaterflowScenario();
+                case 16 -> endGameScenario();
+                case 17 -> manageWaterflowScenario();
                 // Add corresponding scenarios...
                 case 0 -> {
                     System.out.println("Exiting...");
@@ -59,21 +61,20 @@ public class App {
         System.out.println("12. Repair Pump");
         System.out.println("13. Sabotage Pipe");
         System.out.println("14. Calculate Score");
-        System.out.println("15. Break Random Pumps");
-        System.out.println("16. Generate New Components");
-        System.out.println("17. End Game");
-        System.out.println("18. Manage Waterflow");
+        System.out.println("15. Process Random Events");
+        System.out.println("16. End Game");
+        System.out.println("17. Manage Waterflow");
         System.out.println("0. Exit");
     }
 
-    private static void startNewGame() {
+    private static void startNewGameScenario() {
         System.out.println("\n===== 1. Start New Game =====");
         Game game = new Game(config);
         game.startGame();
         System.out.println("Game Initialized Successfully");
     }
 
-    private static void configureGame() {
+    private static void configureGameScenario() {
         System.out.println("\n===== Configure Game =====");
 
         System.out.print("Input new goal score: ");
@@ -98,7 +99,7 @@ public class App {
         System.out.println("===== Game Configuration Finalized =====");
     }
 
-    private static void pauseResumeGame() {
+    private static void pauseResumeGameScenario() {
         System.out.println("\n===== 3. Pause/Resume Game =====");
         Game game = new Game();
         game.state = GameState.RUNNING;
@@ -116,8 +117,36 @@ public class App {
                 default -> System.out.println("Invalid choice");
             }
         }
+    }
+    private static void movePlayerScenario() {
+        System.out.println("\n===== 4. Move Player =====");
+        Game game = new Game(config);
+
 
     }
+
+    private static void endTurnScenario() {
+        System.out.println("\n===== 5. End Turn =====");
+        Game game = new Game(config);
+
+        game.turnManager.startTurn();
+
+        System.out.println("How does the turn end?");
+        System.out.println("1. Player performs action (completes turn)");
+        System.out.println("2. Time expires");
+        System.out.print("Enter choice: ");
+        int choice = scanner.nextInt();
+
+        if (choice == 1) {
+            System.out.println("[Player] action()");
+            game.turnManager.endTurn();
+        } else if (choice == 2) {
+            game.turnManager.timeExpired();
+        } else {
+            System.out.println("Invalid choice.");
+        }
+    }
+
 
     private static void sabotagePipeScenario() {
         System.out.println("\n===== 13. Sabotage Pipe =====");
