@@ -1,23 +1,37 @@
 package software.project;
 
+import java.util.Scanner;
+
 import software.project.core.Game;
 import software.project.core.GameConfig;
-import software.project.models.*;
+import software.project.models.ActiveElement;
+import software.project.models.Cistern;
+import software.project.models.Element;
+import software.project.models.Pipe;
+import software.project.models.PipeEnd;
+import software.project.models.Player;
+import software.project.models.Plumber;
+import software.project.models.Pump;
+import software.project.models.Saboteur;
+import software.project.models.Spring;
+import software.project.models.Team;
 import software.project.utils.GameState;
 import software.project.utils.Teams;
-
-import java.util.Scanner;
 
 /**
  * Command-line skeleton application for testing Pipes in the Desert scenarios.
  *
- * <p>Presents a numbered menu allowing users to execute individual test scenarios
+ * <p>
+ * Presents a numbered menu allowing users to execute individual test scenarios
  * that correspond to the use cases defined in the analysis model. Each scenario
  * simulates a specific gameplay action and prints the internal method calls to
- * verify correct behavior of the domain model.</p>
+ * verify correct behavior of the domain model.
+ * </p>
  *
- * <p>This skeleton serves as a verification tool only and does not provide a
- * graphical user interface.</p>
+ * <p>
+ * This skeleton serves as a verification tool only and does not provide a
+ * graphical user interface.
+ * </p>
  *
  * @author Artem Monakhov
  * @author Diego Gomes
@@ -28,14 +42,18 @@ import java.util.Scanner;
  * @since 2026-03-30
  */
 public class App {
+    /** Shared scanner for reading console input. */
     public static final Scanner scanner = new Scanner(System.in);
+    /** Shared configuration used by scenarios. */
     private static final GameConfig config = new GameConfig();
 
     /**
      * Entry point of the skeleton application.
      *
-     * <p>Displays the main menu and executes the selected test scenario in a loop
-     * until the user chooses to exit.</p>
+     * <p>
+     * Displays the main menu and executes the selected test scenario in a loop
+     * until the user chooses to exit.
+     * </p>
      *
      * @param args command line arguments (not used)
      */
@@ -72,6 +90,7 @@ public class App {
         }
     }
 
+    /** Prints the main menu options. */
     private static void printMainMenu() {
         System.out.println("\n===== Game Skeleton Menu =====");
         System.out.println("1. Start New Game");
@@ -94,6 +113,7 @@ public class App {
         System.out.println("0. Exit");
     }
 
+    /** Runs the start-new-game scenario. */
     private static void startNewGameScenario() {
         System.out.println("\n===== 1. Start New Game =====");
         Game game = new Game(config);
@@ -101,6 +121,7 @@ public class App {
         System.out.println("Game Initialized Successfully");
     }
 
+    /** Runs the configure-game scenario using user input. */
     private static void configureGameScenario() {
         System.out.println("\n===== Configure Game =====");
 
@@ -126,6 +147,7 @@ public class App {
         System.out.println("===== Game Configuration Finalized =====");
     }
 
+    /** Runs the pause/resume scenario with a looped menu. */
     private static void pauseResumeGameScenario() {
         System.out.println("\n===== 3. Pause/Resume Game =====");
         Game game = new Game();
@@ -146,6 +168,7 @@ public class App {
         }
     }
 
+    /** Runs the move-player scenario, prompting for a target element. */
     private static void movePlayerScenario() {
         System.out.println("\n===== 4. Move Player =====");
 
@@ -193,6 +216,7 @@ public class App {
         player.moveTo(selected);
     }
 
+    /** Runs the end-turn scenario with player or timer completion. */
     private static void endTurnScenario() {
         System.out.println("\n===== 5. End Turn =====");
         Game game = new Game(config);
@@ -215,6 +239,7 @@ public class App {
         }
     }
 
+    /** Runs the disconnect-pipe-end scenario. */
     private static void disconnectPipeEndScenario() {
         System.out.println("\n===== Disconnect Pipe End =====");
 
@@ -233,6 +258,7 @@ public class App {
         plumber.disconnect(end);
     }
 
+    /** Runs the connect-pipe-end scenario with a selected target. */
     private static void connectPipeEndScenario() {
         System.out.println("\n===== Connect Pipe End =====");
 
@@ -284,6 +310,7 @@ public class App {
         }
     }
 
+    /** Runs the insert-pump-into-pipe scenario. */
     private static void insertPumpIntoPipeScenario() {
         System.out.println("\n===== Insert Pump Into Pipe =====");
 
@@ -316,6 +343,7 @@ public class App {
         }
     }
 
+    /** Runs the set-pump-direction scenario. */
     private static void setPumpDirectionScenario() {
         System.out.println("\n===== Set Pump Direction =====");
 
@@ -353,6 +381,7 @@ public class App {
         }
     }
 
+    /** Runs the repair-pipe scenario. */
     private static void repairPipeScenario() {
         System.out.println("\n===== Repair Pipe =====");
 
@@ -377,6 +406,7 @@ public class App {
         }
     }
 
+    /** Runs the pick-up-component scenario at a cistern. */
     private static void pickUpComponentScenario() {
         System.out.println("\n===== Pick Up Component =====");
 
@@ -405,6 +435,7 @@ public class App {
         }
     }
 
+    /** Runs the repair-pump scenario. */
     private static void repairPumpScenario() {
         System.out.println("\n===== Repair Pump =====");
 
@@ -429,7 +460,7 @@ public class App {
         }
     }
 
-
+    /** Runs the sabotage-pipe scenario. */
     private static void sabotagePipeScenario() {
         System.out.println("\n===== 13. Sabotage Pipe =====");
 
@@ -445,11 +476,12 @@ public class App {
         System.out.println("===== Sabotage Scenario Finished =====");
     }
 
+    /** Runs the calculate-score scenario. */
     private static void calculateScoreScenario() {
         System.out.println("\n===== 14. Calculate Score =====");
 
         Game game = new Game();
-        
+
         Cistern cistern1 = new Cistern();
         Cistern cistern2 = new Cistern();
         game.addElement(cistern1);
@@ -467,6 +499,7 @@ public class App {
         System.out.println("\n===== Score Calculation Scenario Finished =====");
     }
 
+    /** Runs the process-random-event scenario. */
     private static void processRandomEventScenario() {
         System.out.println("\n===== 15. Process Random Event =====");
 
@@ -494,11 +527,12 @@ public class App {
         System.out.println("\n===== Process Random Event Scenario Finished =====");
     }
 
+    /** Runs the end-game scenario with periodic winner checks. */
     private static void endGameScenario() {
         System.out.println("\n===== 17. End Game =====");
 
         Game game = new Game();
-        
+
         Cistern cistern1 = new Cistern();
         Cistern cistern2 = new Cistern();
         game.addElement(cistern1);
@@ -516,7 +550,7 @@ public class App {
         System.out.println("\n[Game] Starting periodic winner check...");
 
         for (int i = 0; i < 3; i++) {
-            System.out.println("\n[Game] Periodic check #" + (i+1));
+            System.out.println("\n[Game] Periodic check #" + (i + 1));
             game.checkWinner();
 
             game.plumber.addScore(5);
@@ -531,6 +565,7 @@ public class App {
         System.out.println("\n===== End Game Scenario Finished =====");
     }
 
+    /** Runs the waterflow simulation scenario. */
     private static void manageWaterflowScenario() {
         System.out.println("\n===== 18. Manage Waterflow =====");
         Game game = new Game();
@@ -538,17 +573,17 @@ public class App {
         // 1. Create components
         Spring spring = new Spring();
         spring.waterProductionRate = 5; // Set rate so generation > 0
-        
+
         Pipe pipe = new Pipe();
         Pump pump = new Pump();
         Cistern cistern = new Cistern();
 
         // 2. THE WIRING (Crucial step!)
         spring.addPipe(pipe); // Connect Spring -> Pipe
-        
+
         pipe.end1 = new PipeEnd();
-        pipe.end1.connectedTo = spring; 
-        
+        pipe.end1.connectedTo = spring;
+
         pipe.end2 = new PipeEnd();
         pipe.end2.connectedTo = pump; // Connect Pipe -> Pump
 

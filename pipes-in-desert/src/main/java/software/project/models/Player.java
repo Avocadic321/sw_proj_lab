@@ -13,7 +13,8 @@ import java.util.Scanner;
  * Movement is restricted to adjacent elements that are directly connected
  * in the pipe network. Occupancy rules are enforced by each element's
  * {@link Element#canOccupy()} method: pipes allow at most one player at a time,
- * while pumps and other active elements may hold multiple players simultaneously.
+ * while pumps and other active elements may hold multiple players
+ * simultaneously.
  * </p>
  *
  * @see Element
@@ -26,21 +27,26 @@ public abstract class Player {
     public Element currentPosition;
 
     /**
-     * Attempts to move the player from their current position to the specified target element.
+     * Attempts to move the player from their current position to the specified
+     * target element.
      * <p>
      * The move is valid only if the following conditions are met:
      * <ul>
-     *   <li>The target is directly connected to the current position</li>
-     *   <li>The target element's {@link Element#canOccupy()} method returns {@code true}</li>
+     * <li>The target is directly connected to the current position</li>
+     * <li>The target element's {@link Element#canOccupy()} method returns
+     * {@code true}</li>
      * </ul>
      * </p>
      * <p>
-     * This implementation includes interactive user input to simulate adjacency checking
-     * for skeleton/verification purposes. In the final implementation, adjacency should
+     * This implementation includes interactive user input to simulate adjacency
+     * checking
+     * for skeleton/verification purposes. In the final implementation, adjacency
+     * should
      * be determined automatically based on the pipe network topology.
      * </p>
      *
-     * @param target the element to move to; must be directly connected to the current position
+     * @param target the element to move to; must be directly connected to the
+     *               current position
      * @return {@code true} if the move succeeded, {@code false} otherwise
      */
     public boolean moveTo(Element target) {

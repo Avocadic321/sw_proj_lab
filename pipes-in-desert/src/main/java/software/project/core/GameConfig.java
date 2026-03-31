@@ -3,17 +3,24 @@ package software.project.core;
 /**
  * Stores all user-configurable settings for a game session.
  *
- * <p>This class holds four key parameters that determine how a game plays:</p>
+ * <p>
+ * This class holds four key parameters that determine how a game plays:
+ * </p>
  *
  * <ul>
- *   <li><b>goalScore</b> - How many points a team needs to win</li>
- *   <li><b>turnDurationSeconds</b> - How many seconds each player gets per turn</li>
- *   <li><b>realTimeScoring</b> - Whether scores update every second or only after turns</li>
- *   <li><b>numberOfPlayers</b> - Total players in the game, split between Plumbers and Saboteurs</li>
+ * <li><b>goalScore</b> - How many points a team needs to win</li>
+ * <li><b>turnDurationSeconds</b> - How many seconds each player gets per
+ * turn</li>
+ * <li><b>realTimeScoring</b> - Whether scores update every second or only after
+ * turns</li>
+ * <li><b>numberOfPlayers</b> - Total players in the game, split between
+ * Plumbers and Saboteurs</li>
  * </ul>
  *
- * <p>All setters validate input against minimum/maximum limits. Invalid values
- * are rejected with an error message printed to console.</p>
+ * <p>
+ * All setters validate input against minimum/maximum limits. Invalid values
+ * are rejected with an error message printed to console.
+ * </p>
  */
 public class GameConfig {
     // Default values
@@ -87,7 +94,7 @@ public class GameConfig {
      * @param score must be between MIN_GOAL_SCORE and MAX_GOAL_SCORE
      */
     public void setGoalScore(int score) {
-        if (goalScore >= MIN_GOAL_SCORE &&  goalScore <= MAX_GOAL_SCORE) {
+        if (goalScore >= MIN_GOAL_SCORE && goalScore <= MAX_GOAL_SCORE) {
             System.out.printf("[GameConfig] setGoalScore(%d)%n", score);
             this.goalScore = score;
         } else {
@@ -112,7 +119,8 @@ public class GameConfig {
     /**
      * Enables or disables real-time scoring mode.
      *
-     * @param enabled true = scores update every second, false = scores update after each full round
+     * @param enabled true = scores update every second, false = scores update after
+     *                each full round
      */
     public void setRealTimeScoring(boolean enabled) {
         System.out.printf("[GameConfig] setRealTimeScoring(%b)%n", enabled);
@@ -149,16 +157,15 @@ public class GameConfig {
     @Override
     public String toString() {
         return String.format(
-            "GameConfig {\n" +
-                "  Goal Score: %d\n" +
-                "  Turn Duration: %d seconds\n" +
-                "  Real-time Scoring: %s\n" +
-                "  Number of Players: %d\n" +
-                "}",
-            goalScore,
-            turnDurationSeconds,
-            realTimeScoring ? "enabled" : "disabled",
-            numberOfPlayers
-        );
+                "GameConfig {\n" +
+                        "  Goal Score: %d\n" +
+                        "  Turn Duration: %d seconds\n" +
+                        "  Real-time Scoring: %s\n" +
+                        "  Number of Players: %d\n" +
+                        "}",
+                goalScore,
+                turnDurationSeconds,
+                realTimeScoring ? "enabled" : "disabled",
+                numberOfPlayers);
     }
 }

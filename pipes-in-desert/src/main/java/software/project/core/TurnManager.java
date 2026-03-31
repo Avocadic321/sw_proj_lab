@@ -5,10 +5,12 @@ import software.project.models.Player;
 /**
  * Manages the turn-based flow of a game session.
  *
- * <p>Controls turn order, tracks the currently active player, and coordinates
+ * <p>
+ * Controls turn order, tracks the currently active player, and coordinates
  * turn transitions. The timer enforces time limits per player turn. When a turn
  * ends (either by player action or timer expiration), the manager advances to
- * the next player.</p>
+ * the next player.
+ * </p>
  *
  * @see Timer
  * @see Player
@@ -28,7 +30,9 @@ public class TurnManager {
     /**
      * Begins a new turn for the current player.
      *
-     * <p>Starts the turn timer and sets the manager state to running.</p>
+     * <p>
+     * Starts the turn timer and sets the manager state to running.
+     * </p>
      */
     public void startTurn() {
         System.out.println("[TurnManager] startTurn()");
@@ -41,8 +45,10 @@ public class TurnManager {
     /**
      * Suspends the current turn without ending it.
      *
-     * <p>Stops the timer but preserves the turn state for later resumption.
-     * Used when the game is paused.</p>
+     * <p>
+     * Stops the timer but preserves the turn state for later resumption.
+     * Used when the game is paused.
+     * </p>
      */
     public void suspendTurn() {
         System.out.println("[TurnManager] suspendTurn()");
@@ -52,7 +58,9 @@ public class TurnManager {
     /**
      * Resumes a previously suspended turn.
      *
-     * <p>Restarts the timer from where it was stopped.</p>
+     * <p>
+     * Restarts the timer from where it was stopped.
+     * </p>
      */
     public void resumeTurn() {
         System.out.println("[TurnManager] resumeTurn()");
@@ -62,8 +70,10 @@ public class TurnManager {
     /**
      * Terminates the current turn.
      *
-     * <p>Stops the timer, clears the running flag, and advances to the next
-     * player.</p>
+     * <p>
+     * Stops the timer, clears the running flag, and advances to the next
+     * player.
+     * </p>
      */
     public void endTurn() {
         System.out.println("[TurnManager] endTurn()");
@@ -73,6 +83,9 @@ public class TurnManager {
         nextPlayer();
     }
 
+    /**
+     * Advances the turn to the next player.
+     */
     public void nextPlayer() {
         System.out.println("[TurnManager] nextPlayer()");
     }
@@ -80,12 +93,15 @@ public class TurnManager {
     /**
      * Sets the duration of each player's turn.
      *
-     * @param seconds  turn length in seconds
+     * @param seconds turn length in seconds
      */
     public void setTimerDuration(int seconds) {
         timer.setTurnDuration(seconds);
     }
 
+    /**
+     * Marks the current player as having ended their turn.
+     */
     public void playerEndsTurn() {
         System.out.println("[TurnManager] playerEndsTurn()");
     }
@@ -93,7 +109,9 @@ public class TurnManager {
     /**
      * Handles turn expiration when the timer reaches zero.
      *
-     * <p>Automatically ends the current turn.</p>
+     * <p>
+     * Automatically ends the current turn.
+     * </p>
      */
     public void timeExpired() {
         System.out.println("[TurnManager] timeExpired()");
