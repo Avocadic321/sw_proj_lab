@@ -1,21 +1,45 @@
 package software.project.core;
 
-import software.project.models.*;
-import software.project.utils.GameState;
-import software.project.utils.Teams;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import software.project.models.ActiveElement;
+import software.project.models.Cistern;
+import software.project.models.Element;
+import software.project.models.Pipe;
+import software.project.models.PipeEnd;
+import software.project.models.Player;
+import software.project.models.Plumber;
+import software.project.models.Pump;
+import software.project.models.Saboteur;
+import software.project.models.Spring;
+import software.project.models.Team;
+import software.project.utils.GameState;
+import software.project.utils.Teams;
+
+/**
+ * Coordinates gameplay flow, state, and high-level actions.
+ */
 public class Game {
+    /** Manages turns and timing. */
     public TurnManager turnManager;
+    /** All elements currently in the game. */
     public List<Element> elements;
+    /** Saboteur team instance. */
     public Team saboteur;
+    /** Plumber team instance. */
     public Team plumber;
+    /** Current game state. */
     public GameState state;
+    /** Game configuration settings. */
     public GameConfig config;
 
+    /**
+     * Creates a game with the provided configuration.
+     *
+     * @param config game configuration
+     */
     public Game(GameConfig config) {
         this.elements = new ArrayList<>();
         this.turnManager = new TurnManager();
@@ -24,10 +48,12 @@ public class Game {
         System.out.println("[Game] Game object created");
     }
 
+    /** Creates a game with default configuration. */
     public Game() {
         this(new GameConfig());
     }
 
+    /** Initializes elements, teams, and starts the first turn. */
     public void startGame() {
         System.out.println("[Game] startGame()");
         System.out.println("[Game] state = INITIALIZING");
@@ -59,6 +85,7 @@ public class Game {
         state = GameState.RUNNING;
     }
 
+    /** Pauses the game if it is currently running. */
     public void pauseGame() {
         System.out.println("[Game] pauseGame()\n");
         if (!(state == GameState.RUNNING)) {
@@ -72,6 +99,7 @@ public class Game {
         turnManager.suspendTurn();
     }
 
+    /** Resumes the game if it is currently paused. */
     public void resumeGame() {
         System.out.println("[Game] resumeGame()\n");
         if (state != GameState.PAUSED) {
@@ -85,10 +113,17 @@ public class Game {
         turnManager.resumeTurn();
     }
 
+    /** Ends the game session. */
     public void endGame() {
         System.out.println("[Game] endGame()\n");
     }
 
+    /**
+     * Finds an element by its id.
+     *
+     * @param id element identifier
+     * @return matching element or null
+     */
     public Element getElementById(String id) {
         for (Element e : elements) {
             if (e.id != null && e.id.equals(id)) {
@@ -98,20 +133,34 @@ public class Game {
         return null;
     }
 
+    /** Executes random events for the current turn. */
     public void performRandomEvents() {
         System.out.println("[Game] performRandomEvents()\n");
     }
 
+    /**
+     * Adds an element to the game.
+     *
+     * @param element element to add
+     */
     public void addElement(Element element) {
         this.elements.add(element);
         System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
     }
 
+    /**
+     * Connects a free pipe end to a target element if valid.
+     *
+     * @param selectedPipe  pipe that owns the end
+     * @param freeEnd       pipe end to connect
+     * @param targetElement element to connect to
+     * @return true if the connection succeeds
+     */
     public boolean connect(Pipe selectedPipe, PipeEnd freeEnd, ActiveElement targetElement) {
         System.out.println("[Game] connect(selectedPipe, freeEnd, targetElement)");
 
         boolean validPipeEnd = selectedPipe != null
-            && (selectedPipe.end1 == freeEnd || selectedPipe.end2 == freeEnd);
+                && (selectedPipe.end1 == freeEnd || selectedPipe.end2 == freeEnd);
         if (!validPipeEnd) {
             System.out.println("[Game] Rejected: selected pipe does not own the selected pipe end");
             return false;
@@ -130,8 +179,8 @@ public class Game {
         }
 
         if (targetElement instanceof Pump pump
-            && pump.maxConnections > 0
-            && pump.getConnections().size() >= pump.maxConnections) {
+                && pump.maxConnections > 0
+                && pump.getConnections().size() >= pump.maxConnections) {
             System.out.println("[Game] Rejected: target pump has no free connection slots");
             return false;
         }
@@ -141,6 +190,13 @@ public class Game {
         return true;
     }
 
+    /**
+     * Inserts a carried pump into a selected pipe.
+     *
+     * @param activePlumber plumber carrying the pump
+     * @param targetPipe    pipe to split
+     * @return true if insertion succeeds
+     */
     public boolean insertPumpIntoPipe(Plumber activePlumber, Pipe targetPipe) {
         System.out.println("[Game] insertPumpIntoPipe(targetPipe)");
 
@@ -171,6 +227,15 @@ public class Game {
         return true;
     }
 
+    /**
+     * Attempts to configure the direction of a pump.
+     *
+     * @param player     player performing the action
+     * @param targetPump pump to configure
+     * @param inputPipe  chosen input pipe
+     * @param outputPipe chosen output pipe
+     * @return true if the direction is updated
+     */
     public boolean setPumpDirection(Player player, Pump targetPump, Pipe inputPipe, Pipe outputPipe) {
         System.out.println("[Game] setDirection(inputPipe, outputPipe)");
 
@@ -189,6 +254,13 @@ public class Game {
         return false;
     }
 
+    /**
+     * Repairs a broken pipe via the plumber.
+     *
+     * @param plumber    plumber performing repair
+     * @param targetPipe pipe to repair
+     * @return true if repaired
+     */
     public boolean repairPipe(Plumber plumber, Pipe targetPipe) {
         System.out.println("[Game] repairPipe(targetPipe)");
 
@@ -208,10 +280,22 @@ public class Game {
         return true;
     }
 
+    /**
+     * Marks a pump as selected for subsequent actions.
+     *
+     * @param targetPump selected pump
+     */
     public void selectPump(Pump targetPump) {
         System.out.println("[Game] selectPump() - " + targetPump);
     }
 
+    /**
+     * Repairs a broken pump via the plumber.
+     *
+     * @param plumber    plumber performing repair
+     * @param targetPump pump to repair
+     * @return true if repaired
+     */
     public boolean repairPump(Plumber plumber, Pump targetPump) {
         System.out.println("[Game] repairPump(targetPump)");
 
@@ -231,6 +315,11 @@ public class Game {
         return true;
     }
 
+    /**
+     * Returns the active plumber if it is their turn.
+     *
+     * @return active plumber or null
+     */
     public Plumber getActivePlayer() {
         System.out.println("[Game] getActivePlayer()");
         if (turnManager.currentPlayer instanceof Plumber activePlumber) {
@@ -239,10 +328,22 @@ public class Game {
         return null;
     }
 
+    /**
+     * Marks a cistern as selected for component requests.
+     *
+     * @param sourceCistern selected cistern
+     */
     public void selectCistern(Cistern sourceCistern) {
         System.out.println("[Game] selectCistern() - " + sourceCistern);
     }
 
+    /**
+     * Requests a component from a cistern for the active plumber.
+     *
+     * @param sourceCistern cistern producing the component
+     * @param requestPump   true to request a pump, false for a pipe
+     * @return true if a component is provided
+     */
     public boolean requestComponent(Cistern sourceCistern, boolean requestPump) {
         System.out.println("[Game] requestComponent()");
 
@@ -269,10 +370,20 @@ public class Game {
     }
 
     // UC-14
+    /**
+     * Marks a pipe as selected for later operations.
+     *
+     * @param targetPipe selected pipe
+     */
     public void selectPipe(Pipe targetPipe) {
         System.out.println("[Game] selectPipe() - " + targetPipe);
     }
 
+    /**
+     * Sabotages a pipe by breaking it if it is functional.
+     *
+     * @param targetPipe pipe to sabotage
+     */
     public void sabotagePipe(Pipe targetPipe) {
         System.out.println("[Game] sabotagePipe()");
 
@@ -289,6 +400,7 @@ public class Game {
 
     // UC-15
 
+    /** Calculates and updates team scores based on water flow. */
     public void calculateScore() {
         System.out.println("[Game] calculateScore()");
 
@@ -313,16 +425,29 @@ public class Game {
         updateDisplayedScores();
     }
 
+    /**
+     * Returns total water stored based on a flow report.
+     *
+     * @param flowReport flow report object
+     * @return total stored water
+     */
     public int getTotalStoredWater(Object flowReport) {
         System.out.println("[Game] getTotalStoredWater()");
         return 42; // placeholder
     }
 
+    /**
+     * Returns total water leaked based on a flow report.
+     *
+     * @param flowReport flow report object
+     * @return total leaked water
+     */
     public int getTotalLeakedWater(Object flowReport) {
         System.out.println("[Game] getTotalLeakedWater()");
         return 17; // placeholder
     }
 
+    /** Prints updated scores for both teams. */
     public void updateDisplayedScores() {
         System.out.println("[Game] updateDisplayedScores()");
         System.out.println("[Game] Plumber score = " + plumber.getScore());
@@ -331,6 +456,7 @@ public class Game {
 
     // UC-16
 
+    /** Executes a random event sequence for the current turn. */
     public void processRandomEvent() {
         System.out.println("[Game] processRandomEvent()");
 
@@ -362,9 +488,14 @@ public class Game {
         System.out.println("[Game] Game state updated after random event\n");
     }
 
+    /**
+     * Selects a random subset of working pumps to break.
+     *
+     * @return list of pumps to break
+     */
     private List<Pump> selectRandomWorkingPumps() {
         System.out.println("[Game] selectRandomWorkingPumps()");
-        
+
         // Filter the main list for working pumps
         List<Pump> workingPumps = new ArrayList<>();
         for (Element e : elements) {
@@ -377,14 +508,19 @@ public class Game {
         // For this example, let's say we break 50% of working pumps
         Collections.shuffle(workingPumps);
         int countToBreak = (int) Math.ceil(workingPumps.size() * 0.5);
-        
+
         return workingPumps.subList(0, countToBreak);
     }
 
+    /**
+     * Collects all cistern elements in the game.
+     *
+     * @return list of cisterns
+     */
     private List<Cistern> getCisterns() {
         System.out.println("[Game] getCisterns()");
         List<Cistern> cisterns = new ArrayList<>();
-        
+
         for (Element e : elements) {
             if (e instanceof Cistern) {
                 cisterns.add((Cistern) e);
@@ -393,15 +529,17 @@ public class Game {
         return cisterns;
     }
 
+    /** Updates game state after random events. */
     private void updateGameState() {
         System.out.println("[Game] updateGameState()");
     }
 
     // UC-17
 
+    /** Checks current scores and determines whether the game ends. */
     public void checkWinner() {
         System.out.println("[Game] checkWinner()");
-        
+
         int plumberScore = plumber.getScore();
         int saboteurScore = saboteur.getScore();
         System.out.println("[Game] Plumber score = " + plumberScore);
@@ -410,8 +548,15 @@ public class Game {
         compareScores(plumberScore, saboteurScore);
     }
 
+    /**
+     * Compares team scores against the goal threshold.
+     *
+     * @param plumberScore  plumber team score
+     * @param saboteurScore saboteur team score
+     */
     public void compareScores(int plumberScore, int saboteurScore) {
-        System.out.println("[Game] compareScores() - plumberScore: " + plumberScore + ", saboteurScore: " + saboteurScore);
+        System.out.println(
+                "[Game] compareScores() - plumberScore: " + plumberScore + ", saboteurScore: " + saboteurScore);
 
         // Example threshold for winning (just for skeleton)
         int goalScore = config.getGoalScore();
@@ -425,23 +570,33 @@ public class Game {
         }
     }
 
+    /** Determines the winning team. */
     public void determineWinner() {
         System.out.println("[Game] determineWinner()");
     }
 
+    /** Ensures a tie condition is resolved. */
     public void ensureNoDrawCondition() {
         System.out.println("[Game] ensureNoDrawCondition()");
     }
 
+    /**
+     * Displays the final result for the winner.
+     *
+     * @param winner winning team
+     */
     public void displayFinalResult(Team winner) {
         System.out.println("[Game] displayFinalResult() - Winner: " + winner.team);
-    }  
-    
+    }
+
     // UC18
 
+    /** Total water stored after flow simulation. */
     private int storedWaterTotal = 0;
+    /** Total water leaked after flow simulation. */
     private int leakedWaterTotal = 0;
-    
+
+    /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
         System.out.println("[Game] simulateWaterFlow()");
 
@@ -455,8 +610,9 @@ public class Game {
         for (Spring sourceSpring : springs) {
             // Ensure water production isn't 0
             int waterAmount = sourceSpring.generateWater();
-            if (waterAmount == 0) waterAmount = 500; // Default fallback for skeleton
-            
+            if (waterAmount == 0)
+                waterAmount = 500; // Default fallback for skeleton
+
             System.out.println("[Game] Spring generated: " + waterAmount + " units");
 
             // BFS Queue to trace the flow
@@ -470,16 +626,16 @@ public class Game {
                 if (activePipe.isBroken()) {
                     System.out.println("[Game] Flow Interrupted: Pipe is broken.");
                     registerLeak(waterAmount);
-                } 
+                }
                 // Check 2: Leaking due to being unplugged?
                 else if (activePipe.hasFreeEnd()) {
                     System.out.println("[Game] Flow Interrupted: Pipe has a free end.");
                     registerLeak(waterAmount);
-                } 
+                }
                 // Check 3: Functional pipe
                 else {
                     int forwardedAmount = activePipe.transferWater(waterAmount);
-                    
+
                     // Find the next component
                     Pump activePump = activePipe.getNextPump();
                     if (activePump != null) {
@@ -494,22 +650,29 @@ public class Game {
         updateFlowTotals();
     }
 
+    /**
+     * Routes water through a pump and its outgoing connections.
+     *
+     * @param activePump pump handling the flow
+     * @param amount     incoming water amount
+     * @param pipeQueue  queue of pipes to process
+     */
     private void processPumpFlow(Pump activePump, int amount, List<Pipe> pipeQueue) {
         // Check 1: Pump Health
         if (activePump.isBroken()) {
             System.out.println("[Game] Flow Interrupted: Pump is broken.");
-            // In many designs, a broken pump causes water to leak or just stop. 
+            // In many designs, a broken pump causes water to leak or just stop.
             // We'll count it as a leak for the Saboteurs.
             registerLeak(amount);
-        } 
+        }
         // Check 2: Pump Capacity
         else if (activePump.isTankFull()) {
             System.out.println("[Game] Flow Interrupted: Pump tank is full.");
-        } 
+        }
         // Check 3: Pump is working
         else {
             int pumpedAmount = activePump.transferWater(amount);
-            
+
             // Branch A: Water moves into the next pipe
             Pipe outgoingPipe = activePump.getOutgoingPipe();
             if (outgoingPipe != null) {
@@ -529,19 +692,31 @@ public class Game {
         }
     }
 
+    /**
+     * Collects all springs in the game.
+     *
+     * @return list of springs
+     */
     private List<Spring> getSprings() {
         List<Spring> springs = new ArrayList<>();
         for (Element e : elements) {
-            if (e instanceof Spring) springs.add((Spring) e);
+            if (e instanceof Spring)
+                springs.add((Spring) e);
         }
         return springs;
     }
 
+    /**
+     * Registers leaked water for saboteur scoring.
+     *
+     * @param amount leaked amount
+     */
     private void registerLeak(int amount) {
         leakedWaterTotal += amount;
         System.out.println("[Game] registerLeak() - Total leaked so far: " + leakedWaterTotal);
     }
 
+    /** Prints the totals from the last flow simulation. */
     private void updateFlowTotals() {
         System.out.println("\n[Game] --- Flow Simulation Results ---");
         System.out.println("[Game] Total Water Stored (Plumbers): " + storedWaterTotal);
