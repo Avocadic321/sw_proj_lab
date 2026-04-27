@@ -9,9 +9,9 @@ import software.project.interfaces.IConnectable;
  */
 public class Cistern extends ActiveElement implements IConnectable {
     /** Current amount of water stored. */
-    public int storedWater;
+    private int storedWater;
     /** Maximum water capacity. */
-    public int capacity;
+    private int capacity;
 
     /**
      * Accepts incoming water.

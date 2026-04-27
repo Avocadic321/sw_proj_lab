@@ -116,8 +116,8 @@ public abstract class Player {
             return false;
         }
 
-        PipeEnd inputEnd = in.end1 != null && in.end1.connectedTo == pump ? in.end1 : in.end2;
-        PipeEnd outputEnd = out.end1 != null && out.end1.connectedTo == pump ? out.end1 : out.end2;
+        PipeEnd inputEnd = in.getEnd1() != null && in.getEnd1().connectedTo == pump ? in.getEnd1() : in.getEnd2();
+        PipeEnd outputEnd = out.getEnd1() != null && out.getEnd1().connectedTo == pump ? out.getEnd1() : out.getEnd2();
 
         return pump.setDirection(inputEnd, outputEnd);
     }
