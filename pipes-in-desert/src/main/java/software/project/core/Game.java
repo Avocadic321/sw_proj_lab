@@ -232,7 +232,7 @@ public class Game {
 
             // Branch B: Pump is connected directly to a Cistern
             if (activePump.isConnectedToCistern()) {
-                Cistern targetCistern = activePump.getTargetCistern();
+                Cistern targetCistern = new Cistern();
                 if (targetCistern != null) {
                     targetCistern.receiveWater(pumpedAmount);
                     // storedWaterTotal += pumpedAmount; // Score for Plumbers

@@ -13,22 +13,22 @@ import software.project.interfaces.IRepairable;
  */
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
     /** Connected pipe ends. */
-    public List<PipeEnd> connections;
+    private List<PipeEnd> connections;
 
     /** Selected input pipe end. */
-    public PipeEnd inputPipe;
+    private PipeEnd inputPipe;
     /** Selected output pipe end. */
-    public PipeEnd outputPipe;
+    private PipeEnd outputPipe;
 
     /** Maximum water capacity of the pump tank. */
-    public int tankCapacity;
+    private int tankCapacity;
     /** Current amount stored in the pump tank. */
-    public int storedWater;
+    private int storedWater;
     /** Maximum number of connections allowed. */
-    public int maxConnections;
+    private int maxConnections;
 
     /** Whether the pump is broken. */
-    public boolean isBroken;
+    private boolean isBroken;
 
     /** Creates a new pump with default values. */
     public Pump() {
@@ -60,22 +60,23 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return true if the configuration is valid
      */
     public boolean setDirection(PipeEnd input, PipeEnd output) {
-        System.out.println("[Pump] setDirection()");
-
-        boolean valid = input != null
-                && output != null
-                && input != output
-                && input.connectedTo == this
-                && output.connectedTo == this;
-
-        System.out.println("[Pump] validateSingleInputOutput(inputPipe, outputPipe) -> " + valid);
-        if (!valid) {
+        if (input == null || output == null) {
             return false;
         }
 
-        inputPipe = input;
-        outputPipe = output;
-        System.out.println("[Pump] storeDirectionConfiguration()");
+        // Must be distinct ends
+        if (input == output) {
+            return false;
+        }
+
+        // Both ends must be among the pump’s connections
+        if (!connections.contains(input) || !connections.contains(output)) {
+            return false;
+        }
+
+        // Set the new direction
+        this.inputPipe = input;
+        this.outputPipe = output;
         return true;
     }
 
@@ -86,14 +87,13 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return forwarded amount
      */
     public int transferWater(int amount) {
-        System.out.println("[Pump] transferWater(" + amount + ")");
+        // TODO: Implement logic
         return amount;
     }
 
     /** Breaks the pump. */
     @Override
     public void breakElement() {
-        System.out.println("[Pump] breakElement()");
         this.isBroken = true;
     }
 
@@ -104,7 +104,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     @Override
     public boolean isBroken() {
-        System.out.println("[Pump] isBroken()");
         return this.isBroken;
     }
 
@@ -115,7 +114,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     @Override
     public void connect(PipeEnd end) {
-        System.out.println("[Pump] connect()");
         if (!connections.contains(end)) {
             connections.add(end);
         }
@@ -128,7 +126,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     @Override
     public void disconnect(PipeEnd end) {
-        System.out.println("[Pump] disconnect()");
         connections.remove(end);
     }
 
@@ -139,14 +136,12 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     @Override
     public List<PipeEnd> getConnections() {
-        System.out.println("[Pump] getConnections()");
         return connections;
     }
 
     /** Repairs the pump. */
     @Override
     public void repair() {
-        System.out.println("[Pump] repair()");
         this.isBroken = false;
     }
 
@@ -156,8 +151,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return true if full
      */
     public boolean isTankFull() {
-        System.out.println("[Pump] isTankFull()");
-        return false;
+        return storedWater == tankCapacity;
     }
 
     /**
@@ -166,30 +160,15 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return outgoing pipe or null
      */
     public Pipe getOutgoingPipe() {
-        System.out.println("[Pump] getOutgoingPipe()");
-        if (outputPipe != null && outputPipe.pipe != null) {
+        if (outputPipe != null) {
             return outputPipe.pipe;
         }
         return null;
     }
 
-    /**
-     * Indicates whether the pump is connected to a cistern.
-     *
-     * @return true if output connects to a cistern
-     */
+    /* Do we need this? */
     public boolean isConnectedToCistern() {
         System.out.println("[Pump] isConnectedToCistern()");
         return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
-    }
-
-    /**
-     * Returns the target cistern for the output connection.
-     *
-     * @return target cistern
-     */
-    public Cistern getTargetCistern() {
-        System.out.println("[Pump] getTargetCistern()");
-        return new Cistern();
     }
 }
