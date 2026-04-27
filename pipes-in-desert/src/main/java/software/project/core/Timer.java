@@ -11,9 +11,13 @@ package software.project.core;
  * </p>
  */
 public class Timer {
-    public int turnDuration;
-    public int timeLeft;
-    public boolean isRunning;
+    private int turnDuration;
+    private int timeLeft;
+    private boolean isRunning;
+
+    public Timer(int turnDuration) {
+        this.turnDuration = turnDuration;
+    }
 
     /**
      * Begins the countdown from the full duration.
@@ -76,6 +80,6 @@ public class Timer {
      * @param duration the turn duration in seconds
      */
     public void setTurnDuration(int duration) {
-        System.out.printf("[Timer] setTurnDuration(%d)%n", duration);
+        turnDuration = duration;
     }
 }

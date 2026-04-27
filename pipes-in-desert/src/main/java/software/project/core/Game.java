@@ -33,7 +33,7 @@ public class Game {
      */
     public Game(GameConfig config) {
         this.gameMap = new GameMap();
-        this.turnManager = new TurnManager();
+        this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
         this.config = config;
     }
@@ -57,7 +57,6 @@ public class Game {
             saboteur.addPlayer(new Saboteur());
         }
 
-        turnManager.setTimerDuration(config.getTurnDurationSeconds());
         turnManager.startTurn();
 
         state = GameState.RUNNING;
