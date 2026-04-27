@@ -47,8 +47,6 @@ public class Game {
     public void startGame() {
         state = GameState.INITIALIZING;
 
-        // TODO: Create Mock Map
-
         plumber = new Team(Teams.PLUMBERS);
         saboteur = new Team(Teams.SABOTEURS);
 
@@ -87,7 +85,32 @@ public class Game {
     /** Ends the game session. */
     public void endGame() {}
 
-    /** Executes a random event sequence for the current turn. */
+    public void checkWinner() {
+
+    }
+
+    public void breakSpecificPump(String pumpId) {
+
+    }
+
+    public void produceComponentAt(String cisternId, String type) {
+
+    }
+
+    public void breakRandomPump() {
+
+    }
+
+    public void produceRandomComponent() {
+
+    }
+
+    public void performRandomEvents() {
+        breakRandomPump();
+        produceRandomComponent();
+    }
+
+    /** TODO: Separate method */
     public void processRandomEvent() {
         List<Pump> pumpsToBreak = selectRandomWorkingPumps();
         for (Pump selectedPump : pumpsToBreak) {
@@ -148,7 +171,7 @@ public class Game {
             List<Pipe> pipeQueue = new ArrayList<>(sourceSpring.getConnectedPipes());
 
             while (!pipeQueue.isEmpty()) {
-                Pipe activePipe = pipeQueue.remove(0);
+                Pipe activePipe = pipeQueue.removeFirst();
                 // Check 1: Leaking due to sabotage?
                 if (activePipe.isBroken()) {
                     leakedWaterTotal += waterAmount;
