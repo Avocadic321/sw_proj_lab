@@ -12,7 +12,7 @@ public class Spring extends ActiveElement implements IConnectable {
     /**
      * Base water production rate used by {@link #generateWater()}.
      */
-    public int waterProductionRate;
+    private int waterProductionRate;
     /**
      * Pipes currently attached to this spring.
      */
