@@ -24,12 +24,16 @@ import java.util.List;
  * @since 1.0
  */
 public abstract class Element {
-    public String id;
+    private String id;
 
-    public int x;
-    public int y;
+    private int x;
+    private int y;
 
-    public List<Player> occupants;
+    protected List<Player> occupants;
+
+    protected String getId() { return id; }
+    protected int getX() { return x; }
+    protected int getY() { return y; }
 
     /**
      * Constructs an element with default values.

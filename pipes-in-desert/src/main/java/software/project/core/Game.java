@@ -4,15 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import software.project.models.Cistern;
-import software.project.models.Element;
-import software.project.models.Pipe;
+import software.project.models.*;
 
-import software.project.models.Plumber;
-import software.project.models.Pump;
-import software.project.models.Saboteur;
-import software.project.models.Spring;
-import software.project.models.Team;
 import software.project.utils.GameState;
 import software.project.utils.Teams;
 
@@ -23,7 +16,7 @@ public class Game {
     /** Manages turns and timing. */
     private TurnManager turnManager;
     /** All elements currently in the game. */
-    private List<Element> elements;
+    private GameMap gameMap;
     /** Saboteur team instance. */
     private Team saboteur;
     /** Plumber team instance. */
@@ -39,7 +32,7 @@ public class Game {
      * @param config game configuration
      */
     public Game(GameConfig config) {
-        this.elements = new ArrayList<>();
+        this.gameMap = new GameMap();
         this.turnManager = new TurnManager();
         this.state = GameState.INITIALIZING;
         this.config = config;
@@ -94,17 +87,6 @@ public class Game {
     /** Ends the game session. */
     public void endGame() {}
 
-    /**
-     * Adds an element to the game.
-     *
-     * @param element element to add
-     */
-
-
-    public void addElement(Element element) {
-        this.elements.add(element);
-    }
-
     /** Executes a random event sequence for the current turn. */
     public void processRandomEvent() {
         List<Pump> pumpsToBreak = selectRandomWorkingPumps();
@@ -112,17 +94,16 @@ public class Game {
             selectedPump.breakElement();
         }
 
-        // List<Cistern> cisternList = getCisterns();
-        List<Cistern> cisternList = null;
+        List<Cistern> cisternList = gameMap.getAllCisterns();
 
         for (Cistern targetCistern : cisternList) {
             boolean generatePipe = Math.random() > 0.5;
             if (generatePipe) {
                 Pipe newPipe = targetCistern.producePipe();
-                addElement(newPipe);
+                gameMap.addElement(newPipe);
             } else {
                 Pump newPump = targetCistern.producePump();
-                addElement(newPump);
+                gameMap.addElement(newPump);
             }
         }
     }
@@ -135,11 +116,11 @@ public class Game {
     private List<Pump> selectRandomWorkingPumps() {
         // Filter the main list for working pumps
         List<Pump> workingPumps = new ArrayList<>();
-        for (Element e : elements) {
+        /*for (Element e : elements) {
             if (e instanceof Pump && !((Pump) e).isBroken()) {
                 workingPumps.add((Pump) e);
             }
-        }
+        }*/
 
         // To make it "Random": Shuffle the list and take the first few
         // For this example, let's say we break 50% of working pumps
@@ -155,10 +136,7 @@ public class Game {
         int storedWaterTotal = 0;
         int leakedWaterTotal = 0;
 
-        List<Spring> springs = elements.stream()
-            .filter(Spring.class::isInstance)
-            .map(Spring.class::cast)
-            .toList();
+        List<Spring> springs = gameMap.getAllSprings();
 
         for (Spring sourceSpring : springs) {
             // Ensure water production isn't 0

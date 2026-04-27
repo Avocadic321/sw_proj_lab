@@ -100,8 +100,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     public Pipe[] splitForPump(Pump carriedPump) {
         System.out.println("[Pipe] splitForPump(carriedPump)");
 
-        Pipe leftPipe = new Pipe(id == null ? "PIPE_LEFT" : id + "_LEFT");
-        Pipe rightPipe = new Pipe(id == null ? "PIPE_RIGHT" : id + "_RIGHT");
+        Pipe leftPipe = new Pipe(getId() == null ? "PIPE_LEFT" : getId() + "_LEFT");
+        Pipe rightPipe = new Pipe(getId() == null ? "PIPE_RIGHT" : getId() + "_RIGHT");
 
         leftPipe.end1.connectedTo = this.end1.connectedTo;
         if (leftPipe.end1.connectedTo != null) {
