@@ -18,7 +18,7 @@ import software.project.interfaces.IRepairable;
  * @since 1.0
  */
 public class Plumber extends Player {
-    public ICarriable carriedItem;
+    private ICarriable carriedItem;
 
     public Plumber(String id) {
         super(id);
@@ -30,7 +30,6 @@ public class Plumber extends Player {
      * @param target the element to repair (pipe or pump)
      */
     public void repair(IRepairable target) {
-        System.out.println("[Plumber] repair()");
         target.repair();
     }
 
@@ -75,9 +74,7 @@ public class Plumber extends Player {
      * @param end the pipe end to disconnect
      */
     public void disconnect(PipeEnd end) {
-        System.out.println("[Plumber] disconnect(end)");
         end.disconnect();
-        System.out.println("[Plumber] Pipe end disconnected");
     }
 
     /**
@@ -87,9 +84,7 @@ public class Plumber extends Player {
      * @param tgt the target active element (pump, cistern, or spring)
      */
     public void connect(PipeEnd end, ActiveElement tgt) {
-        System.out.println("[Plumber] connect()");
         end.connectsTo(tgt);
-        System.out.println("[Plumber] Pipe end connected");
     }
 
     /**
@@ -98,7 +93,6 @@ public class Plumber extends Player {
      * @return the carried item, or null if nothing is being carried
      */
     public ICarriable getCarriedItem() {
-        System.out.println("[Plumber] getCarriedItem()");
         return carriedItem;
     }
 
@@ -108,7 +102,6 @@ public class Plumber extends Player {
      * @param item the item to carry
      */
     public void setCarriedItem(ICarriable item) {
-        System.out.println("[Plumber] setCarriedItem()");
         carriedItem = item;
     }
 
@@ -116,7 +109,6 @@ public class Plumber extends Player {
      * Clears the currently carried item, setting it to null.
      */
     public void clearCarriedItem() {
-        System.out.println("[Plumber] clearCarriedItem()");
         carriedItem = null;
     }
 
@@ -131,7 +123,7 @@ public class Plumber extends Player {
      * @param pipe the pipe to insert the pump into
      */
     public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
-        System.out.println("[Plumber] insertPumpIntoPipe()");
+        // TODO: Implement
     }
 
 }
