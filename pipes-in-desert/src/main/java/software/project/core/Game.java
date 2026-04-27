@@ -51,10 +51,12 @@ public class Game {
         saboteur = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            plumber.addPlayer(new Plumber());
+            String id = "PLUMBER" + i;
+            plumber.addPlayer(new Plumber(id));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            saboteur.addPlayer(new Saboteur());
+            String id = "SABOTEUR" + i;
+            saboteur.addPlayer(new Saboteur(id));
         }
 
         turnManager.startTurn();

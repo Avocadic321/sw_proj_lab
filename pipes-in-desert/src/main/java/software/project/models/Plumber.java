@@ -20,6 +20,10 @@ import software.project.interfaces.IRepairable;
 public class Plumber extends Player {
     public ICarriable carriedItem;
 
+    public Plumber(String id) {
+        super(id);
+    }
+
     /**
      * Repairs a broken or damaged element, restoring it to full functionality.
      *

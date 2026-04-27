@@ -24,7 +24,12 @@ import java.util.Scanner;
  * @since 1.0
  */
 public abstract class Player {
-    public Element currentPosition;
+    protected String id;
+    protected Element currentPosition;
+
+    protected Player(String id) {
+        this.id = id;
+    }
 
     /**
      * Attempts to move the player from their current position to the specified
