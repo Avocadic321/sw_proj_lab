@@ -15,7 +15,7 @@ public class GameMenu implements IMenu {
     public IMenu run() {
         Scanner sc = app.getScanner();
         while (true) {
-            System.out.println("\n===== AVAILABLE ACTIONS =====");
+            System.out.println("\n===== Available Actions =====");
             System.out.println("MOVE <playerId> <elementId>");
             System.out.println("REPAIR_PIPE <playerId> <pipeId>");
             System.out.println("REPAIR_PUMP <playerId> <pumpId>");
@@ -27,8 +27,8 @@ public class GameMenu implements IMenu {
             System.out.println("INSERT_PUMP <playerId> <pipe> <pump>");
             System.out.println("END_TURN");
             System.out.println("PAUSE");
-            System.out.println("SHOW_STATE  – show current game state");
-            System.out.println("EXIT – quit to main menu");
+            System.out.println("SHOW_STATE");
+            System.out.println("EXIT");
             System.out.print("> ");
             String line = sc.nextLine().trim();
             if (line.equalsIgnoreCase("EXIT")) {

@@ -26,7 +26,7 @@ public class ConfigMenu implements IMenu {
             );
             System.out.println("------------------------------");
             System.out.println("SET_GOAL <value>");
-            System.out.println("SET_TURN <seconds>");
+            System.out.println("SET_TURN_DURATION <seconds>");
             System.out.println("SET_PLAYERS <count>");
             System.out.println("SET_RANDOM ON|OFF");
             System.out.println("BACK");

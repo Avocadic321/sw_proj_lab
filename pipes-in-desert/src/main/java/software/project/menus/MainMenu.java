@@ -15,7 +15,7 @@ public class MainMenu implements IMenu {
     public IMenu run() {
         Scanner sc = app.getScanner();
         while (true) {
-            System.out.println("======= Pipes in the Desert=======");
+            System.out.println("======= Pipes in the Desert =======");
             System.out.println("1. Start New Game");
             System.out.println("2. Configure Game");
             System.out.println("3. Exit");
