@@ -9,11 +9,23 @@ public class PipeEnd {
     /** Active element currently connected to this end. */
     public ActiveElement connectedTo;
 
+    private boolean recievedWater;
+
+
+    public boolean isRecievedWater() {
+        return recievedWater;
+    }
+    // TODO: Called from Pump
+    public void recieveWater(boolean bls) {
+        this.recievedWater = bls;
+    }
     /**
      * Connects this end to an active element and registers it.
      *
      * @param element element to connect to
      */
+
+
     public void connectsTo(ActiveElement element) {
         connectedTo = element;
         element.connect(this);

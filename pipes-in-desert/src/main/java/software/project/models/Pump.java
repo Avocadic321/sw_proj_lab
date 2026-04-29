@@ -88,6 +88,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     public int transferWater(int amount) {
         // TODO: Implement logic
+        outputPipe.recieveWater(true);
         return amount;
     }
 
