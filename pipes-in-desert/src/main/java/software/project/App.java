@@ -1,5 +1,8 @@
 package software.project;
 
+import software.project.core.Game;
+import software.project.parser.CommandParser;
+
 /**
  * TODO: Update for Prototype
  *
@@ -12,12 +15,22 @@ package software.project;
  * @since 2026-03-30
  */
 public class App {
+    private Game game;
+    private final CommandParser parser;
 
-    public static void main(String[] args) {
-
-        while (true) {
-
-        }
+    public App() {
+        this.parser = new CommandParser(this);
     }
 
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public void runInteractive() {
+
+    }
+
+    public void runTest(String inputFile, String outputFile) {
+        // TODO:
+    }
 }
