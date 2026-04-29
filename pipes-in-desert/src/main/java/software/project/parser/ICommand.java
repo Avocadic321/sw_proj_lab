@@ -1,5 +1,5 @@
 package software.project.parser;
 
-public interface Command {
+public interface ICommand {
     void execute(String[] args);
 }

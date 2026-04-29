@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandParser {
-    private final Map<String, Command> commands = new HashMap<>();
+    private final Map<String, ICommand> commands = new HashMap<>();
     private final Game game;
 
     public CommandParser(Game game) {
@@ -36,7 +36,7 @@ public class CommandParser {
         String commandKey = tokens[0].toUpperCase();
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
 
-        Command command = commands.get(commandKey);
+        ICommand command = commands.get(commandKey);
         if (command != null) {
             command.execute(args);
         } else {
