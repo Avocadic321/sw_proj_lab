@@ -80,7 +80,7 @@ public class Plumber extends Player {
             throw new IllegalStateException("Already carrying an item");
         }
 
-        carriedItem = cistern.producePump();
+        carriedItem = cistern.pickUpPump();
     }
 
     /**
@@ -121,7 +121,7 @@ public class Plumber extends Player {
             throw new IllegalStateException("Already carrying an item");
         }
 
-        carriedItem = cistern.producePipe();
+        carriedItem = cistern.pickUpPipe();
     }
 
     /**
