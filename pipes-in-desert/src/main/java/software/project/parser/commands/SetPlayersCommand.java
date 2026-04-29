@@ -4,6 +4,7 @@ import software.project.App;
 import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class SetPlayersCommand implements ICommand {
     private final App app;
@@ -17,6 +18,9 @@ public class SetPlayersCommand implements ICommand {
         if (args.length != 1) {
             System.out.println("[ERROR] SET_PLAYERS INVALID_ARGS");
             return;
+        }
+        if (game.getState() != GameState.INITIALIZING) {
+            System.out.println("[ERROR] SET_PLAYERS GAME_ALREADY_STARTED");
         }
 
         int value;

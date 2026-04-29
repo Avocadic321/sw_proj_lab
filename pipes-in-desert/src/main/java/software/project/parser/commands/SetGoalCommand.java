@@ -4,6 +4,7 @@ import software.project.App;
 import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class SetGoalCommand implements ICommand {
     private final App app;
@@ -17,6 +18,9 @@ public class SetGoalCommand implements ICommand {
         if (args.length != 1) {
             System.out.println("[ERROR] SET_GOAL INVALID_ARGS");
             return;
+        }
+        if (game.getState() != GameState.INITIALIZING) {
+            System.out.println("[ERROR] SET_GOAL GAME_ALREADY_STARTED");
         }
 
         int value;

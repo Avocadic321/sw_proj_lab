@@ -114,4 +114,7 @@ public class Game {
     public void simulateWaterFlow() {
     }
 
+    public GameState getState() {
+        return state;
+    }
 }
