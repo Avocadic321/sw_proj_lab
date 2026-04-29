@@ -19,12 +19,7 @@ public class CommandParser {
         commands.put("NEW_GAME", new NewGameCommand(app));
         commands.put("SET_GOAL", new SetGoalCommand(app));
         commands.put("SET_TURN_DURATION", new SetTurnDurationCommand(app));
-        commands.put("SABOTAGE", null);
-        commands.put("CONNECT", null);
-        commands.put("DISCONNECT", null);
-        commands.put("PAUSE", null);
-        commands.put("RESUME", null);
-        commands.put("EXIT", null);
+        commands.put("SET_PLAYERS", new SetPlayersCommand(app));
         // Add others, add aliases, etc
     }
 
