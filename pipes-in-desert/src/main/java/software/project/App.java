@@ -1,6 +1,7 @@
 package software.project;
 
 import software.project.core.Game;
+import software.project.core.GameConfig;
 import software.project.parser.CommandParser;
 
 import java.util.Scanner;
@@ -20,19 +21,24 @@ public class App {
     private Game game;
     private final CommandParser parser;
     private Scanner scanner;
+    private final GameConfig gameConfig;
 
     public App() {
         this.parser = new CommandParser(this);
-        scanner = new Scanner(System.in);
+        this.gameConfig = new GameConfig();
     }
 
     public void setGame(Game game) {
         this.game = game;
+    }
 
+    public GameConfig getGameConfig() {
+        return gameConfig;
     }
 
     public void runInteractive() {
         System.out.println("[INFO] Interactive Mode");
+        scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");
             String line = scanner.nextLine();
