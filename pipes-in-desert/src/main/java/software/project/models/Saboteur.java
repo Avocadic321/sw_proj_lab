@@ -14,8 +14,8 @@ package software.project.models;
  * @since 1.0
  */
 public class Saboteur extends Player{
-    public Saboteur(String id) {
-        super(id);
+    public Saboteur(String id, Element startPosition) {
+        super(id, startPosition);
     }
 
     /**
@@ -29,6 +29,16 @@ public class Saboteur extends Player{
      * @param pipe the pipe to sabotage
      */
     public void sabotagePipe(Pipe pipe) {
-        System.out.println("[Saboteur] sabotagePipe()");
+        if(pipe != this.currentPosition) {
+            System.out.println("[ERROR] SABOTAGE_PIPE NOT_ON_PIPE");
+            return;
+        }
+        if(pipe.isBroken()) {
+            System.out.println("[ERROR] SABOTAGE_PIPE ALREADY_BROKEN");
+            return;
+        }
+        pipe.breakElement();
+        System.out.printf("[OK] SABOTAGE_PIPE %s %s%n", this.id,pipe.getId());
+        System.out.printf("[EVENT] PIPE_BROKEN %s",pipe.getId());
     }
 }
