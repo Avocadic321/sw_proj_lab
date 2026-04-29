@@ -35,10 +35,7 @@ public class TurnManager {
      * </p>
      */
     public void startTurn() {
-        System.out.println("[TurnManager] startTurn()");
         timer.start();
-
-        System.out.println("[TurnManager] isRunning = true");
         isRunning = true;
     }
 
@@ -55,7 +52,6 @@ public class TurnManager {
      * </p>
      */
     public void suspendTurn() {
-        System.out.println("[TurnManager] suspendTurn()");
         timer.stop();
     }
 
