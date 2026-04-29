@@ -19,7 +19,7 @@ public class NewGameCommand implements ICommand {
         }
 
         if (game != null) {
-            System.out.println("[WARNING] NEW_GAME: Replacing existing Game instance");
+            System.out.println("[WARNING] NEW_GAME GAME_INSTANCE_REPLACE");
         }
 
         Game newGame = new Game(app.getGameConfig());
