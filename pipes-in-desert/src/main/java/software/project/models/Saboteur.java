@@ -14,6 +14,10 @@ package software.project.models;
  * @since 1.0
  */
 public class Saboteur extends Player{
+    public Saboteur(String id) {
+        super(id);
+    }
+
     /**
      * Damages the specified pipe, causing it to leak water.
      * <p>

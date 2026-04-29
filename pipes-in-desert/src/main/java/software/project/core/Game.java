@@ -4,17 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import software.project.models.ActiveElement;
-import software.project.models.Cistern;
-import software.project.models.Element;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
-import software.project.models.Player;
-import software.project.models.Plumber;
-import software.project.models.Pump;
-import software.project.models.Saboteur;
-import software.project.models.Spring;
-import software.project.models.Team;
+import software.project.models.*;
+
 import software.project.utils.GameState;
 import software.project.utils.Teams;
 
@@ -23,17 +14,17 @@ import software.project.utils.Teams;
  */
 public class Game {
     /** Manages turns and timing. */
-    public TurnManager turnManager;
+    private TurnManager turnManager;
     /** All elements currently in the game. */
-    public List<Element> elements;
+    private GameMap gameMap;
     /** Saboteur team instance. */
-    public Team saboteur;
+    private Team saboteur;
     /** Plumber team instance. */
-    public Team plumber;
+    private Team plumber;
     /** Current game state. */
-    public GameState state;
+    private GameState state;
     /** Game configuration settings. */
-    public GameConfig config;
+    private GameConfig config;
 
     /**
      * Creates a game with the provided configuration.
@@ -41,11 +32,10 @@ public class Game {
      * @param config game configuration
      */
     public Game(GameConfig config) {
-        this.elements = new ArrayList<>();
-        this.turnManager = new TurnManager();
+        this.gameMap = new GameMap();
+        this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
         this.config = config;
-        System.out.println("[Game] Game object created");
     }
 
     /** Creates a game with default configuration. */
@@ -55,437 +45,91 @@ public class Game {
 
     /** Initializes elements, teams, and starts the first turn. */
     public void startGame() {
-        System.out.println("[Game] startGame()");
-        System.out.println("[Game] state = INITIALIZING");
         state = GameState.INITIALIZING;
-
-        Spring spring = new Spring();
-        Cistern cistern = new Cistern();
-        Pump pump = new Pump();
-
-        addElement(spring);
-        addElement(cistern);
-        addElement(pump);
 
         plumber = new Team(Teams.PLUMBERS);
         saboteur = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            plumber.addPlayer(new Plumber());
+            String id = "PLUMBER" + i;
+            plumber.addPlayer(new Plumber(id));
         }
-        System.out.println('\n');
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            saboteur.addPlayer(new Saboteur());
+            String id = "SABOTEUR" + i;
+            saboteur.addPlayer(new Saboteur(id));
         }
 
-        turnManager.setTimerDuration(config.getTurnDurationSeconds());
         turnManager.startTurn();
 
-        System.out.println("[Game] state = RUNNING");
         state = GameState.RUNNING;
     }
 
     /** Pauses the game if it is currently running. */
     public void pauseGame() {
-        System.out.println("[Game] pauseGame()\n");
-        if (!(state == GameState.RUNNING)) {
-            System.out.println("[Game] pauseGame() - You cannot pause a Game if it not RUNNING");
+        if (state != GameState.RUNNING) {
             return;
         }
 
-        System.out.println("[Game] state = PAUSED\n");
         state = GameState.PAUSED;
-
         turnManager.suspendTurn();
     }
 
     /** Resumes the game if it is currently paused. */
     public void resumeGame() {
-        System.out.println("[Game] resumeGame()\n");
         if (state != GameState.PAUSED) {
-            System.out.println("[Game] resumeGame() - You cannot resume a Game if it not PAUSED");
             return;
         }
-
-        System.out.println("[Game] state = RUNNING\n");
         state = GameState.RUNNING;
-
         turnManager.resumeTurn();
     }
 
     /** Ends the game session. */
-    public void endGame() {
-        System.out.println("[Game] endGame()\n");
+    public void endGame() {}
+
+    public void checkWinner() {
+
     }
 
-    /**
-     * Finds an element by its id.
-     *
-     * @param id element identifier
-     * @return matching element or null
-     */
-    public Element getElementById(String id) {
-        for (Element e : elements) {
-            if (e.id != null && e.id.equals(id)) {
-                return e;
-            }
-        }
-        return null;
+    public void breakSpecificPump(String pumpId) {
+
     }
 
-    /** Executes random events for the current turn. */
+    public void produceComponentAt(String cisternId, String type) {
+
+    }
+
+    public void breakRandomPump() {
+
+    }
+
+    public void produceRandomComponent() {
+
+    }
+
     public void performRandomEvents() {
-        System.out.println("[Game] performRandomEvents()\n");
+        breakRandomPump();
+        produceRandomComponent();
     }
 
-    /**
-     * Adds an element to the game.
-     *
-     * @param element element to add
-     */
-    public void addElement(Element element) {
-        this.elements.add(element);
-        System.out.println("[Game] addElement() - " + element.getClass().getSimpleName());
-    }
-
-    /**
-     * Connects a free pipe end to a target element if valid.
-     *
-     * @param selectedPipe  pipe that owns the end
-     * @param freeEnd       pipe end to connect
-     * @param targetElement element to connect to
-     * @return true if the connection succeeds
-     */
-    public boolean connect(Pipe selectedPipe, PipeEnd freeEnd, ActiveElement targetElement) {
-        System.out.println("[Game] connect(selectedPipe, freeEnd, targetElement)");
-
-        boolean validPipeEnd = selectedPipe != null
-                && (selectedPipe.end1 == freeEnd || selectedPipe.end2 == freeEnd);
-        if (!validPipeEnd) {
-            System.out.println("[Game] Rejected: selected pipe does not own the selected pipe end");
-            return false;
-        }
-
-        boolean free = freeEnd.isFree();
-        if (!free) {
-            System.out.println("[Game] Rejected: end already connected");
-            return false;
-        }
-
-        System.out.println("[Game] validate targetElement connection");
-        if (targetElement.getConnections().contains(freeEnd)) {
-            System.out.println("[Game] Rejected: this pipe end is already registered on target");
-            return false;
-        }
-
-        if (targetElement instanceof Pump pump
-                && pump.maxConnections > 0
-                && pump.getConnections().size() >= pump.maxConnections) {
-            System.out.println("[Game] Rejected: target pump has no free connection slots");
-            return false;
-        }
-
-        freeEnd.connectsTo(targetElement);
-        System.out.println("[Game] updatePipeNetworkStructure()");
-        return true;
-    }
-
-    /**
-     * Inserts a carried pump into a selected pipe.
-     *
-     * @param activePlumber plumber carrying the pump
-     * @param targetPipe    pipe to split
-     * @return true if insertion succeeds
-     */
-    public boolean insertPumpIntoPipe(Plumber activePlumber, Pipe targetPipe) {
-        System.out.println("[Game] insertPumpIntoPipe(targetPipe)");
-
-        if (activePlumber == null || targetPipe == null) {
-            System.out.println("[Game] Rejected: missing plumber or target pipe");
-            return false;
-        }
-
-        Object carriedItem = activePlumber.getCarriedItem();
-        if (!(carriedItem instanceof Pump carriedPump)) {
-            System.out.println("[Game] Rejected: carried item is not a pump");
-            return false;
-        }
-
-        Pipe[] splitPipes = targetPipe.splitForPump(carriedPump);
-        Pipe leftPipe = splitPipes[0];
-        Pipe rightPipe = splitPipes[1];
-
-        carriedPump.setDirection(leftPipe.end2, rightPipe.end1);
-        activePlumber.clearCarriedItem();
-
-        elements.remove(targetPipe);
-        addElement(leftPipe);
-        addElement(rightPipe);
-        addElement(carriedPump);
-
-        System.out.println("[Game] updateConnections()");
-        return true;
-    }
-
-    /**
-     * Attempts to configure the direction of a pump.
-     *
-     * @param player     player performing the action
-     * @param targetPump pump to configure
-     * @param inputPipe  chosen input pipe
-     * @param outputPipe chosen output pipe
-     * @return true if the direction is updated
-     */
-    public boolean setPumpDirection(Player player, Pump targetPump, Pipe inputPipe, Pipe outputPipe) {
-        System.out.println("[Game] setDirection(inputPipe, outputPipe)");
-
-        if (player == null || targetPump == null || inputPipe == null || outputPipe == null) {
-            System.out.println("[Game] Rejected: missing player, pump, or pipes");
-            return false;
-        }
-
-        boolean updated = player.changePumpDirection(targetPump, inputPipe, outputPipe);
-        if (updated) {
-            System.out.println("[Game] directionUpdated");
-            return true;
-        }
-
-        System.out.println("[Game] Rejected: invalid direction setup");
-        return false;
-    }
-
-    /**
-     * Repairs a broken pipe via the plumber.
-     *
-     * @param plumber    plumber performing repair
-     * @param targetPipe pipe to repair
-     * @return true if repaired
-     */
-    public boolean repairPipe(Plumber plumber, Pipe targetPipe) {
-        System.out.println("[Game] repairPipe(targetPipe)");
-
-        if (plumber == null || targetPipe == null) {
-            System.out.println("[Game] Rejected: missing plumber or target pipe");
-            return false;
-        }
-
-        boolean broken = targetPipe.isBroken();
-        if (!broken) {
-            System.out.println("[Game] No change: pipe already functional");
-            return false;
-        }
-
-        plumber.repair(targetPipe);
-        System.out.println("[Game] Pipe repaired");
-        return true;
-    }
-
-    /**
-     * Marks a pump as selected for subsequent actions.
-     *
-     * @param targetPump selected pump
-     */
-    public void selectPump(Pump targetPump) {
-        System.out.println("[Game] selectPump() - " + targetPump);
-    }
-
-    /**
-     * Repairs a broken pump via the plumber.
-     *
-     * @param plumber    plumber performing repair
-     * @param targetPump pump to repair
-     * @return true if repaired
-     */
-    public boolean repairPump(Plumber plumber, Pump targetPump) {
-        System.out.println("[Game] repairPump(targetPump)");
-
-        if (plumber == null || targetPump == null) {
-            System.out.println("[Game] Rejected: missing plumber or target pump");
-            return false;
-        }
-
-        boolean broken = targetPump.isBroken();
-        if (!broken) {
-            System.out.println("[Game] No change: pump already working");
-            return false;
-        }
-
-        plumber.repair(targetPump);
-        System.out.println("[Game] Pump repaired");
-        return true;
-    }
-
-    /**
-     * Returns the active plumber if it is their turn.
-     *
-     * @return active plumber or null
-     */
-    public Plumber getActivePlayer() {
-        System.out.println("[Game] getActivePlayer()");
-        if (turnManager.currentPlayer instanceof Plumber activePlumber) {
-            return activePlumber;
-        }
-        return null;
-    }
-
-    /**
-     * Marks a cistern as selected for component requests.
-     *
-     * @param sourceCistern selected cistern
-     */
-    public void selectCistern(Cistern sourceCistern) {
-        System.out.println("[Game] selectCistern() - " + sourceCistern);
-    }
-
-    /**
-     * Requests a component from a cistern for the active plumber.
-     *
-     * @param sourceCistern cistern producing the component
-     * @param requestPump   true to request a pump, false for a pipe
-     * @return true if a component is provided
-     */
-    public boolean requestComponent(Cistern sourceCistern, boolean requestPump) {
-        System.out.println("[Game] requestComponent()");
-
-        if (sourceCistern == null) {
-            System.out.println("[Game] Rejected: missing cistern");
-            return false;
-        }
-
-        Plumber activePlumber = getActivePlayer();
-        if (activePlumber == null) {
-            System.out.println("[Game] Rejected: no active plumber");
-            return false;
-        }
-
-        if (requestPump) {
-            Pump newPump = sourceCistern.producePump();
-            activePlumber.setCarriedItem(newPump);
-        } else {
-            Pipe newPipe = sourceCistern.producePipe();
-            activePlumber.setCarriedItem(newPipe);
-        }
-
-        return true;
-    }
-
-    // UC-14
-    /**
-     * Marks a pipe as selected for later operations.
-     *
-     * @param targetPipe selected pipe
-     */
-    public void selectPipe(Pipe targetPipe) {
-        System.out.println("[Game] selectPipe() - " + targetPipe);
-    }
-
-    /**
-     * Sabotages a pipe by breaking it if it is functional.
-     *
-     * @param targetPipe pipe to sabotage
-     */
-    public void sabotagePipe(Pipe targetPipe) {
-        System.out.println("[Game] sabotagePipe()");
-
-        boolean broken = targetPipe.isBroken();
-
-        if (!broken) {
-            System.out.println("[Game] Pipe is functional -> sabotaging");
-            targetPipe.breakElement();
-            System.out.println("[Game] Result: sabotaged");
-        } else {
-            System.out.println("[Game] Pipe already leaking -> noChange");
-        }
-    }
-
-    // UC-15
-
-    /** Calculates and updates team scores based on water flow. */
-    public void calculateScore() {
-        System.out.println("[Game] calculateScore()");
-
-        simulateWaterFlow();
-        Object flowReport = new Object();
-        System.out.println("[Game] flowReport generated");
-
-        // Simulate water reaching cisterns
-        for (Element element : elements) {
-            if (element instanceof Cistern) {
-                Cistern cistern = (Cistern) element;
-                cistern.receiveWater(10); // just a placeholder amount
-            }
-        }
-
-        int storedWaterTotal = getTotalStoredWater(flowReport);
-        plumber.addScore(storedWaterTotal);
-
-        int leakedWaterTotal = getTotalLeakedWater(flowReport);
-        saboteur.addScore(leakedWaterTotal);
-
-        updateDisplayedScores();
-    }
-
-    /**
-     * Returns total water stored based on a flow report.
-     *
-     * @param flowReport flow report object
-     * @return total stored water
-     */
-    public int getTotalStoredWater(Object flowReport) {
-        System.out.println("[Game] getTotalStoredWater()");
-        return 42; // placeholder
-    }
-
-    /**
-     * Returns total water leaked based on a flow report.
-     *
-     * @param flowReport flow report object
-     * @return total leaked water
-     */
-    public int getTotalLeakedWater(Object flowReport) {
-        System.out.println("[Game] getTotalLeakedWater()");
-        return 17; // placeholder
-    }
-
-    /** Prints updated scores for both teams. */
-    public void updateDisplayedScores() {
-        System.out.println("[Game] updateDisplayedScores()");
-        System.out.println("[Game] Plumber score = " + plumber.getScore());
-        System.out.println("[Game] Saboteur score = " + saboteur.getScore());
-    }
-
-    // UC-16
-
-    /** Executes a random event sequence for the current turn. */
+    /** TODO: Separate method */
     public void processRandomEvent() {
-        System.out.println("[Game] processRandomEvent()");
-
         List<Pump> pumpsToBreak = selectRandomWorkingPumps();
-        System.out.println("[Game] pumpsToBreak = " + pumpsToBreak.size());
-
         for (Pump selectedPump : pumpsToBreak) {
-            System.out.println("[Game] Breaking pump: " + selectedPump);
             selectedPump.breakElement();
         }
 
-        List<Cistern> cisternList = getCisterns();
-        System.out.println("[Game] cisternList size = " + cisternList.size());
+        List<Cistern> cisternList = gameMap.getAllCisterns();
 
         for (Cistern targetCistern : cisternList) {
             boolean generatePipe = Math.random() > 0.5;
             if (generatePipe) {
-                System.out.println("[Game] Generating Pipe from cistern: " + targetCistern);
                 Pipe newPipe = targetCistern.producePipe();
-                addElement(newPipe);
+                gameMap.addElement(newPipe);
             } else {
-                System.out.println("[Game] Generating Pump from cistern: " + targetCistern);
                 Pump newPump = targetCistern.producePump();
-                addElement(newPump);
+                gameMap.addElement(newPump);
             }
         }
-
-        updateGameState();
-        System.out.println("[Game] Game state updated after random event\n");
     }
 
     /**
@@ -494,15 +138,13 @@ public class Game {
      * @return list of pumps to break
      */
     private List<Pump> selectRandomWorkingPumps() {
-        System.out.println("[Game] selectRandomWorkingPumps()");
-
         // Filter the main list for working pumps
         List<Pump> workingPumps = new ArrayList<>();
-        for (Element e : elements) {
+        /*for (Element e : elements) {
             if (e instanceof Pump && !((Pump) e).isBroken()) {
                 workingPumps.add((Pump) e);
             }
-        }
+        }*/
 
         // To make it "Random": Shuffle the list and take the first few
         // For this example, let's say we break 50% of working pumps
@@ -512,100 +154,13 @@ public class Game {
         return workingPumps.subList(0, countToBreak);
     }
 
-    /**
-     * Collects all cistern elements in the game.
-     *
-     * @return list of cisterns
-     */
-    private List<Cistern> getCisterns() {
-        System.out.println("[Game] getCisterns()");
-        List<Cistern> cisterns = new ArrayList<>();
-
-        for (Element e : elements) {
-            if (e instanceof Cistern) {
-                cisterns.add((Cistern) e);
-            }
-        }
-        return cisterns;
-    }
-
-    /** Updates game state after random events. */
-    private void updateGameState() {
-        System.out.println("[Game] updateGameState()");
-    }
-
-    // UC-17
-
-    /** Checks current scores and determines whether the game ends. */
-    public void checkWinner() {
-        System.out.println("[Game] checkWinner()");
-
-        int plumberScore = plumber.getScore();
-        int saboteurScore = saboteur.getScore();
-        System.out.println("[Game] Plumber score = " + plumberScore);
-        System.out.println("[Game] Saboteur score = " + saboteurScore);
-
-        compareScores(plumberScore, saboteurScore);
-    }
-
-    /**
-     * Compares team scores against the goal threshold.
-     *
-     * @param plumberScore  plumber team score
-     * @param saboteurScore saboteur team score
-     */
-    public void compareScores(int plumberScore, int saboteurScore) {
-        System.out.println(
-                "[Game] compareScores() - plumberScore: " + plumberScore + ", saboteurScore: " + saboteurScore);
-
-        // Example threshold for winning (just for skeleton)
-        int goalScore = config.getGoalScore();
-        if (plumberScore >= goalScore || saboteurScore >= goalScore) {
-            determineWinner();
-            ensureNoDrawCondition();
-            state = GameState.FINALIZED;
-            displayFinalResult(plumberScore > saboteurScore ? plumber : saboteur);
-        } else {
-            System.out.println("[Game] No winner yet - game keeps running");
-        }
-    }
-
-    /** Determines the winning team. */
-    public void determineWinner() {
-        System.out.println("[Game] determineWinner()");
-    }
-
-    /** Ensures a tie condition is resolved. */
-    public void ensureNoDrawCondition() {
-        System.out.println("[Game] ensureNoDrawCondition()");
-    }
-
-    /**
-     * Displays the final result for the winner.
-     *
-     * @param winner winning team
-     */
-    public void displayFinalResult(Team winner) {
-        System.out.println("[Game] displayFinalResult() - Winner: " + winner.team);
-    }
-
-    // UC18
-
-    /** Total water stored after flow simulation. */
-    private int storedWaterTotal = 0;
-    /** Total water leaked after flow simulation. */
-    private int leakedWaterTotal = 0;
-
     /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
-        System.out.println("[Game] simulateWaterFlow()");
-
         // Reset totals at the start of every simulation
-        storedWaterTotal = 0;
-        leakedWaterTotal = 0;
+        int storedWaterTotal = 0;
+        int leakedWaterTotal = 0;
 
-        List<Spring> springs = getSprings();
-        System.out.println("[Game] Found " + springs.size() + " springs.");
+        List<Spring> springs = gameMap.getAllSprings();
 
         for (Spring sourceSpring : springs) {
             // Ensure water production isn't 0
@@ -613,24 +168,18 @@ public class Game {
             if (waterAmount == 0)
                 waterAmount = 500; // Default fallback for skeleton
 
-            System.out.println("[Game] Spring generated: " + waterAmount + " units");
-
             // BFS Queue to trace the flow
             List<Pipe> pipeQueue = new ArrayList<>(sourceSpring.getConnectedPipes());
 
             while (!pipeQueue.isEmpty()) {
-                Pipe activePipe = pipeQueue.remove(0);
-                System.out.println("[Game] Processing pipe: " + activePipe);
-
+                Pipe activePipe = pipeQueue.removeFirst();
                 // Check 1: Leaking due to sabotage?
                 if (activePipe.isBroken()) {
-                    System.out.println("[Game] Flow Interrupted: Pipe is broken.");
-                    registerLeak(waterAmount);
+                    leakedWaterTotal += waterAmount;
                 }
                 // Check 2: Leaking due to being unplugged?
                 else if (activePipe.hasFreeEnd()) {
-                    System.out.println("[Game] Flow Interrupted: Pipe has a free end.");
-                    registerLeak(waterAmount);
+                    leakedWaterTotal += waterAmount;
                 }
                 // Check 3: Functional pipe
                 else {
@@ -642,12 +191,12 @@ public class Game {
                         processPumpFlow(activePump, forwardedAmount, pipeQueue);
                     } else {
                         // If it's a functional pipe but leads nowhere, it's effectively a free end
-                        registerLeak(forwardedAmount);
+                        leakedWaterTotal += forwardedAmount;
                     }
                 }
             }
         }
-        updateFlowTotals();
+
     }
 
     /**
@@ -660,14 +209,15 @@ public class Game {
     private void processPumpFlow(Pump activePump, int amount, List<Pipe> pipeQueue) {
         // Check 1: Pump Health
         if (activePump.isBroken()) {
-            System.out.println("[Game] Flow Interrupted: Pump is broken.");
+            // System.out.println("[Game] Flow Interrupted: Pump is broken.");
             // In many designs, a broken pump causes water to leak or just stop.
             // We'll count it as a leak for the Saboteurs.
-            registerLeak(amount);
+            // TODO: Use the Team Saboteur field rather than leakedWaterTotal
+            // leakedWaterTotal += amount;
         }
         // Check 2: Pump Capacity
         else if (activePump.isTankFull()) {
-            System.out.println("[Game] Flow Interrupted: Pump tank is full.");
+            // System.out.println("[Game] Flow Interrupted: Pump tank is full.");
         }
         // Check 3: Pump is working
         else {
@@ -682,46 +232,13 @@ public class Game {
 
             // Branch B: Pump is connected directly to a Cistern
             if (activePump.isConnectedToCistern()) {
-                Cistern targetCistern = activePump.getTargetCistern();
+                Cistern targetCistern = new Cistern();
                 if (targetCistern != null) {
                     targetCistern.receiveWater(pumpedAmount);
-                    storedWaterTotal += pumpedAmount; // Score for Plumbers
-                    System.out.println("[Game] SUCCESS: Water reached target cistern!");
+                    // storedWaterTotal += pumpedAmount; // Score for Plumbers
+                    // TODO: Use the correct fields in Teams rather than having it here
                 }
             }
         }
     }
-
-    /**
-     * Collects all springs in the game.
-     *
-     * @return list of springs
-     */
-    private List<Spring> getSprings() {
-        List<Spring> springs = new ArrayList<>();
-        for (Element e : elements) {
-            if (e instanceof Spring)
-                springs.add((Spring) e);
-        }
-        return springs;
-    }
-
-    /**
-     * Registers leaked water for saboteur scoring.
-     *
-     * @param amount leaked amount
-     */
-    private void registerLeak(int amount) {
-        leakedWaterTotal += amount;
-        System.out.println("[Game] registerLeak() - Total leaked so far: " + leakedWaterTotal);
-    }
-
-    /** Prints the totals from the last flow simulation. */
-    private void updateFlowTotals() {
-        System.out.println("\n[Game] --- Flow Simulation Results ---");
-        System.out.println("[Game] Total Water Stored (Plumbers): " + storedWaterTotal);
-        System.out.println("[Game] Total Water Leaked (Saboteurs): " + leakedWaterTotal);
-        System.out.println("[Game] --------------------------------\n");
-    }
-
 }

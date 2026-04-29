@@ -16,13 +16,13 @@ import software.project.models.Player;
  * @see Player
  */
 public class TurnManager {
-    public Timer timer;
-    public Player currentPlayer;
-    public boolean isRunning;
+    private Timer timer;
+    private Player currentPlayer;
+    private boolean isRunning;
 
     /** Creates a new turn manager with default values. */
-    TurnManager() {
-        timer = new Timer();
+    TurnManager(int turnDuration) {
+        timer = new Timer(turnDuration);
         currentPlayer = null;
         isRunning = false;
     }
@@ -40,6 +40,10 @@ public class TurnManager {
 
         System.out.println("[TurnManager] isRunning = true");
         isRunning = true;
+    }
+
+    public void nextTurn() {
+
     }
 
     /**
@@ -63,7 +67,6 @@ public class TurnManager {
      * </p>
      */
     public void resumeTurn() {
-        System.out.println("[TurnManager] resumeTurn()");
         timer.start();
     }
 
@@ -76,10 +79,9 @@ public class TurnManager {
      * </p>
      */
     public void endTurn() {
-        System.out.println("[TurnManager] endTurn()");
         timer.stop();
         isRunning = false;
-        System.out.println("[TurnManager] isRunning = false");
+
         nextPlayer();
     }
 
@@ -87,34 +89,6 @@ public class TurnManager {
      * Advances the turn to the next player.
      */
     public void nextPlayer() {
-        System.out.println("[TurnManager] nextPlayer()");
-    }
 
-    /**
-     * Sets the duration of each player's turn.
-     *
-     * @param seconds turn length in seconds
-     */
-    public void setTimerDuration(int seconds) {
-        timer.setTurnDuration(seconds);
-    }
-
-    /**
-     * Marks the current player as having ended their turn.
-     */
-    public void playerEndsTurn() {
-        System.out.println("[TurnManager] playerEndsTurn()");
-    }
-
-    /**
-     * Handles turn expiration when the timer reaches zero.
-     *
-     * <p>
-     * Automatically ends the current turn.
-     * </p>
-     */
-    public void timeExpired() {
-        System.out.println("[TurnManager] timeExpired()");
-        endTurn();
     }
 }

@@ -25,9 +25,9 @@ import java.util.List;
  * @since 1.0
  */
 public class Team {
-    public Teams team;
-    public List<Player> players;
-    public int score;
+    private Teams team;
+    private List<Player> players;
+    private int score;
 
     /**
      * Constructs a new team with the specified team type.

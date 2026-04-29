@@ -9,17 +9,17 @@ import software.project.interfaces.IRepairable;
  */
 public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
     /** First pipe end. */
-    public PipeEnd end1;
+    private PipeEnd end1;
     /** Second pipe end. */
-    public PipeEnd end2;
+    private PipeEnd end2;
 
     /** Maximum water capacity. */
-    public int capacity;
+    private int capacity;
     /** Current water amount. */
-    public int currentWater;
+    private int currentWater;
 
     /** Whether the pipe is broken. */
-    public boolean isBroken;
+    private boolean isBroken;
 
     /** Creates a new pipe with default values. */
     public Pipe() {
@@ -45,6 +45,14 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         this.end2.pipe = this;
     }
 
+    public PipeEnd getEnd1() {
+        return end1;
+    }
+
+    public PipeEnd getEnd2() {
+        return end2;
+    }
+
     /**
      * Transfers water through this pipe.
      *
@@ -52,14 +60,12 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * @return forwarded water amount
      */
     public int transferWater(int amount) {
-        System.out.println("[Pipe] transferWater(" + amount + ")");
         return amount;
     }
 
     /** Breaks the pipe, causing leakage. */
     @Override
     public void breakElement() {
-        System.out.println("[Pipe] breakElement()");
         this.isBroken = true;
     }
 
@@ -70,14 +76,12 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      */
     @Override
     public boolean isBroken() {
-        System.out.println("[Pipe] isBroken()");
         return this.isBroken;
     }
 
     /** Repairs the pipe. */
     @Override
     public void repair() {
-        System.out.println("[Pipe] repair()");
         this.isBroken = false;
     }
 
@@ -87,7 +91,6 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * @return true if any end is free
      */
     public boolean hasFreeEnd() {
-        System.out.println("[Pipe] checking if ends are free...");
         return end1.isFree() || end2.isFree();
     }
 
@@ -98,10 +101,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * @return array containing left and right pipe segments
      */
     public Pipe[] splitForPump(Pump carriedPump) {
-        System.out.println("[Pipe] splitForPump(carriedPump)");
-
-        Pipe leftPipe = new Pipe(id == null ? "PIPE_LEFT" : id + "_LEFT");
-        Pipe rightPipe = new Pipe(id == null ? "PIPE_RIGHT" : id + "_RIGHT");
+        Pipe leftPipe = new Pipe(getId() == null ? "PIPE_LEFT" : getId() + "_LEFT");
+        Pipe rightPipe = new Pipe(getId() == null ? "PIPE_RIGHT" : getId() + "_RIGHT");
 
         leftPipe.end1.connectedTo = this.end1.connectedTo;
         if (leftPipe.end1.connectedTo != null) {
@@ -125,7 +126,6 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * @return next pump or null
      */
     public Pump getNextPump() {
-        System.out.println("[Pipe] getNextPump()");
         if (end2.connectedTo instanceof Pump) {
             return (Pump) end2.connectedTo;
         }
@@ -140,7 +140,6 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     @Override
     public boolean canOccupy() {
         boolean can = occupants.isEmpty();
-        System.out.println("[Pipe] canOccupy() -> " + can);
         return can;
     }
 }

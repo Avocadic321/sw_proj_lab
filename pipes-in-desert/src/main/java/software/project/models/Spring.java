@@ -12,7 +12,7 @@ public class Spring extends ActiveElement implements IConnectable {
     /**
      * Base water production rate used by {@link #generateWater()}.
      */
-    public int waterProductionRate;
+    private int waterProductionRate;
     /**
      * Pipes currently attached to this spring.
      */
@@ -58,10 +58,10 @@ public class Spring extends ActiveElement implements IConnectable {
         System.out.println("[Spring] getConnections()");
         List<PipeEnd> ends = new ArrayList<>();
         for (Pipe p : attachedPipes) {
-            if (p.end1 != null && p.end1.connectedTo == this)
-                ends.add(p.end1);
-            else if (p.end2 != null && p.end2.connectedTo == this)
-                ends.add(p.end2);
+            if (p.getEnd1() != null && p.getEnd1().connectedTo == this)
+                ends.add(p.getEnd1());
+            else if (p.getEnd2() != null && p.getEnd2().connectedTo == this)
+                ends.add(p.getEnd2());
         }
         return ends;
     }

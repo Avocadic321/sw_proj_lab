@@ -15,22 +15,18 @@ public class PipeEnd {
      * @param element element to connect to
      */
     public void connectsTo(ActiveElement element) {
-        System.out.println("[PipeEnd] connectsTo()");
         connectedTo = element;
         element.connect(this);
-        System.out.println("    [PipeEnd] connectedTo = " + element.id);
     }
 
     /**
      * Disconnects this end from its current element.
      */
     public void disconnect() {
-        System.out.println("[PipeEnd] disconnect()");
         if (connectedTo != null) {
             connectedTo.disconnect(this);
             connectedTo = null;
         }
-        System.out.println("    [PipeEnd] connectedTo = null");
     }
 
     /**
@@ -39,7 +35,6 @@ public class PipeEnd {
      * @return true if not connected
      */
     public boolean isFree() {
-        System.out.println("[PipeEnd] isFree()");
         return connectedTo == null;
     }
 }

@@ -8,10 +8,10 @@ import java.util.List;
  */
 public abstract class ActiveElement extends Element {
     /** Current pipe ends connected to this element. */
-    public List<PipeEnd> connections;
+    protected List<PipeEnd> connections;
 
     /** Creates an active element with default values. */
-    public ActiveElement() {
+    protected ActiveElement() {
         super();
         this.connections = new ArrayList<>();
     }
@@ -21,7 +21,7 @@ public abstract class ActiveElement extends Element {
      *
      * @param id element identifier
      */
-    public ActiveElement(String id) {
+    protected ActiveElement(String id) {
         super(id);
         this.connections = new ArrayList<>();
     }
@@ -33,7 +33,7 @@ public abstract class ActiveElement extends Element {
      * @param x  x-coordinate
      * @param y  y-coordinate
      */
-    public ActiveElement(String id, int x, int y) {
+    protected ActiveElement(String id, int x, int y) {
         super(id, x, y);
         this.connections = new ArrayList<>();
     }
@@ -44,7 +44,6 @@ public abstract class ActiveElement extends Element {
      * @param end pipe end to connect
      */
     public void connect(PipeEnd end) {
-        System.out.println("[ActiveElement] connect(this)");
         if (!connections.contains(end)) {
             connections.add(end);
         }
@@ -56,7 +55,6 @@ public abstract class ActiveElement extends Element {
      * @param end pipe end to disconnect
      */
     public void disconnect(PipeEnd end) {
-        System.out.println("[ActiveElement] disconnect(this)");
         connections.remove(end);
     }
 
@@ -66,7 +64,6 @@ public abstract class ActiveElement extends Element {
      * @return list of connected pipe ends
      */
     public List<PipeEnd> getConnections() {
-        System.out.println("[ActiveElement] getConnections()");
         return connections;
     }
 
