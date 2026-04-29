@@ -1,9 +1,7 @@
 package software.project.models;
 
-import java.util.Scanner;
-
 /**
- * An abstract base class representing a participant in the game.
+ * Represents a participant in the game.
  * <p>
  * A player can move between connected elements in the pipe network and perform
  * actions depending on their role. Players belong to either the plumber team
@@ -23,12 +21,13 @@ import java.util.Scanner;
  * @see Saboteur
  * @since 1.0
  */
-public abstract class Player {
+public class Player {
     protected String id;
     protected Element currentPosition;
 
-    protected Player(String id) {
+    public Player(String id, Element startPosition) {
         this.id = id;
+        this.currentPosition = startPosition;
     }
 
     /**
@@ -42,37 +41,19 @@ public abstract class Player {
      * {@code true}</li>
      * </ul>
      * </p>
-     * <p>
-     * This implementation includes interactive user input to simulate adjacency
-     * checking
-     * for skeleton/verification purposes. In the final implementation, adjacency
-     * should
-     * be determined automatically based on the pipe network topology.
-     * </p>
-     *
+     * 
      * @param target the element to move to; must be directly connected to the
      *               current position
      * @return {@code true} if the move succeeded, {@code false} otherwise
      */
     public boolean moveTo(Element target) {
-        System.out.println("[Player] moveTo(" + target.getClass().getSimpleName() + ")");
-
-        // Simulate adjacency check via user input
-        System.out.print("Is the target element adjacent and connected? (Y/N): ");
-        boolean adjacent = new Scanner(System.in).next().equalsIgnoreCase("Y");
-
-        if (!adjacent) {
-            System.out.println("Returned: false");
-            System.out.println("Cannot move: target is not adjacent or not connected.");
+        if (!isDirectlyConnected(currentPosition, target)) {
+            System.out.println("[ERROR] MOVE INVALID_TARGET");
             return false;
         }
 
-        // Check occupancy
-        boolean canOccupy = target.canOccupy();
-
-        if (!canOccupy) {
-            System.out.println("Returned: false");
-            System.out.println("Cannot move: target element is occupied (only one player per pipe).");
+        if (target instanceof Pipe && !target.canOccupy()) {
+            System.out.println("[ERROR] MOVE OCCUPIED");
             return false;
         }
 
@@ -84,9 +65,7 @@ public abstract class Player {
         target.addOccupant(this);
         currentPosition = target;
 
-        System.out.println("[Player] currentPosition = " + target.getClass().getSimpleName());
-        System.out.println("Returned: true");
-        System.out.println("Move successful.");
+        System.out.println("[OK] MOVE " + id + " " + target.getId());
         return true;
     }
 
@@ -111,14 +90,67 @@ public abstract class Player {
      *         to the pump or input and output are the same)
      */
     public boolean changePumpDirection(Pump pump, Pipe in, Pipe out) {
-        System.out.println("[Player] changePumpDirection(pump, in, out)");
         if (pump == null || in == null || out == null) {
             return false;
         }
 
-        PipeEnd inputEnd = in.getEnd1() != null && in.getEnd1().connectedTo == pump ? in.getEnd1() : in.getEnd2();
-        PipeEnd outputEnd = out.getEnd1() != null && out.getEnd1().connectedTo == pump ? out.getEnd1() : out.getEnd2();
+        if (in == out) {
+            return false;
+        }
+
+        PipeEnd inputEnd = getEndConnectedToPump(in, pump);
+        PipeEnd outputEnd = getEndConnectedToPump(out, pump);
+
+        if (inputEnd == null || outputEnd == null) {
+            return false;
+        }
+
+        if (inputEnd == outputEnd) {
+            return false;
+        }
 
         return pump.setDirection(inputEnd, outputEnd);
+    }
+
+    private boolean isDirectlyConnected(Element from, Element to) {
+        if (from == null || to == null) {
+            return false;
+        }
+
+        if (from instanceof Pipe pipe) {
+            PipeEnd end1 = pipe.getEnd1();
+            PipeEnd end2 = pipe.getEnd2();
+            ActiveElement conn1 = end1 != null ? end1.connectedTo : null;
+            ActiveElement conn2 = end2 != null ? end2.connectedTo : null;
+            return to == conn1 || to == conn2;
+        }
+
+        if (from instanceof ActiveElement active) {
+            if (!(to instanceof Pipe targetPipe)) {
+                return false;
+            }
+
+            for (PipeEnd end : active.getConnections()) {
+                if (end != null && end.pipe == targetPipe) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private PipeEnd getEndConnectedToPump(Pipe pipe, Pump pump) {
+        PipeEnd end1 = pipe.getEnd1();
+        if (end1 != null && end1.connectedTo == pump) {
+            return end1;
+        }
+
+        PipeEnd end2 = pipe.getEnd2();
+        if (end2 != null && end2.connectedTo == pump) {
+            return end2;
+        }
+
+        return null;
     }
 }
