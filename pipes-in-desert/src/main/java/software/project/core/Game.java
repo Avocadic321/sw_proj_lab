@@ -38,11 +38,6 @@ public class Game {
         this.config = config;
     }
 
-    /** Creates a game with default configuration. */
-    public Game() {
-        this(new GameConfig());
-    }
-
     /** Initializes elements, teams, and starts the first turn. */
     public void startGame() {
         state = GameState.INITIALIZING;
