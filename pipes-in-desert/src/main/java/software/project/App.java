@@ -2,6 +2,8 @@ package software.project;
 
 import software.project.core.Game;
 import software.project.core.GameConfig;
+import software.project.menus.IMenu;
+import software.project.menus.MainMenu;
 import software.project.parser.CommandParser;
 
 import java.util.Scanner;
@@ -28,24 +30,21 @@ public class App {
         this.gameConfig = new GameConfig();
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
+    public void setGame(Game game) { this.game = game; }
 
     public GameConfig getGameConfig() {
         return gameConfig;
     }
+    public CommandParser getParser() { return parser; }
+    public Game getGame() { return game; }
+    public Scanner getScanner() { return scanner; }
 
     public void runInteractive() {
-        System.out.println("[INFO] Interactive Mode");
         scanner = new Scanner(System.in);
-        while (true) {
-            System.out.print("> ");
-            String line = scanner.nextLine();
-            if (line.trim().equalsIgnoreCase("EXIT")) {
-                break;
-            }
-            parser.parseAndExecute(line, game);
+
+        IMenu currentMenu = new MainMenu(this);
+        while (currentMenu != null) {
+            currentMenu = currentMenu.run();
         }
     }
 
