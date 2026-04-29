@@ -36,7 +36,7 @@ public class SetTurnDurationCommand implements ICommand {
             return;
         }
 
-        app.getGameConfig().setGoalScore(value);
+        app.getGameConfig().setTurnDurationSeconds(value);
         System.out.println("[OK] SET_TURN_DURATION " + value);
     }
 }

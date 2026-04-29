@@ -36,7 +36,7 @@ public class SetPlayersCommand implements ICommand {
             return;
         }
 
-        app.getGameConfig().setGoalScore(value);
+        app.getGameConfig().setNumberOfPlayers(value);
         System.out.println("[OK] SET_PLAYERS " + value);
     }
 }
