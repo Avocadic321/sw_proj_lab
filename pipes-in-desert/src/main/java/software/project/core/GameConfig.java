@@ -107,7 +107,7 @@ public class GameConfig {
      * @param seconds must be between MIN_TURN_DURATION and MAX_TURN_DURATION
      */
     public void setTurnDurationSeconds(int seconds) {
-        if (turnDurationSeconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
+        if (seconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
             this.turnDurationSeconds = seconds;
         } else {
         }
