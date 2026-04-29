@@ -28,6 +28,7 @@ public class GameConfig {
     private static final int DEFAULT_TURN_DURATION = 120;
     private static final boolean DEFAULT_REAL_TIME_SCORING = false;
     private static final int DEFAULT_PLAYERS = 4;
+    private static final boolean DEFAULT_RANDOM = false;
 
     // Limits
     public static final int MIN_GOAL_SCORE = 10;
@@ -42,6 +43,7 @@ public class GameConfig {
     private int turnDurationSeconds;
     private boolean realTimeScoring;
     private int numberOfPlayers;
+    private boolean random;
 
     /** Creates a new config with all default values. */
     public GameConfig() {
@@ -49,6 +51,7 @@ public class GameConfig {
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
         this.numberOfPlayers = DEFAULT_PLAYERS;
+        this.random = DEFAULT_RANDOM;
     }
 
     /**
@@ -88,6 +91,10 @@ public class GameConfig {
         return numberOfPlayers;
     }
 
+    public boolean isRandom() {
+        return random;
+    }
+
     /**
      * Sets the winning score threshold.
      *
@@ -97,7 +104,7 @@ public class GameConfig {
         if (score >= MIN_GOAL_SCORE && score <= MAX_GOAL_SCORE) {
             this.goalScore = score;
         } else {
-            System.out.println("[ERROR] Goal score must be >= " + MIN_GOAL_SCORE);
+            System.out.printf("[ERROR] SET_GOAL OUT_OF_RANGE [%d, %d]%n", MIN_GOAL_SCORE, MAX_GOAL_SCORE);
         }
     }
 
@@ -110,6 +117,7 @@ public class GameConfig {
         if (seconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
             this.turnDurationSeconds = seconds;
         } else {
+            System.out.printf("[ERROR] SET_TURN_DURATION OUT_OF_RANGE [%d, %d]%n", MIN_TURN_DURATION, MAX_TURN_DURATION);
         }
     }
 
@@ -132,7 +140,12 @@ public class GameConfig {
         if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
             this.numberOfPlayers = count;
         } else {
+            System.out.printf("[ERROR] SET_PLAYERS OUT_OF_RANGE [%d, %d]%n",  MIN_PLAYERS, MAX_PLAYERS);
         }
+    }
+
+    public void setRandom(boolean random) {
+        this.random = random;
     }
 
     /** Restores all settings to their default values. */
@@ -141,6 +154,7 @@ public class GameConfig {
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
         this.numberOfPlayers = DEFAULT_PLAYERS;
+        this.random = DEFAULT_RANDOM;
     }
 
     /**
@@ -151,15 +165,12 @@ public class GameConfig {
     @Override
     public String toString() {
         return String.format(
-                "GameConfig {\n" +
-                        "  Goal Score: %d\n" +
-                        "  Turn Duration: %d seconds\n" +
-                        "  Real-time Scoring: %s\n" +
-                        "  Number of Players: %d\n" +
-                        "}",
-                goalScore,
-                turnDurationSeconds,
-                realTimeScoring ? "enabled" : "disabled",
-                numberOfPlayers);
+            "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
+            goalScore,
+            turnDurationSeconds,
+            realTimeScoring ? "ON" : "OFF",
+            numberOfPlayers,
+            random ? "ON" : "OFF"
+        );
     }
 }
