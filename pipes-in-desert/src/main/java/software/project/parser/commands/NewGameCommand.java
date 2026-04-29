@@ -13,6 +13,6 @@ public class NewGameCommand implements ICommand {
 
     @Override
     public void execute(Game game, String[] args) {
-        // TODO: Implement
+        System.out.println("[OK] NEW_GAME");
     }
 }
