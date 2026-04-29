@@ -16,11 +16,14 @@ public class CommandParser {
     }
 
     private void registerCommands(App app) {
-        commands.put("NEW_GAME", new NewGameCommand(app));
+        /* Game Configuration Commands */
         commands.put("SET_GOAL", new SetGoalCommand(app));
         commands.put("SET_TURN_DURATION", new SetTurnDurationCommand(app));
         commands.put("SET_PLAYERS", new SetPlayersCommand(app));
-        // Add others, add aliases, etc
+        commands.put("SET_RANDOM", new SetRandomCommand(app));
+
+        /* Game Control Commands */
+        commands.put("NEW_GAME", new NewGameCommand(app));
     }
 
     public void parseAndExecute(String line, Game game) {
