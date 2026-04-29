@@ -15,12 +15,14 @@ public class SetGoalCommand implements ICommand {
 
     @Override
     public void execute(Game game, String[] args) {
+        if (game != null) {
+            System.out.println("[ERROR] SET_GOAL GAME_ALREADY_STARTED");
+            return;
+        }
+
         if (args.length != 1) {
             System.out.println("[ERROR] SET_GOAL INVALID_ARGS");
             return;
-        }
-        if (game.getState() != GameState.INITIALIZING) {
-            System.out.println("[ERROR] SET_GOAL GAME_ALREADY_STARTED");
         }
 
         int value;
