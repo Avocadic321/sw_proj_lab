@@ -15,7 +15,7 @@ package software.project.models;
  */
 public class Saboteur extends Player{
     public Saboteur(String id) {
-        super(id);
+        super(id, null);
     }
 
     /**

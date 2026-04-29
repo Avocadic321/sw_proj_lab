@@ -52,7 +52,7 @@ public class Game {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "PLUMBER" + i;
-            plumber.addPlayer(new Plumber(id));
+            plumber.addPlayer(new Plumber(id, null));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "SABOTEUR" + i;

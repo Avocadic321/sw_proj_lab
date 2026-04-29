@@ -17,7 +17,7 @@ public class CommandParser {
 
     private void registerCommands(App app) {
         commands.put("NEW_GAME", new NewGameCommand(app));
-        commands.put("CONFIGURE", null);
+        commands.put("SET_GOAL", new SetGoalCommand(app));
         commands.put("REPAIR", null);
         commands.put("SABOTAGE", null);
         commands.put("CONNECT", null);
