@@ -1,5 +1,8 @@
 package software.project.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
 
@@ -20,8 +23,9 @@ import software.project.interfaces.IRepairable;
 public class Plumber extends Player {
     private ICarriable carriedItem;
 
-    public Plumber(String id) {
-        super(id);
+    public Plumber(String id, Element startPosition) {
+        super(id, startPosition);
+        this.carriedItem = null;
     }
 
     /**
@@ -38,7 +42,28 @@ public class Plumber extends Player {
      * at the plumber's current position.
      */
     public void extendPipeSystem() {
-        System.out.println("[Plumber] extendPipeSystem()");
+        if (carriedItem == null || currentPosition == null) {
+            throw new IllegalStateException("No item being carried or current position is null");
+        }
+
+        if (carriedItem instanceof Pipe pipe && currentPosition instanceof ActiveElement active) {
+            PipeEnd freeEnd = getFreeEnd(pipe);
+            if (freeEnd == null) {
+                throw new IllegalStateException("No free end available to connect the pipe");
+            }
+
+            if (!hasFreeSlot(active)) {
+                throw new IllegalStateException("No free slot available on the active element");
+            }
+
+            freeEnd.connectsTo(active);
+            carriedItem = null;
+            return;
+        }
+
+        if (carriedItem instanceof Pump pump && currentPosition instanceof Pipe pipe) {
+            insertPumpIntoPipe(pump, pipe);
+        }
     }
 
     /**
@@ -47,7 +72,15 @@ public class Plumber extends Player {
      * @param cistern the cistern to pick the pump from
      */
     public void pickUpPump(Cistern cistern) {
-        System.out.println("[Plumber] pickUpPump() - at Cistern");
+        if (cistern == null || currentPosition != cistern) {
+            throw new IllegalArgumentException("Cistern is null or not at the current position");
+        }
+
+        if (carriedItem != null) {
+            throw new IllegalStateException("Already carrying an item");
+        }
+
+        carriedItem = cistern.producePump();
     }
 
     /**
@@ -56,7 +89,22 @@ public class Plumber extends Player {
      * @param pump the pump to pick up
      */
     public void pickUpPump(Pump pump) {
-        System.out.println("[Plumber] pickUpPump()");
+        if (pump == null || currentPosition != pump) {
+            throw new IllegalArgumentException("Pump is null or not at the current position");
+        }
+
+        if (carriedItem != null) {
+            throw new IllegalStateException("Already carrying an item");
+        }
+
+        List<PipeEnd> endsToDisconnect = new ArrayList<>(pump.getConnections());
+        for (PipeEnd end : endsToDisconnect) {
+            if (end != null) {
+                end.disconnect();
+            }
+        }
+
+        carriedItem = pump;
     }
 
     /**
@@ -65,7 +113,43 @@ public class Plumber extends Player {
      * @param cistern the cistern to pick the pipe from
      */
     public void pickUpPipe(Cistern cistern) {
-        System.out.println("[Plumber] pickUpPipe()");
+        if (cistern == null || currentPosition != cistern) {
+            throw new IllegalArgumentException("Cistern is null or not at the current position");
+        }
+
+        if (carriedItem != null) {
+            throw new IllegalStateException("Already carrying an item");
+        }
+
+        carriedItem = cistern.producePipe();
+    }
+
+    /**
+     * Picks up an existing pipe from the network.
+     *
+     * @param pipe the pipe to pick up
+     */
+    public void pickUpPipe(Pipe pipe) {
+        if (pipe == null || currentPosition != pipe) {
+            throw new IllegalArgumentException("Pipe is null or not at the current position");
+        }
+
+        if (carriedItem != null) {
+            throw new IllegalStateException("Already carrying an item");
+        }
+
+        PipeEnd end1 = pipe.getEnd1();
+        PipeEnd end2 = pipe.getEnd2();
+
+        if (end1 != null) {
+            end1.disconnect();
+        }
+
+        if (end2 != null) {
+            end2.disconnect();
+        }
+
+        carriedItem = pipe;
     }
 
     /**
@@ -74,7 +158,16 @@ public class Plumber extends Player {
      * @param end the pipe end to disconnect
      */
     public void disconnect(PipeEnd end) {
+        if (currentPosition != end.pipe && currentPosition != end.connectedTo) {
+            throw new IllegalArgumentException("Plumber is not at the location of the pipe end or its connection");
+        }
+
+        if (end.isFree()) {
+            throw new IllegalStateException("Pipe end is already free");
+        }
+
         end.disconnect();
+        System.out.println("[OK] DISCONNECT " + id + " " + getPipeEndId(end));
     }
 
     /**
@@ -84,7 +177,20 @@ public class Plumber extends Player {
      * @param tgt the target active element (pump, cistern, or spring)
      */
     public void connect(PipeEnd end, ActiveElement tgt) {
+        if (currentPosition != end.pipe && currentPosition != tgt) {
+            throw new IllegalArgumentException("Plumber is not at the location of the pipe end or its connection");
+        }
+
+        if (!end.isFree()) {
+            throw new IllegalStateException("Pipe end is already connected");
+        }
+
+        if (!hasFreeSlot(tgt)) {
+            throw new IllegalStateException("No free slot available on the target element");
+        }
+
         end.connectsTo(tgt);
+        System.out.println("[OK] CONNECT " + id + " " + getPipeEndId(end) + " " + tgt.getId());
     }
 
     /**
@@ -123,7 +229,73 @@ public class Plumber extends Player {
      * @param pipe the pipe to insert the pump into
      */
     public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
-        // TODO: Implement
+        if (carriedItem != pump) {
+            throw new IllegalStateException("Pump is not being carried");
+        }
+
+        if (currentPosition != pipe) {
+            throw new IllegalArgumentException("Plumber is not at the location of the pipe");
+        }
+
+        Pipe[] newPipes = pipe.splitForPump(pump);
+        Pipe pipe1 = newPipes[0];
+        Pipe pipe2 = newPipes[1];
+
+        pump.connect(pipe1.getEnd2());
+        pump.connect(pipe2.getEnd1());
+
+        carriedItem = null;
+
+        currentPosition.removeOccupant(this);
+        pump.addOccupant(this);
+        currentPosition = pump;
+
+        System.out.println("[OK] INSERT_PUMP " + id + " " + pipe.getId() + " " + pump.getId());
+        System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + pipe1.getId() + "," + pipe2.getId() + " via " + pump.getId());
+    }
+
+    private PipeEnd getFreeEnd(Pipe pipe) {
+        PipeEnd end1 = pipe.getEnd1();
+        if (end1 != null && end1.isFree()) {
+            return end1;
+        }
+
+        PipeEnd end2 = pipe.getEnd2();
+        if (end2 != null && end2.isFree()) {
+            return end2;
+        }
+
+        return null;
+    }
+
+    private boolean hasFreeSlot(ActiveElement tgt) {
+        if (tgt == null) {
+            return false;
+        }
+
+        int maxConnections = (tgt instanceof Pump) ? 4 : 1;
+        return tgt.getConnections().size() < maxConnections;
+    }
+
+    private String getPipeEndId(PipeEnd end) {
+        if (end == null || end.pipe == null) {
+            return "PIPE_END";
+        }
+
+        String pipeId = end.pipe.getId();
+        if (pipeId == null) {
+            pipeId = "PIPE";
+        }
+
+        if (end.pipe.getEnd1() == end) {
+            return pipeId + "_END1";
+        }
+
+        if (end.pipe.getEnd2() == end) {
+            return pipeId + "_END2";
+        }
+
+        return pipeId;
     }
 
 }

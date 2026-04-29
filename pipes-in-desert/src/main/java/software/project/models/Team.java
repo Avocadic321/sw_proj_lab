@@ -1,23 +1,29 @@
 package software.project.models;
 
-import software.project.utils.Teams;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import software.project.utils.Teams;
 
 /**
- * Represents one of the two competing groups in the game: the plumbers or the saboteurs.
+ * Represents one of the two competing groups in the game: the plumbers or the
+ * saboteurs.
  * <p>
- * A team aggregates all players belonging to that side and maintains the team's collective
- * score. The class manages its members (adding or removing players) and tracks the team's
- * progress toward victory by accumulating points from water successfully delivered
+ * A team aggregates all players belonging to that side and maintains the team's
+ * collective
+ * score. The class manages its members (adding or removing players) and tracks
+ * the team's
+ * progress toward victory by accumulating points from water successfully
+ * delivered
  * (for plumbers) or leaked (for saboteurs).
  * </p>
  * <p>
- * Each team is identified by its {@link Teams} enumeration value, which determines
- * the role-specific rules that apply to its members. The score is updated incrementally
- * as water either reaches cisterns (plumber team) or leaks into the desert (saboteur team).
+ * Each team is identified by its {@link Teams} enumeration value, which
+ * determines
+ * the role-specific rules that apply to its members. The score is updated
+ * incrementally
+ * as water either reaches cisterns (plumber team) or leaks into the desert
+ * (saboteur team).
  * </p>
  *
  * @see Player
@@ -25,9 +31,9 @@ import java.util.List;
  * @since 1.0
  */
 public class Team {
-    private Teams team;
-    private List<Player> players;
-    private int score;
+    private final List<Player> players = new ArrayList<>();
+    private final Teams team;
+    private int score = 0;
 
     /**
      * Constructs a new team with the specified team type.
@@ -39,12 +45,7 @@ public class Team {
      * @param team the team type identifier
      */
     public Team(Teams team) {
-        System.out.printf("[Team] Team(%s)%n",  team.toString());
-        this.players = new ArrayList<>();
         this.team = team;
-
-        System.out.println("[Team] initializeScore(0)");
-        this.score = 0;
     }
 
     /**
@@ -58,7 +59,18 @@ public class Team {
      * @param player the player to add to this team
      */
     public void addPlayer(Player player) {
-        System.out.printf("[Team] addPlayer() - Team %s%n", team.toString());
+        if (player == null) {
+            throw new IllegalArgumentException("Player cannot be null");
+        }
+
+        if (team == Teams.PLUMBERS && !(player instanceof Plumber)) {
+            throw new IllegalArgumentException("Player does not match the team type");
+        }
+
+        if (team == Teams.SABOTEURS && !(player instanceof Saboteur)) {
+            throw new IllegalArgumentException("Player does not match the team type");
+        }
+
         players.add(player);
     }
 
@@ -72,7 +84,6 @@ public class Team {
      * @param player the player to remove from this team
      */
     public void removePlayer(Player player) {
-        System.out.println("[Team] removePlayer()");
         players.remove(player);
     }
 
@@ -87,7 +98,6 @@ public class Team {
      * @return the current total points accumulated by this team
      */
     public int getScore() {
-        System.out.println("[Team] getScore()");
         return score;
     }
 
@@ -102,7 +112,6 @@ public class Team {
      * @param score the amount to add to the team's current score
      */
     public void addScore(int score) {
-        System.out.printf("[Team] addScore(%d)%n", score);
         this.score += score;
     }
 

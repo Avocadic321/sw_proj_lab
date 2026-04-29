@@ -10,9 +10,9 @@ package software.project.utils;
  * The two teams have opposing objectives:
  * <ul>
  * <li>{@link #PLUMBERS} - Guardians of the water infrastructure, focused on
- *     delivering water to cisterns and maintaining the pipe network</li>
+ * delivering water to cisterns and maintaining the pipe network</li>
  * <li>{@link #SABOTEURS} - Disruptors who aim to cause water leakage and
- *     prevent water from reaching its destination</li>
+ * prevent water from reaching its destination</li>
  * </ul>
  * </p>
  *

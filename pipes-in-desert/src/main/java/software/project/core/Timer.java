@@ -11,12 +11,14 @@ package software.project.core;
  * </p>
  */
 public class Timer {
-    private int turnDuration;
+    private int duration;
     private int timeLeft;
     private boolean isRunning;
 
-    public Timer(int turnDuration) {
-        this.turnDuration = turnDuration;
+    public Timer(int durationSeconds) {
+        this.duration = durationSeconds;
+        this.timeLeft = 0;
+        this.isRunning = false;
     }
 
     /**
@@ -27,7 +29,8 @@ public class Timer {
      * </p>
      */
     public void start() {
-        System.out.println("[Timer] start()");
+        timeLeft = duration;
+        isRunning = true;
     }
 
     /**
@@ -38,7 +41,7 @@ public class Timer {
      * </p>
      */
     public void pause() {
-        System.out.println("[Timer] pause()");
+        isRunning = false;
     }
 
     /**
@@ -48,7 +51,7 @@ public class Timer {
      * </p>
      */
     public void resume() {
-        System.out.println("[Timer] resume()");
+        isRunning = true;
     }
 
     /**
@@ -59,7 +62,8 @@ public class Timer {
      * </p>
      */
     public void stop() {
-        System.out.println("[Timer] stop()");
+        isRunning = false;
+        timeLeft = 0;
     }
 
     /**
@@ -71,7 +75,16 @@ public class Timer {
      * </p>
      */
     public void tick() {
-        System.out.println("[Timer] tick()");
+        if (!isRunning) {
+            return;
+        }
+
+        timeLeft -= 1;
+
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            isRunning = false;
+        }
     }
 
     /**
@@ -80,6 +93,6 @@ public class Timer {
      * @param duration the turn duration in seconds
      */
     public void setTurnDuration(int duration) {
-        turnDuration = duration;
+        this.duration = duration;
     }
 }
