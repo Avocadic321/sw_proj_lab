@@ -101,11 +101,7 @@ public class GameConfig {
      * @param score must be between MIN_GOAL_SCORE and MAX_GOAL_SCORE
      */
     public void setGoalScore(int score) {
-        if (score >= MIN_GOAL_SCORE && score <= MAX_GOAL_SCORE) {
-            this.goalScore = score;
-        } else {
-            System.out.printf("[ERROR] SET_GOAL OUT_OF_RANGE [%d, %d]%n", MIN_GOAL_SCORE, MAX_GOAL_SCORE);
-        }
+        this.goalScore = score;
     }
 
     /**
@@ -114,11 +110,7 @@ public class GameConfig {
      * @param seconds must be between MIN_TURN_DURATION and MAX_TURN_DURATION
      */
     public void setTurnDurationSeconds(int seconds) {
-        if (seconds >= MIN_TURN_DURATION && seconds <= MAX_TURN_DURATION) {
-            this.turnDurationSeconds = seconds;
-        } else {
-            System.out.printf("[ERROR] SET_TURN_DURATION OUT_OF_RANGE [%d, %d]%n", MIN_TURN_DURATION, MAX_TURN_DURATION);
-        }
+        this.turnDurationSeconds = seconds;
     }
 
     /**

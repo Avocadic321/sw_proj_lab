@@ -5,17 +5,17 @@ import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
-public class SetGoalCommand implements ICommand {
+public class SetTurnDurationCommand implements ICommand {
     private final App app;
 
-    public SetGoalCommand(App app) {
+    public SetTurnDurationCommand(App app) {
         this.app = app;
     }
 
     @Override
     public void execute(Game game, String[] args) {
         if (args.length != 1) {
-            System.out.println("[ERROR] SET_GOAL INVALID_ARGS");
+            System.out.println("[ERROR] SET_TURN_DURATION INVALID_ARGS");
             return;
         }
 
@@ -23,19 +23,20 @@ public class SetGoalCommand implements ICommand {
         try {
             value = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
-            System.out.println("[ERROR] SET_GOAL NOT_NUMERIC");
+            System.out.println("[ERROR] SET_TURN_DURATION NOT_NUMERIC");
             return;
         }
 
-        if (value < GameConfig.MIN_GOAL_SCORE || value > GameConfig.MAX_GOAL_SCORE) {
+        if (value < GameConfig.MIN_TURN_DURATION || value > GameConfig.MAX_TURN_DURATION) {
             System.out.printf(
-                "[ERROR] SET_SCORE OUT_OF_RANGE [%d, %d]%n",
-                GameConfig.MIN_GOAL_SCORE,
-                GameConfig.MAX_GOAL_SCORE
+                "[ERROR] SET_TURN_DURATION OUT_OF_RANGE [%d, %d]%n",
+                GameConfig.MIN_TURN_DURATION,
+                GameConfig.MAX_TURN_DURATION
             );
             return;
         }
 
         app.getGameConfig().setGoalScore(value);
+        System.out.println("[OK] SET_TURN_DURATION " + value);
     }
 }
