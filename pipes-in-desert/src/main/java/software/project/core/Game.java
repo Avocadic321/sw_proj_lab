@@ -47,15 +47,14 @@ public class Game {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "PLUMBER" + i;
-            plumber.addPlayer(new Plumber(id, null));
+            plumber.addPlayer(new Plumber(id, gameMap.getSpawnPoint()));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "SABOTEUR" + i;
-            saboteur.addPlayer(new Saboteur(id));
+            saboteur.addPlayer(new Saboteur(id, gameMap.getSpawnPoint()));
         }
 
         turnManager.startTurn();
-
         state = GameState.RUNNING;
     }
 

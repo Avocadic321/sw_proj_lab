@@ -5,9 +5,10 @@ import java.util.List;
 
 public class GameMap {
     private final List<Element> elements = new ArrayList<>();
+    private Element spawnPoint;
 
     public GameMap() {
-        // TODO: Create Mock Map for Prototype
+        buildMap();
     }
 
     public void addElement(Element element) {
@@ -18,6 +19,10 @@ public class GameMap {
 
     public void removeElement(Element element) {
         elements.remove(element);
+    }
+
+    public Element getSpawnPoint() {
+        return spawnPoint;
     }
 
     public Element getElement(String id) {
@@ -47,5 +52,28 @@ public class GameMap {
         return getElementsByType(Cistern.class);
     }
 
+    /*           S1        S2
+     *           ||
+     *           B1
+     *           ||
+     * FE===B2===P1===B3===P3===B9===FE
+     *           ||        ||
+     *           B4        B8
+     *           ||        ||
+     * C1===B5===P2===B6===P4===B7===C2
+     *
+     * Labels:
+     * FE - Free End
+     * B# - Pipe - maybe you get it why is B :)
+     * P# - Pump
+     * C# - Cistern
+     * S# - Spring
+     * === or || - Pipes
+     *
+     * Spawn point: P1
+     */
+    private void buildMap() {
+
+    }
 
 }
