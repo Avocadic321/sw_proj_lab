@@ -3,10 +3,13 @@ package software.project.utils;
 import software.project.models.Element;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-public class IdGenerator {
+public final class IdGenerator {
     private static final Map<Class<? extends Element>, Integer> counters = new HashMap<>();
+    private static final Set<String> usedIds = new HashSet<>();
 
     private IdGenerator() {}
 
@@ -14,11 +17,21 @@ public class IdGenerator {
         int next = counters.getOrDefault(type, 0) + 1;
         counters.put(type, next);
         String prefix = getPrefix(type);
+        usedIds.add(prefix);
         return prefix + next;
+    }
+
+    public static boolean isIdAvailable(String id) {
+        return !usedIds.contains(id);
+    }
+
+    public static void markIdUsed(String id) {
+        usedIds.add(id);
     }
 
     public static void reset() {
         counters.clear();
+        usedIds.clear();
     }
 
     private static String getPrefix(Class<? extends Element> type) {
