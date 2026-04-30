@@ -78,8 +78,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
         return new ArrayList<>(List.of(inputEnd,outputEnd));
     }
-    public int transferWater() {
-        if(end1.isFree() && end2.isFree()) return 0;
+    public void receiveAndTransferWater() {
+        if(end1.isFree() && end2.isFree()) return;
         List<PipeEnd> pipeEnds = resolveInputAndOutputEnds(end1,end2);
         PipeEnd inputEnd = pipeEnds.getFirst();
         PipeEnd outputEnd = pipeEnds.getLast();
@@ -92,10 +92,10 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         if(isBroken || outputEnd.isFree()) {
             currentWater = 0; // lose all water we hold
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), waterAmount);
-            return waterAmount;
+            return;
         }
         outputEnd.setInput(waterAmount);
-        return 0;
+
     }
 
     /** Breaks the pipe, causing leakage. */

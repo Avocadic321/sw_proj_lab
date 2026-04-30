@@ -24,13 +24,14 @@ public class Cistern extends ActiveElement implements IConnectable {
     /**
      * Accepts incoming water.
      *
-     * @param amount amount of water received
+   //  * @param amount amount of water received
      */
-    public void receiveWater(int amount) {
+    @Override
+    public void receiveAndTransferWater() {
 
         if(isFull()) return;
-        int newAmount = storedWater + amount;
-        storedWater = newAmount > capacity ? capacity : storedWater + newAmount;
+      //  int newAmount = storedWater + amount;
+    //    storedWater = newAmount > capacity ? capacity : storedWater + newAmount;
 
 
     }
