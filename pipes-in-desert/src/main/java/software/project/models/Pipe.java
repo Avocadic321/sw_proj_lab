@@ -4,6 +4,7 @@ import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
 import software.project.utils.Helper;
+import software.project.utils.ElementWaterState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,9 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     // can be modified to a better thing
     private List<PipeEnd> resolveInputAndOutputEnds(PipeEnd end1, PipeEnd end2) {
-        PipeEnd inputEnd = end1.getReceivedWater() != 0 ? end1 : end2.getReceivedWater() != 0 ? end2 : null;
+        PipeEnd inputEnd = end1.isInput() ? end1
+                : end2.isInput() ? end2
+                : null;
         if(inputEnd == null) throw new IllegalStateException("No Input pipe");
         PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
         return new ArrayList<>(List.of(inputEnd,outputEnd));
@@ -81,14 +84,17 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         PipeEnd inputEnd = pipeEnds.getFirst();
         PipeEnd outputEnd = pipeEnds.getLast();
 
-        int waterAmount = Helper.waterToBePumpedOut(inputEnd.getReceivedWater(),waterPerTurn,currentWater,capacity, this::breakElement);
+
+        ElementWaterState state = Helper.waterToBePumpedOut(inputEnd.getReceivedWater(),waterPerTurn,currentWater,capacity, this::breakElement);
+        currentWater = state.currentlyStoredWater();
+        int waterAmount = state.pumpedWater();
+        inputEnd.clearInput();
         if(isBroken || outputEnd.isFree()) {
-            currentWater = 0;
-            System.out.printf("[EVENT] WATER_LEAK %s amount=%d",this.getId(),waterAmount);
+            currentWater = 0; // lose all water we hold
+            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), waterAmount);
             return waterAmount;
         }
-        inputEnd.setReceivedWater(0);
-        outputEnd.setReceivedWater(waterAmount);
+        outputEnd.setInput(waterAmount);
         return 0;
     }
 

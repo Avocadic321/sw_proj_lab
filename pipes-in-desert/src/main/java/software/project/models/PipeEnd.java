@@ -11,12 +11,22 @@ public class PipeEnd {
 
     private int receivedWater;
 
-    public int getReceivedWater() {
-        return receivedWater;
+    private boolean isInput;
+
+    public boolean isInput(){
+        return isInput;
+    }
+    public void setInput(int water) {
+        isInput = true;
+        receivedWater = water;
+    }
+    public void clearInput() {
+        isInput = false;
+        receivedWater = 0;
     }
 
-    public void setReceivedWater(int receivedWater) {
-        this.receivedWater = receivedWater;
+    public int getReceivedWater() {
+        return receivedWater;
     }
 
     /**

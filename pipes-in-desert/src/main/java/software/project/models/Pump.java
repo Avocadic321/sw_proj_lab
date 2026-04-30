@@ -7,6 +7,7 @@ import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
+import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
 
 /**
@@ -89,10 +90,16 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     public int transferWater() {
 
-        int waterAmount = Helper.waterToBePumpedOut(inputPipe.getReceivedWater(),1000,storedWater,tankCapacity, this::breakElement);
-        inputPipe.setReceivedWater(0);
-        outputPipe.setReceivedWater(waterAmount);
-        return waterAmount;
+        ElementWaterState waterAmount = Helper.waterToBePumpedOut(inputPipe.getReceivedWater(),1000,storedWater,tankCapacity, this::breakElement);
+        inputPipe.clearInput();
+        if(isBroken || outputPipe.isFree()) {
+            storedWater = 0; // lose all water we hold
+            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), waterAmount);
+            return waterAmount.pumpedWater();
+        }
+        outputPipe.setInput(waterAmount.pumpedWater());
+        storedWater = waterAmount.currentlyStoredWater();
+        return 0;
     }
 
     /** Breaks the pump. */
