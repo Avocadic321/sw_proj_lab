@@ -3,6 +3,11 @@ package software.project.models;
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
+import software.project.utils.Helper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Pipe segment that connects two pipe ends and can carry water.
@@ -55,53 +60,36 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return end2;
     }
 
-    private int waterToBePumpedOut(int amount) {
-        int toBePumped = Math.min(waterPerTurn, amount + currentWater);
-        currentWater = amount + currentWater - toBePumped;
-        if(currentWater > capacity) {
-            breakElement();
-        }
-        return currentWater;
-    }
 
     /**
      * Transfers water through this pipe.
      *
-     * @param amount incoming water amount
+ //    * @param amount incoming water amount
      * @return forwarded water amount
      */
-    public int transferWater(int amount) {
-    // TODO: understand what to do with currentWater & Amount
-        int waterAmount = waterToBePumpedOut(amount);
-        PipeEnd freeEnd = null;
-        if(end1.isFree() && end2.isFree()) return 0;
-        freeEnd = end1.isFree() ? end1 : end2;
-        if(isBroken || freeEnd != null) {
 
+    // can be modified to a better thing
+    private List<PipeEnd> resolveInputAndOutputEnds(PipeEnd end1, PipeEnd end2) {
+        PipeEnd inputEnd = end1.getReceivedWater() != 0 ? end1 : end2.getReceivedWater() != 0 ? end2 : null;
+        if(inputEnd == null) throw new IllegalStateException("No Input pipe");
+        PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
+        return new ArrayList<>(List.of(inputEnd,outputEnd));
+    }
+    public int transferWater() {
+        if(end1.isFree() && end2.isFree()) return 0;
+        List<PipeEnd> pipeEnds = resolveInputAndOutputEnds(end1,end2);
+        PipeEnd inputEnd = pipeEnds.getFirst();
+        PipeEnd outputEnd = pipeEnds.getLast();
+
+        int waterAmount = Helper.waterToBePumpedOut(inputEnd.getReceivedWater(),waterPerTurn,currentWater,capacity, this::breakElement);
+        if(isBroken || outputEnd.isFree()) {
             currentWater = 0;
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d",this.getId(),waterAmount);
             return waterAmount;
         }
-
-        PipeEnd inputEnd = end1.isRecievedWater() ? end1 : end2.isRecievedWater() ? end2 : null;
-        if(inputEnd == null) {
-            return 0;
-        }
-        PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
-
-        inputEnd.recieveWater(false);
-        ActiveElement target = outputEnd.connectedTo;
-        if(target instanceof Cistern cs) {
-            cs.receiveWater(waterAmount);
-            currentWater = 0;
-            return 0;
-        } else if(target instanceof Pump p) {
-            p.transferWater(waterAmount);
-            currentWater = 0;
-            return 0;
-        }
+        inputEnd.setReceivedWater(0);
+        outputEnd.setReceivedWater(waterAmount);
         return 0;
-
     }
 
     /** Breaks the pipe, causing leakage. */

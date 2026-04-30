@@ -7,6 +7,7 @@ import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
+import software.project.utils.Helper;
 
 /**
  * Active element that routes water from an input to an output.
@@ -83,13 +84,15 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     /**
      * Transfers water through the pump.
      *
-     * @param amount incoming amount
+    // * @param amount incoming amount
      * @return forwarded amount
      */
-    public int transferWater(int amount) {
-        // TODO: Implement logic
-        outputPipe.recieveWater(true);
-        return amount;
+    public int transferWater() {
+
+        int waterAmount = Helper.waterToBePumpedOut(inputPipe.getReceivedWater(),1000,storedWater,tankCapacity, this::breakElement);
+        inputPipe.setReceivedWater(0);
+        outputPipe.setReceivedWater(waterAmount);
+        return waterAmount;
     }
 
     /** Breaks the pump. */
