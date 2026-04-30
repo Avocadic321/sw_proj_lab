@@ -182,4 +182,9 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         System.out.println("[Pump] isConnectedToCistern()");
         return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
     }
+
+    @Override
+    public void receiveAndTransferWater() {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 }
