@@ -38,11 +38,6 @@ public class Game {
         this.config = config;
     }
 
-    /** Creates a game with default configuration. */
-    public Game() {
-        this(new GameConfig());
-    }
-
     /** Initializes elements, teams, and starts the first turn. */
     public void startGame() {
         state = GameState.INITIALIZING;
@@ -52,7 +47,7 @@ public class Game {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "PLUMBER" + i;
-            plumber.addPlayer(new Plumber(id));
+            plumber.addPlayer(new Plumber(id, null));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "SABOTEUR" + i;
@@ -119,4 +114,7 @@ public class Game {
     public void simulateWaterFlow() {
     }
 
+    public GameState getState() {
+        return state;
+    }
 }
