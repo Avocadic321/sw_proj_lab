@@ -94,4 +94,9 @@ public class Spring extends ActiveElement implements IConnectable {
     public void addPipe(Pipe p) {
         attachedPipes.add(p);
     }
+
+    @Override
+    public void receiveAndTransferWater() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 }

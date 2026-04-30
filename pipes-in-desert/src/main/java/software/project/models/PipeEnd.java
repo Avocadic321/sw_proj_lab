@@ -9,16 +9,26 @@ public class PipeEnd {
     /** Active element currently connected to this end. */
     public ActiveElement connectedTo;
 
-    private boolean recievedWater;
+    private int receivedWater;
 
+    private boolean isInput;
 
-    public boolean isRecievedWater() {
-        return recievedWater;
+    public boolean isInput(){
+        return isInput;
     }
-    // TODO: Called from Pump
-    public void recieveWater(boolean bls) {
-        this.recievedWater = bls;
+    public void setInput(int water) {
+        isInput = true;
+        receivedWater = water;
     }
+    public void clearInput() {
+        isInput = false;
+        receivedWater = 0;
+    }
+
+    public int getReceivedWater() {
+        return receivedWater;
+    }
+
     /**
      * Connects this end to an active element and registers it.
      *

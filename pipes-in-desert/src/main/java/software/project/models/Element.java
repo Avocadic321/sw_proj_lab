@@ -132,4 +132,9 @@ public abstract class Element {
         System.out.println("[Element] canOccupy()");
         return true; // by default, any number of players can occupy
     }
+
+    /**
+     * Transfer water from input(s) of Element to its output(s)
+     */
+    public abstract void receiveAndTransferWater();
 }
