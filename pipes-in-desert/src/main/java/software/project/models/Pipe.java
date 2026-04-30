@@ -14,6 +14,9 @@ import java.util.Optional;
  * Pipe segment that connects two pipe ends and can carry water.
  */
 public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
+    private static final int DEFAULT_CAPACITY = 50;
+    public static final int MAX_CAPACITY = 500;
+
     /** First pipe end. */
     private PipeEnd end1;
     /** Second pipe end. */
@@ -29,23 +32,28 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     private int waterPerTurn = 20; // magic number
 
-    /** Creates a new pipe with default values. */
     public Pipe() {
-        super();
-        this.isBroken = false;
-        this.end1 = new PipeEnd();
-        this.end2 = new PipeEnd();
-        this.end1.pipe = this;
-        this.end2.pipe = this;
+        this(null, -1, -1, DEFAULT_CAPACITY);
     }
 
-    /**
-     * Creates a new pipe with the given identifier.
-     *
-     * @param id pipe id
-     */
     public Pipe(String id) {
-        super(id);
+        this(id, -1, -1, DEFAULT_CAPACITY);
+    }
+
+    public Pipe(int x, int y) {
+        this(null, x, y, DEFAULT_CAPACITY);
+    }
+
+    public Pipe(String id, int x, int y) {
+        this(id, x, y, DEFAULT_CAPACITY);
+    }
+
+    public Pipe(String id, int x, int y, int capacity) {
+        super(id, x, y);
+        if (capacity < 1 || capacity > MAX_CAPACITY) {
+            throw new IllegalArgumentException("[ERROR] PIPE INVALID_CAPACITY");
+        }
+        this.capacity = capacity;
         this.isBroken = false;
         this.end1 = new PipeEnd();
         this.end2 = new PipeEnd();
