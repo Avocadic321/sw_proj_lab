@@ -43,7 +43,7 @@ public abstract class Element {
      * </p>
      */
     public Element() {
-        this.occupants = new ArrayList<>();
+        this("",0,0);
     }
 
     /**
@@ -55,8 +55,7 @@ public abstract class Element {
      * @param id the unique identifier for this element
      */
     public Element(String id) {
-        this.id = id;
-        this.occupants = new ArrayList<>();
+        this(id,0,0);
     }
 
     /**

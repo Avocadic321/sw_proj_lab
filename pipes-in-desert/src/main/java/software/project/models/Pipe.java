@@ -21,6 +21,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     /** Whether the pipe is broken. */
     private boolean isBroken;
 
+    private int waterPerTurn = 20; // magic number
+
     /** Creates a new pipe with default values. */
     public Pipe() {
         super();
@@ -53,6 +55,15 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return end2;
     }
 
+    private int waterToBePumpedOut(int amount) {
+        int toBePumped = Math.min(waterPerTurn, amount + currentWater);
+        currentWater = amount + currentWater - toBePumped;
+        if(currentWater > capacity) {
+            breakElement();
+        }
+        return currentWater;
+    }
+
     /**
      * Transfers water through this pipe.
      *
@@ -60,7 +71,37 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * @return forwarded water amount
      */
     public int transferWater(int amount) {
-        return amount;
+    // TODO: understand what to do with currentWater & Amount
+        int waterAmount = waterToBePumpedOut(amount);
+        PipeEnd freeEnd = null;
+        if(end1.isFree() && end2.isFree()) return 0;
+        freeEnd = end1.isFree() ? end1 : end2;
+        if(isBroken || freeEnd != null) {
+
+            currentWater = 0;
+            System.out.printf("[EVENT] WATER_LEAK %s amount=%d",this.getId(),waterAmount);
+            return waterAmount;
+        }
+
+        PipeEnd inputEnd = end1.isRecievedWater() ? end1 : end2.isRecievedWater() ? end2 : null;
+        if(inputEnd == null) {
+            return 0;
+        }
+        PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
+
+        inputEnd.recieveWater(false);
+        ActiveElement target = outputEnd.connectedTo;
+        if(target instanceof Cistern cs) {
+            cs.receiveWater(waterAmount);
+            currentWater = 0;
+            return 0;
+        } else if(target instanceof Pump p) {
+            p.transferWater(waterAmount);
+            currentWater = 0;
+            return 0;
+        }
+        return 0;
+
     }
 
     /** Breaks the pipe, causing leakage. */

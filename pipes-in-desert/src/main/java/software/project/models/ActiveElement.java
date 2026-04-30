@@ -46,6 +46,7 @@ public abstract class ActiveElement extends Element {
     public void connect(PipeEnd end) {
         if (!connections.contains(end)) {
             connections.add(end);
+            end.connectsTo(this);
         }
     }
 
@@ -56,6 +57,7 @@ public abstract class ActiveElement extends Element {
      */
     public void disconnect(PipeEnd end) {
         connections.remove(end);
+        end.disconnect();
     }
 
     /**
