@@ -1,5 +1,7 @@
 package software.project.models;
 
+import software.project.utils.IdGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +57,7 @@ public abstract class Element {
      * @param id the unique identifier for this element
      */
     public Element(String id) {
-        this(id,0,0);
+        this(id,-1,-1);
     }
 
     /**
@@ -66,7 +68,15 @@ public abstract class Element {
      * @param y  the y-coordinate position
      */
     public Element(String id, int x, int y) {
-        this.id = id;
+        if (id == null || id.isEmpty()) {
+            this.id = IdGenerator.generateId(this.getClass());
+        } else {
+            if (!IdGenerator.isIdAvailable(id)) {
+                throw new IllegalArgumentException("[ERROR] ELEMENT DUPLICATE_ID");
+            }
+            IdGenerator.markIdUsed(id);
+            this.id = id;
+        }
         this.x = x;
         this.y = y;
         this.occupants = new ArrayList<>();
@@ -83,7 +93,6 @@ public abstract class Element {
      * @param p the player to add to this element's occupants
      */
     public void addOccupant(Player p) {
-        System.out.println("[Element] addOccupant(Player p)");
         occupants.add(p);
     }
 
@@ -97,7 +106,6 @@ public abstract class Element {
      * @param p the player to remove from this element's occupants
      */
     public void removeOccupant(Player p) {
-        System.out.println("[Element] removeOccupant(Player p)");
         occupants.remove(p);
     }
 
@@ -107,7 +115,6 @@ public abstract class Element {
      * @return a list of players on this element
      */
     public List<Player> getOccupants() {
-        System.out.println("[Element] getOccupant()");
         return occupants;
     }
 
@@ -129,7 +136,6 @@ public abstract class Element {
      *         {@code false} otherwise
      */
     public boolean canOccupy() {
-        System.out.println("[Element] canOccupy()");
         return true; // by default, any number of players can occupy
     }
 

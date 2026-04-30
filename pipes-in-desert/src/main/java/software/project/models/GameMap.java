@@ -1,5 +1,7 @@
 package software.project.models;
 
+import software.project.utils.IdGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +75,8 @@ public class GameMap {
      * Spawn point: P1
      */
     private void buildMap() {
+        IdGenerator.reset();
+
 
     }
 
