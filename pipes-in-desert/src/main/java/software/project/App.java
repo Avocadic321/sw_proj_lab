@@ -6,6 +6,7 @@ import software.project.menus.IMenu;
 import software.project.menus.MainMenu;
 import software.project.parser.CommandParser;
 
+import java.io.*;
 import java.util.Scanner;
 
 /**
@@ -49,7 +50,31 @@ public class App {
     }
 
     public void runTest(String inputFile, String outputFile) {
-        // TODO:
+        PrintStream originalOut = System.out;
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(buffer, true)); // auto-flush
+
+            try (Scanner fileScanner = new Scanner(new File(inputFile))) {
+                while (fileScanner.hasNextLine()) {
+                    String line = fileScanner.nextLine().trim();
+                    if (line.isEmpty() || line.startsWith("#")) {
+                        continue;
+                    }
+                    parser.parseAndExecute(line, this.getGame());
+                }
+            }
+
+            System.out.flush();
+            try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+                writer.print(buffer.toString());
+            }
+
+        } catch (IOException e) {
+            System.err.println("[ERROR] Could not run test: " + e.getMessage());
+        } finally {
+            System.setOut(originalOut);
+        }
     }
 
 }
