@@ -3,9 +3,9 @@ package software.project.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import software.project.models.*;
-
 import software.project.utils.GameState;
 import software.project.utils.Teams;
 
@@ -25,6 +25,8 @@ public class Game {
     private GameState state;
     /** Game configuration settings. */
     private GameConfig config;
+
+    private final Random random = new Random();
 
     /**
      * Creates a game with the provided configuration.
@@ -93,7 +95,23 @@ public class Game {
     }
 
     public void breakRandomPump() {
+        List<Pump> pumpList = gameMap.getAllPumps();
+        if (pumpList.isEmpty()) {
+            return;
+        }
 
+        List<Pump> unbrokenPumps = new ArrayList<>();
+        for (Pump pump : pumpList) {
+            if (!pump.isBroken()) {
+                unbrokenPumps.add(pump);
+            }
+        }
+
+        if (unbrokenPumps.isEmpty()) { return; }
+
+        Pump target = unbrokenPumps.get(random.nextInt(unbrokenPumps.size()));
+        target.breakElement();
+        System.out.printf("[EVENT] RANDOM_PUMP_BROKEN %s%n", target.getId());
     }
 
     public void produceRandomComponent() {
@@ -105,9 +123,6 @@ public class Game {
         produceRandomComponent();
     }
 
-    /** TODO: Separate method */
-    public void processRandomEvent() {
-    }
 
     /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
