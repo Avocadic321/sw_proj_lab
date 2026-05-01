@@ -25,6 +25,8 @@ public class Game {
     /** Game configuration settings. */
     private GameConfig config;
 
+    private WaterSimulator waterSimulator;
+
     private final Random random = new Random();
 
     /**
@@ -37,6 +39,7 @@ public class Game {
         this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
         this.config = config;
+        this.waterSimulator = new WaterSimulator(gameMap);
     }
 
     /** Initializes elements, teams, and starts the first turn. */

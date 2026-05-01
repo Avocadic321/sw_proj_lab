@@ -107,6 +107,19 @@ public class Spring extends ActiveElement implements IConnectable {
         System.out.println("[Spring] generateWater()");
         return waterProductionRate * 100;
     }
+    @Override
+    public void receiveAndTransferWater() {
+     int produced = generateWater();
+
+     List<PipeEnd> ends = getConnections();
+
+     if(ends.isEmpty()) return;
+     int perEnd = produced / ends.size();
+
+     for(PipeEnd end: ends) {
+         end.addPendingWater(perEnd);
+     }
+      }
 
     /**
      * Adds a pipe to the attached list without changing connection state.
@@ -117,8 +130,5 @@ public class Spring extends ActiveElement implements IConnectable {
         attachedPipes.add(p);
     }
 
-    @Override
-    public void receiveAndTransferWater() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
+
 }
