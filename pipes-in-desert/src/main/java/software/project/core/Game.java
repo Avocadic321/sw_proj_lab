@@ -1,7 +1,6 @@
 package software.project.core;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -58,6 +57,8 @@ public class Game {
 
         turnManager.startTurn();
         state = GameState.RUNNING;
+
+        triggerRandomEvents();
     }
 
     /** Pauses the game if it is currently running. */
@@ -83,14 +84,6 @@ public class Game {
     public void endGame() {}
 
     public void checkWinner() {
-
-    }
-
-    public void breakSpecificPump(String pumpId) {
-
-    }
-
-    public void produceComponentAt(String cisternId, String type) {
 
     }
 
@@ -132,17 +125,17 @@ public class Game {
         // TODO: Add logic later for placing the produced component
     }
 
-    public void performRandomEvents() {
+    public void triggerRandomEvents() {
+        if (!config.areRandomEventsEnabled()) {
+            return;
+        }
         breakRandomPump();
         produceRandomComponent();
     }
-
 
     /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
     }
 
-    public GameState getState() {
-        return state;
-    }
+    public GameState getState() { return state; }
 }
