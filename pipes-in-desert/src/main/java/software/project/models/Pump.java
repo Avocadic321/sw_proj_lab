@@ -36,6 +36,10 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         this(null, -1, -1);
     }
 
+    public Pump(int x, int y) {
+        this(null, x, y);
+    }
+
     public Pump(String id) {
         this(id, -1, -1);
     }
