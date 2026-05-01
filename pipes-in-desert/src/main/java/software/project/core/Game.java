@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import software.project.models.*;
+import software.project.utils.Debug;
 import software.project.utils.GameState;
 import software.project.utils.Teams;
 
@@ -26,7 +27,7 @@ public class Game {
     private GameConfig config;
 
     private final Random random = new Random();
-
+    private Thread loopThread;
 
     /**
      * Creates a game with the provided configuration.
@@ -170,6 +171,9 @@ public class Game {
     }
 
     public void produceComponentAt(String cisternId, String type) {
+        if (Debug.ENABLED) {
+            System.out.printf("[DEBUG] produceComponentAt called for %s type=%s%n", cisternId, type);
+        }
         Cistern cistern = gameMap.getElement(cisternId, Cistern.class);
         if (cistern == null) {
             System.out.printf("[WARNING] CISTERN_NOT_FOUND %s%n", cisternId);
@@ -191,6 +195,9 @@ public class Game {
     }
 
     public void onTurnEnded() {
+        if (Debug.ENABLED) {
+            System.out.println("[DEBUG] onTurnEnded() running per‑turn actions");
+        }
         simulateWaterFlow();
         triggerRandomEvents();
         checkWinner();

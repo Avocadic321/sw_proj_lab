@@ -3,6 +3,7 @@ package software.project.core;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
+import software.project.utils.Debug;
 import software.project.utils.Teams;
 
 import java.util.ArrayList;
@@ -31,12 +32,13 @@ public class TurnManager {
 
     private boolean turnEnded = false;
 
-
     TurnManager(int turnDuration) {
         timer = new Timer(turnDuration);
         currentPlayer = null;
         isRunning = false;
     }
+
+
 
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
@@ -55,6 +57,15 @@ public class TurnManager {
             currentPlayer = players.getFirst();
             activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         }
+
+        if (Debug.ENABLED) {
+            Debug.log("Teams set. Player order: ");
+            for (int i = 0; i < players.size(); i++) {
+                Player p = players.get(i);
+                Debug.log("  [%d] %s (%s)", i, p.getId(), (p instanceof Plumber ? "PLUMBER" : "SABOTEUR"));
+            }
+            Debug.log("First player: %s (%s)", currentPlayer.getId(), activeTeam);
+        }
     }
 
     /**
@@ -68,12 +79,15 @@ public class TurnManager {
         if (players.isEmpty()) return;
         timer.start();
         isRunning = true;
+        Debug.log("Turn started: %s (%s) | Time left: %ds",
+            currentPlayer.getId(), activeTeam, timer.getTimeLeft());
     }
 
     public void tick() {
         if (!isRunning || currentPlayer == null ) return;
         timer.tick();
         if (timer.hasExpired()) {
+            Debug.log("Time expired for %s (%s)", currentPlayer.getId(), activeTeam);
             endTurn();
         }
     }
@@ -88,10 +102,18 @@ public class TurnManager {
      */
     public void endTurn() {
         if (currentPlayer == null) return;
+        Player finishingPlayer = currentPlayer;
+        Teams finishingTeam = activeTeam;
         timer.stop();
         isRunning = false;
         advanceToNextPlayer();
         turnEnded = true;
+
+        Debug.log("Turn ended: %s (%s). Next player: %s (%s)",
+            finishingPlayer.getId(), finishingTeam,
+            currentPlayer != null ? currentPlayer.getId() : "none",
+            activeTeam);
+
         if (currentPlayer != null) {
             startTurn();               // start the next player's turn
         }
@@ -102,6 +124,7 @@ public class TurnManager {
         currentIndex = (currentIndex + 1) % players.size();
         currentPlayer = players.get(currentIndex);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
+        Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
     }
 
     /**
