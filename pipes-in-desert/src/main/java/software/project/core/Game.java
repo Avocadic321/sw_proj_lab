@@ -57,8 +57,6 @@ public class Game {
 
         turnManager.startTurn();
         state = GameState.RUNNING;
-
-        triggerRandomEvents();
     }
 
     /** Pauses the game if it is currently running. */
