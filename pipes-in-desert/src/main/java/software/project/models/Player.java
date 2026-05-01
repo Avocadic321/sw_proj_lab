@@ -153,4 +153,8 @@ public class Player {
 
         return null;
     }
+
+    public String getId() {
+        return id;
+    }
 }
