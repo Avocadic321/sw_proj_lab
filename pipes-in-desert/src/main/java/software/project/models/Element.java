@@ -33,19 +33,13 @@ public abstract class Element {
 
     protected List<Player> occupants;
 
-    protected String getId() { return id; }
+    public String getId() { return id; }
     protected int getX() { return x; }
     protected int getY() { return y; }
 
-    /**
-     * Constructs an element with default values.
-     * <p>
-     * The identifier is {@code null} and coordinates are zero.
-     * Initializes an empty occupant list.
-     * </p>
-     */
+
     public Element() {
-        this("",0,0);
+        this(null,-1,-1);
     }
 
     /**
@@ -80,6 +74,11 @@ public abstract class Element {
         this.x = x;
         this.y = y;
         this.occupants = new ArrayList<>();
+    }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
     /**
