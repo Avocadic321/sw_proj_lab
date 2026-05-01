@@ -79,7 +79,15 @@ public class Game {
     }
 
     /** Ends the game session. */
-    public void endGame() {}
+    public void endGame() {
+        if (state == GameState.FINALIZED) {
+            return;
+        }
+        turnManager.endTurn();
+        state = GameState.FINALIZED;
+
+        System.out.println("[EVENT] GAME_OVER");
+    }
 
     public void checkWinner() {
         if (state != GameState.RUNNING) {
