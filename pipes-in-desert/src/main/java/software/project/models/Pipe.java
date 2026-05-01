@@ -30,7 +30,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     /** Whether the pipe is broken. */
     private boolean isBroken;
 
-    private int waterPerTurn = 50; // magic number
+    private int waterPerTurn = 1000; // magic number
 
     public Pipe() {
         this(null, -1, -1, DEFAULT_CAPACITY);

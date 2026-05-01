@@ -140,6 +140,7 @@ public abstract class Element {
 
     /**
      * Transfer water from input(s) of Element to its output(s)
+     * @return amount of leaked water
      */
     public abstract void receiveAndTransferWater();
 }

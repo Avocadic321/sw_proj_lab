@@ -97,7 +97,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         if(inputPipe == null || outputPipe == null) return;
         int incoming = inputPipe.consumeWater();
 
-        ElementWaterState waterAmount = Helper.waterToBePumpedOut(incoming,60,storedWater,MAX_TANK_CAPACITY, this::breakElement);
+        ElementWaterState waterAmount = Helper.waterToBePumpedOut(incoming,1000,storedWater,MAX_TANK_CAPACITY, this::breakElement);
         storedWater = waterAmount.currentlyStoredWater();
 
 

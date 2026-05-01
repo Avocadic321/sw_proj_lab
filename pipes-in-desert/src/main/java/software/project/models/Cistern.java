@@ -55,13 +55,17 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public void receiveAndTransferWater() {
 
-        if(isFull()) return;
+
       for(PipeEnd end : getConnections()) {
           int incoming = end.consumeWater();
           if(incoming <= 0) continue;
-          storedWater = Math.min(capacity, storedWater + incoming);
-      }
+          int accepted = Math.min(incoming, capacity - storedWater);
+          storedWater += accepted;
+          int overflow = incoming - accepted;
+          System.out.println("[CISTERN] OVERFLOW " + overflow);
 
+      }
+        return;
     }
 
     /**
