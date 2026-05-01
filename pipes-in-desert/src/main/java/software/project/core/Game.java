@@ -17,15 +17,16 @@ public class Game {
     /** All elements currently in the game. */
     private GameMap gameMap;
     /** Saboteur team instance. */
-    private Team saboteur;
+    private Team saboteurs;
     /** Plumber team instance. */
-    private Team plumber;
+    private Team plumbers;
     /** Current game state. */
     private GameState state;
     /** Game configuration settings. */
     private GameConfig config;
 
     private final Random random = new Random();
+
 
     /**
      * Creates a game with the provided configuration.
@@ -43,18 +44,20 @@ public class Game {
     public void startGame() {
         state = GameState.INITIALIZING;
 
-        plumber = new Team(Teams.PLUMBERS);
-        saboteur = new Team(Teams.SABOTEURS);
+        // Create Teams
+        plumbers = new Team(Teams.PLUMBERS);
+        saboteurs = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "PLUMBER" + i;
-            plumber.addPlayer(new Plumber(id, gameMap.getSpawnPoint()));
+            plumbers.addPlayer(new Plumber(id, gameMap.getSpawnPoint()));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "SABOTEUR" + i;
-            saboteur.addPlayer(new Saboteur(id, gameMap.getSpawnPoint()));
+            saboteurs.addPlayer(new Saboteur(id, gameMap.getSpawnPoint()));
         }
 
+        turnManager.setTeams(plumbers, saboteurs);
         turnManager.startTurn();
         state = GameState.RUNNING;
     }
@@ -64,7 +67,6 @@ public class Game {
         if (state != GameState.RUNNING) {
             return;
         }
-
         state = GameState.PAUSED;
         turnManager.suspendTurn();
     }
@@ -94,15 +96,15 @@ public class Game {
             return;
         }
 
-        int plumberScore = plumber.getScore();
-        int saboteurScore = saboteur.getScore();
+        int plumberScore = plumbers.getScore();
+        int saboteurScore = saboteurs.getScore();
         int goal = config.getGoalScore();
 
         if (plumberScore >= goal) {
-            state = GameState.FINALIZED;
+            endGame();
             System.out.printf("[EVENT] PLUMBERS WIN! %d Points (Goal: %d)", plumberScore, goal);
         } else if (saboteurScore >= goal) {
-            state = GameState.FINALIZED;
+            endGame();
             System.out.printf("[EVENT] SABOTEURS WIN! %d Points (Goal: %d)", plumberScore, goal);
         }
     }
@@ -188,5 +190,18 @@ public class Game {
     public void simulateWaterFlow() {
     }
 
+    public void onTurnEnded() {
+        simulateWaterFlow();
+        triggerRandomEvents();
+        checkWinner();
+    }
+
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+    public Team getPlumbersTeam() { return plumbers; }
+    public Team getSaboteursTeam() {
+        return saboteurs;
+    }
     public GameState getState() { return state; }
 }
