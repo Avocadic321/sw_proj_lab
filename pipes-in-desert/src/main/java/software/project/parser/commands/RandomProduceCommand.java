@@ -11,6 +11,10 @@ public class RandomProduceCommand implements ICommand {
             System.out.println("[ERROR] RANDOM_PRODUCE requires cistern ID and type (PIPE or PUMP). Usage: RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
             return;
         }
+        if (game == null) {
+            System.out.println("[ERROR] RANDOM_PRODUCE GAME_NOT_INITIALIZED");
+            return;
+        }
         game.produceComponentAt(args[0].trim(), args[1].trim().toUpperCase());
     }
 }
