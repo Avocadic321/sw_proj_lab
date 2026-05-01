@@ -24,7 +24,7 @@ public class MainMenu implements IMenu {
 
             switch (choice) {
                 case "1":
-                    app.getParser().parseAndExecute("NEW_GAME", app.getGame());
+                    app.getParser().parseAndExecute("NEW_GAME");
                     if (app.getGame() != null) {return new GameMenu(app);}
                     break;
                 case "2":

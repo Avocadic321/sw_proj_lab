@@ -37,7 +37,7 @@ public class ConfigMenu implements IMenu {
                 return new MainMenu(app);
             }
 
-            app.getParser().parseAndExecute(line, null);
+            app.getParser().parseAndExecute(line);
         }
     }
 }

@@ -61,7 +61,7 @@ public class App {
                     if (line.isEmpty() || line.startsWith("#")) {
                         continue;
                     }
-                    parser.parseAndExecute(line, this.getGame());
+                    parser.parseAndExecute(line);
                 }
             }
 
