@@ -28,6 +28,7 @@ public class CommandParser {
 
         /* Random event commands */
         commands.put("RANDOM_BREAK", new RandomBreakCommand());
+        commands.put("RANDOM_PRODUCE", new RandomProduceCommand());
     }
 
     public void parseAndExecute(String line, Game game) {
