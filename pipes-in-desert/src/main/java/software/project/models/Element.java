@@ -33,12 +33,12 @@ public abstract class Element {
 
     protected List<Player> occupants;
 
-    public String getId() { return id; }
-    protected int getX() { return x; }
-    protected int getY() { return y; }
+    public final String getId() { return id; }
+    public final int getX() { return x; }
+    public final int getY() { return y; }
 
 
-    public Element() {
+    protected Element() {
         this(null,-1,-1);
     }
 
@@ -50,7 +50,7 @@ public abstract class Element {
      *
      * @param id the unique identifier for this element
      */
-    public Element(String id) {
+    protected Element(String id) {
         this(id,-1,-1);
     }
 
@@ -61,7 +61,7 @@ public abstract class Element {
      * @param x  the x-coordinate position
      * @param y  the y-coordinate position
      */
-    public Element(String id, int x, int y) {
+    protected Element(String id, int x, int y) {
         if (id == null || id.isEmpty()) {
             this.id = IdGenerator.generateId(this.getClass());
         } else {
