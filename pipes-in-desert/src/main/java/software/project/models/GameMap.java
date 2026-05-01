@@ -13,10 +13,22 @@ public class GameMap {
         buildMap();
     }
 
-    public void addElement(Element element) {
+    public boolean addElement(Element element) {
         if (element != null) {
             elements.add(element);
+            return true;
         }
+        return false;
+    }
+
+    public boolean isPositionOccupied(int x, int y) {
+        if (x < 0 || y < 0) return false;
+        for (Element e : elements) {
+            if (e.getX() == x && e.getY() == y) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void removeElement(Element element) {
@@ -36,6 +48,10 @@ public class GameMap {
         return null;
     }
 
+    public List<Element> getElements() {
+        return elements;
+    }
+
     public <T extends Element> List<T> getElementsByType(Class<T> type) {
         List<T> result = new ArrayList<>();
         for (Element element : elements) {
@@ -52,6 +68,14 @@ public class GameMap {
 
     public List<Cistern> getAllCisterns() {
         return getElementsByType(Cistern.class);
+    }
+
+    public List<Pump> getAllPumps() {
+        return getElementsByType(Pump.class);
+    }
+
+    public List<Pipe> getAllPipes() {
+        return getElementsByType(Pipe.class);
     }
 
     /*           S1        S2
