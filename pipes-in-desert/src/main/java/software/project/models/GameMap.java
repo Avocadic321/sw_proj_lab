@@ -55,6 +55,14 @@ public class GameMap {
         return null;
     }
 
+    public <T extends Element> T getElement(String id, Class<T> type) {
+        Element element = getElement(id);
+        if (type.isInstance(element)) {
+            return type.cast(element);
+        }
+        return null;
+    }
+
     public List<Element> getElements() {
         return elements;
     }

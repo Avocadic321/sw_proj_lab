@@ -133,6 +133,37 @@ public class Game {
         produceRandomComponent();
     }
 
+    public void breakSpecificPump(String pumpId) {
+        Pump pump = gameMap.getElement(pumpId, Pump.class);
+        if (pump == null) {
+            System.out.println("[WARNING] PUMP_NOT_FOUND %s%n" + pumpId);
+            return;
+        }
+        if (pump.isBroken()) {
+            System.out.println("[WARNING] PUMP_BROKEN %s%n" + pumpId);
+            return;
+        }
+        pump.breakElement();
+        System.out.println("[EVENT] PUMP_BROKEN %s%n" + pumpId);
+    }
+
+    public void produceComponentAt(String cisternId, String type) {
+        Cistern cistern = gameMap.getElement(cisternId, Cistern.class);
+        if (cistern == null) {
+            System.out.printf("[WARNING] CISTERN_NOT_FOUND %s%n", cisternId);
+            return;
+        }
+        if (type.equalsIgnoreCase("PIPE")) {
+            cistern.producePipe();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", cisternId);
+        } else if (type.equalsIgnoreCase("PUMP")) {
+            cistern.producePump();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", cisternId);
+        } else {
+            System.out.printf("[WARNING] UNKNOWN_COMPONENT_TYPE %s%n", type);
+        }
+    }
+
     /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
     }
