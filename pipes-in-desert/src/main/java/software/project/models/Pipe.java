@@ -69,6 +69,23 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return end2;
     }
 
+    public void connectBothEnds(ActiveElement end1Target, ActiveElement end2Target) {
+        // At least one target must be non‑null
+        if (end1Target == null && end2Target == null) {
+            return;
+        }
+        // Reject connecting the same element to both ends
+        if (end1Target != null && end1Target == end2Target) {
+            System.out.println("[ERROR] PIPE SAME_ENDS_TARGET");
+            return;
+        }
+        if (end1Target != null) {
+            end1.connectsTo(end1Target);
+        }
+        if (end2Target != null) {
+            end2.connectsTo(end2Target);
+        }
+    }
 
     /**
      * Transfers water through this pipe.
