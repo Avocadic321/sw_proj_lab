@@ -1,11 +1,10 @@
 package software.project.core;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import software.project.models.*;
-
 import software.project.utils.GameState;
 import software.project.utils.Teams;
 
@@ -25,6 +24,8 @@ public class Game {
     private GameState state;
     /** Game configuration settings. */
     private GameConfig config;
+
+    private final Random random = new Random();
 
     /**
      * Creates a game with the provided configuration.
@@ -47,15 +48,14 @@ public class Game {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "PLUMBER" + i;
-            plumber.addPlayer(new Plumber(id, null));
+            plumber.addPlayer(new Plumber(id, gameMap.getSpawnPoint()));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             String id = "SABOTEUR" + i;
-            saboteur.addPlayer(new Saboteur(id));
+            saboteur.addPlayer(new Saboteur(id, gameMap.getSpawnPoint()));
         }
 
         turnManager.startTurn();
-
         state = GameState.RUNNING;
     }
 
@@ -79,42 +79,114 @@ public class Game {
     }
 
     /** Ends the game session. */
-    public void endGame() {}
+    public void endGame() {
+        if (state == GameState.FINALIZED) {
+            return;
+        }
+        turnManager.endTurn();
+        state = GameState.FINALIZED;
+
+        System.out.println("[EVENT] GAME_OVER");
+    }
 
     public void checkWinner() {
+        if (state != GameState.RUNNING) {
+            return;
+        }
 
-    }
+        int plumberScore = plumber.getScore();
+        int saboteurScore = saboteur.getScore();
+        int goal = config.getGoalScore();
 
-    public void breakSpecificPump(String pumpId) {
-
-    }
-
-    public void produceComponentAt(String cisternId, String type) {
-
+        if (plumberScore >= goal) {
+            state = GameState.FINALIZED;
+            System.out.printf("[EVENT] PLUMBERS WIN! %d Points (Goal: %d)", plumberScore, goal);
+        } else if (saboteurScore >= goal) {
+            state = GameState.FINALIZED;
+            System.out.printf("[EVENT] SABOTEURS WIN! %d Points (Goal: %d)", plumberScore, goal);
+        }
     }
 
     public void breakRandomPump() {
+        List<Pump> pumpList = gameMap.getAllPumps();
+        if (pumpList.isEmpty()) {
+            return;
+        }
 
+        List<Pump> unbrokenPumps = new ArrayList<>();
+        for (Pump pump : pumpList) {
+            if (!pump.isBroken()) {
+                unbrokenPumps.add(pump);
+            }
+        }
+
+        if (unbrokenPumps.isEmpty()) { return; }
+
+        Pump target = unbrokenPumps.get(random.nextInt(unbrokenPumps.size()));
+        target.breakElement();
+        System.out.printf("[EVENT] RANDOM_PUMP_BROKEN %s%n", target.getId());
     }
 
     public void produceRandomComponent() {
+        List<Cistern> cisterns = gameMap.getAllCisterns();
+        if (cisterns.isEmpty()) return;
 
+        Cistern c = cisterns.get(random.nextInt(cisterns.size()));
+        boolean producePipe = random.nextBoolean();
+
+        if (producePipe && c.getStoredPipe() == null) {
+            c.producePipe();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
+        } else if (!producePipe && c.getStoredPump() == null) {
+            c.producePump();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
+        }
+
+        // TODO: Add logic later for placing the produced component
     }
 
-    public void performRandomEvents() {
+    public void triggerRandomEvents() {
+        if (!config.areRandomEventsEnabled()) {
+            return;
+        }
         breakRandomPump();
         produceRandomComponent();
     }
 
-    /** TODO: Separate method */
-    public void processRandomEvent() {
+    public void breakSpecificPump(String pumpId) {
+        Pump pump = gameMap.getElement(pumpId, Pump.class);
+        if (pump == null) {
+            System.out.printf("[WARNING] PUMP_NOT_FOUND %s%n", pumpId);
+            return;
+        }
+        if (pump.isBroken()) {
+            System.out.printf("[WARNING] PUMP_ALREADY_BROKEN %s%n", pumpId);
+            return;
+        }
+        pump.breakElement();
+        System.out.printf("[EVENT] PUMP_BROKEN %s%n", pumpId);
+    }
+
+    public void produceComponentAt(String cisternId, String type) {
+        Cistern cistern = gameMap.getElement(cisternId, Cistern.class);
+        if (cistern == null) {
+            System.out.printf("[WARNING] CISTERN_NOT_FOUND %s%n", cisternId);
+            return;
+        }
+        if (type.equalsIgnoreCase("PIPE")) {
+            cistern.producePipe();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", cisternId);
+        } else if (type.equalsIgnoreCase("PUMP")) {
+            cistern.producePump();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", cisternId);
+        } else {
+            System.out.printf("[WARNING] UNKNOWN_COMPONENT_TYPE %s%n", type);
+        }
     }
 
     /** Simulates water flow through the network. */
     public void simulateWaterFlow() {
     }
 
-    public GameState getState() {
-        return state;
-    }
+    public GameState getState() { return state; }
 }

@@ -35,7 +35,7 @@ public class GameMenu implements IMenu {
                 app.setGame(null);
                 return new MainMenu(app);
             }
-            app.getParser().parseAndExecute(line, app.getGame());
+            app.getParser().parseAndExecute(line);
         }
     }
 }

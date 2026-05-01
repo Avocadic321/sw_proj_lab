@@ -28,7 +28,7 @@ public class GameConfig {
     private static final int DEFAULT_TURN_DURATION = 120;
     private static final boolean DEFAULT_REAL_TIME_SCORING = false;
     private static final int DEFAULT_PLAYERS = 4;
-    private static final boolean DEFAULT_RANDOM = false;
+    private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = false;
 
     // Limits
     public static final int MIN_GOAL_SCORE = 10;
@@ -43,7 +43,7 @@ public class GameConfig {
     private int turnDurationSeconds;
     private boolean realTimeScoring;
     private int numberOfPlayers;
-    private boolean random;
+    private boolean randomEventsEnabled;
 
     /** Creates a new config with all default values. */
     public GameConfig() {
@@ -51,7 +51,7 @@ public class GameConfig {
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
         this.numberOfPlayers = DEFAULT_PLAYERS;
-        this.random = DEFAULT_RANDOM;
+        this.randomEventsEnabled = DEFAULT_RANDOM_EVENTS_ENABLED;
     }
 
     /**
@@ -91,8 +91,8 @@ public class GameConfig {
         return numberOfPlayers;
     }
 
-    public boolean isRandom() {
-        return random;
+    public boolean areRandomEventsEnabled() {
+        return randomEventsEnabled;
     }
 
     /**
@@ -136,8 +136,8 @@ public class GameConfig {
         }
     }
 
-    public void setRandom(boolean random) {
-        this.random = random;
+    public void setRandomEventsEnabled(boolean randomEventsEnabled) {
+        this.randomEventsEnabled = randomEventsEnabled;
     }
 
     /** Restores all settings to their default values. */
@@ -146,7 +146,7 @@ public class GameConfig {
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
         this.numberOfPlayers = DEFAULT_PLAYERS;
-        this.random = DEFAULT_RANDOM;
+        this.randomEventsEnabled = DEFAULT_RANDOM_EVENTS_ENABLED;
     }
 
     /**
@@ -162,7 +162,7 @@ public class GameConfig {
             turnDurationSeconds,
             realTimeScoring ? "ON" : "OFF",
             numberOfPlayers,
-            random ? "ON" : "OFF"
+            randomEventsEnabled ? "ON" : "OFF"
         );
     }
 }

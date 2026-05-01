@@ -41,7 +41,7 @@ public class SetGoalCommand implements ICommand {
             );
             return;
         }
-
         app.getGameConfig().setGoalScore(value);
+        System.out.println("[OK] SET_GOAL " + value);
     }
 }

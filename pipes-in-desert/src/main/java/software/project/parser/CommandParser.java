@@ -7,11 +7,14 @@ import software.project.parser.commands.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class CommandParser {
+    private final App app;
     private final Map<String, ICommand> commands = new HashMap<>();
 
     public CommandParser(App app) {
+        this.app = app;
         registerCommands(app);
     }
 
@@ -24,9 +27,13 @@ public class CommandParser {
 
         /* Game Control Commands */
         commands.put("NEW_GAME", new NewGameCommand(app));
+
+        /* Random event commands */
+        commands.put("RANDOM_BREAK", new RandomBreakCommand());
+        commands.put("RANDOM_PRODUCE", new RandomProduceCommand());
     }
 
-    public void parseAndExecute(String line, Game game) {
+    public void parseAndExecute(String line) {
         if (line == null || line.trim().isEmpty()) return;
 
         String[] tokens = line.trim().split("\\s+");
@@ -35,7 +42,7 @@ public class CommandParser {
 
         ICommand command = commands.get(commandKey);
         if (command != null) {
-            command.execute(game, args);
+            command.execute(app.getGame(), args);
         } else {
             System.out.println("[ERROR] Unknown command: " + commandKey);
         }

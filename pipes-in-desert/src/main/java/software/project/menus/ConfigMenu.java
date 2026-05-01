@@ -22,7 +22,7 @@ public class ConfigMenu implements IMenu {
                 config.getGoalScore(),
                 config.getTurnDurationSeconds(),
                 config.getNumberOfPlayers(),
-                config.isRandom() ? "ON" : "OFF"
+                config.areRandomEventsEnabled() ? "ON" : "OFF"
             );
             System.out.println("------------------------------");
             System.out.println("SET_GOAL <value>");
@@ -37,7 +37,7 @@ public class ConfigMenu implements IMenu {
                 return new MainMenu(app);
             }
 
-            app.getParser().parseAndExecute(line, null);
+            app.getParser().parseAndExecute(line);
         }
     }
 }

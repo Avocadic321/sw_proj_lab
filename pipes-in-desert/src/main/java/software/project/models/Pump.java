@@ -14,6 +14,10 @@ import software.project.utils.Helper;
  * Active element that routes water from an input to an output.
  */
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
+    public static final int MAX_CONNECTIONS = 8;
+
+    private static final int MAX_TANK_CAPACITY = 1000;
+
     /** Connected pipe ends. */
     private List<PipeEnd> connections;
 
@@ -22,36 +26,32 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     /** Selected output pipe end. */
     private PipeEnd outputPipe;
 
-    /** Maximum water capacity of the pump tank. */
-    private int tankCapacity;
     /** Current amount stored in the pump tank. */
     private int storedWater;
-    /** Maximum number of connections allowed. */
-    private int maxConnections;
 
     /** Whether the pump is broken. */
     private boolean isBroken;
 
-    /** Creates a new pump with default values. */
     public Pump() {
-        super();
-        connections = new ArrayList<>();
-        inputPipe = new PipeEnd();
-        outputPipe = new PipeEnd();
-        isBroken = false;
+        this(null, -1, -1);
     }
 
-    /**
-     * Creates a new pump with the given identifier.
-     *
-     * @param id pump id
-     */
+    public Pump(int x, int y) {
+        this(null, x, y);
+    }
+
     public Pump(String id) {
-        super(id);
+        this(id, -1, -1);
+    }
+
+    public Pump(String id, int x, int y) {
+        super(id, x, y);
+
+        this.storedWater = 0;
+        this.isBroken = false;
         this.connections = new ArrayList<>();
-        inputPipe = new PipeEnd();
-        outputPipe = new PipeEnd();
-        isBroken = false;
+        this.inputPipe = null;
+        this.outputPipe = null;
     }
 
     /**
@@ -90,7 +90,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      */
     public int transferWater() {
 
-        ElementWaterState waterAmount = Helper.waterToBePumpedOut(inputPipe.getReceivedWater(),1000,storedWater,tankCapacity, this::breakElement);
+        ElementWaterState waterAmount = Helper.waterToBePumpedOut(inputPipe.getReceivedWater(),1000,storedWater,MAX_TANK_CAPACITY, this::breakElement);
         inputPipe.clearInput();
         if(isBroken || outputPipe.isFree()) {
             storedWater = 0; // lose all water we hold
@@ -162,7 +162,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return true if full
      */
     public boolean isTankFull() {
-        return storedWater == tankCapacity;
+        return storedWater == MAX_TANK_CAPACITY;
     }
 
     /**
@@ -181,5 +181,10 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     public boolean isConnectedToCistern() {
         System.out.println("[Pump] isConnectedToCistern()");
         return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
+    }
+
+    @Override
+    public void receiveAndTransferWater() {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

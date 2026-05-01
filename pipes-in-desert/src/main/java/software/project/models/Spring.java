@@ -18,6 +18,28 @@ public class Spring extends ActiveElement implements IConnectable {
      */
     private List<Pipe> attachedPipes = new ArrayList<>();
 
+    private static final int DEFAULT_PRODUCTION_RATE = 1;
+    public static final int MAX_PRODUCTION_RATE = 100;
+
+    public Spring(int x, int y) {
+        this(null, x, y, DEFAULT_PRODUCTION_RATE);
+    }
+
+    public Spring(String id, int x, int y) {
+        this(id, x, y, DEFAULT_PRODUCTION_RATE);
+    }
+
+    public Spring(String id, int x, int y, int waterProductionRate) {
+        super(id, x, y);
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("[ERROR] SPRING INVALID_COORDINATES");
+        }
+        if (waterProductionRate < 1 ||  waterProductionRate > MAX_PRODUCTION_RATE) {
+            throw new IllegalArgumentException("[ERROR] SPRING INVALID_PRODUCTION_RATE");
+        }
+        this.waterProductionRate = waterProductionRate;
+    }
+
     @Override
     /**
      * Connects a pipe end to this spring and tracks its pipe.

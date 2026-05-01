@@ -2,7 +2,6 @@ package software.project.parser.commands;
 
 import software.project.App;
 import software.project.core.Game;
-import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
 public class SetRandomCommand implements ICommand {
@@ -29,7 +28,7 @@ public class SetRandomCommand implements ICommand {
             return;
         }
 
-        app.getGameConfig().setRandom(flag);
+        app.getGameConfig().setRandomEventsEnabled(flag);
         System.out.println("[OK] SET_RANDOM " + (flag ? "ON" : "OFF"));
     }
 }

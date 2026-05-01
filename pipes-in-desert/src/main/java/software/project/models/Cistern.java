@@ -8,6 +8,9 @@ import software.project.interfaces.IConnectable;
  * Storage element that receives water and can produce new components.
  */
 public class Cistern extends ActiveElement implements IConnectable {
+    private static final int DEFAULT_CAPACITY = 100;
+    private static final int MAX_CAPACITY = 1000;
+
     /** Current amount of water stored. */
     private int storedWater;
     /** Maximum water capacity. */
@@ -21,6 +24,25 @@ public class Cistern extends ActiveElement implements IConnectable {
 
 
 
+    public Cistern(int x, int y) {
+        this(null, x, y, DEFAULT_CAPACITY);
+    }
+
+    public Cistern(String id, int x, int y) {
+        this(id, x, y, DEFAULT_CAPACITY);
+    }
+
+    public Cistern(String id, int x, int y, int capacity) {
+        super(id, x, y);
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("[ERROR] CISTERN INVALID_COORDINATES");
+        }
+        if (capacity < 1 || capacity > MAX_CAPACITY) {
+            throw new IllegalArgumentException("[ERROR] CISTERN INVALID_CAPACITY");
+        }
+        this.capacity = capacity;
+        this.storedWater = 0;
+    }
     /**
      * Accepts incoming water.
      *
@@ -45,6 +67,9 @@ public class Cistern extends ActiveElement implements IConnectable {
         System.out.println("[Cistern] isFull()");
         return storedWater >=  capacity;
     }
+
+    public Pipe getStoredPipe() { return storedPipe; }
+    public Pump getStoredPump() { return storedPump; }
 
     /**
      * Produces a new pipe component.
