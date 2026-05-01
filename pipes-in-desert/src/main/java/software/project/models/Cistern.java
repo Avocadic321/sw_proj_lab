@@ -22,6 +22,8 @@ public class Cistern extends ActiveElement implements IConnectable {
     /** Currently stored pump */
     private Pump storedPump;
 
+
+
     public Cistern(int x, int y) {
         this(null, x, y, DEFAULT_CAPACITY);
     }
@@ -65,6 +67,9 @@ public class Cistern extends ActiveElement implements IConnectable {
         System.out.println("[Cistern] isFull()");
         return storedWater >=  capacity;
     }
+
+    public Pipe getStoredPipe() { return storedPipe; }
+    public Pump getStoredPump() { return storedPump; }
 
     /**
      * Produces a new pipe component.

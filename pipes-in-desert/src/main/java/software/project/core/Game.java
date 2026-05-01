@@ -115,7 +115,21 @@ public class Game {
     }
 
     public void produceRandomComponent() {
+        List<Cistern> cisterns = gameMap.getAllCisterns();
+        if (cisterns.isEmpty()) return;
 
+        Cistern c = cisterns.get(random.nextInt(cisterns.size()));
+        boolean producePipe = random.nextBoolean();
+
+        if (producePipe && c.getStoredPipe() == null) {
+            c.producePipe();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
+        } else if (!producePipe && c.getStoredPump() == null) {
+            c.producePump();
+            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
+        }
+
+        // TODO: Add logic later for placing the produced component
     }
 
     public void performRandomEvents() {
