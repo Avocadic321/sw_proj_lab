@@ -84,7 +84,21 @@ public class Game {
     public void endGame() {}
 
     public void checkWinner() {
+        if (state != GameState.RUNNING) {
+            return;
+        }
 
+        int plumberScore = plumber.getScore();
+        int saboteurScore = saboteur.getScore();
+        int goal = config.getGoalScore();
+
+        if (plumberScore >= goal) {
+            state = GameState.FINALIZED;
+            System.out.printf("[EVENT] PLUMBERS WIN! %d Points (Goal: %d)", plumberScore, goal);
+        } else if (saboteurScore >= goal) {
+            state = GameState.FINALIZED;
+            System.out.printf("[EVENT] SABOTEURS WIN! %d Points (Goal: %d)", plumberScore, goal);
+        }
     }
 
     public void breakRandomPump() {
@@ -136,15 +150,15 @@ public class Game {
     public void breakSpecificPump(String pumpId) {
         Pump pump = gameMap.getElement(pumpId, Pump.class);
         if (pump == null) {
-            System.out.println("[WARNING] PUMP_NOT_FOUND %s%n" + pumpId);
+            System.out.printf("[WARNING] PUMP_NOT_FOUND %s%n", pumpId);
             return;
         }
         if (pump.isBroken()) {
-            System.out.println("[WARNING] PUMP_BROKEN %s%n" + pumpId);
+            System.out.printf("[WARNING] PUMP_ALREADY_BROKEN %s%n", pumpId);
             return;
         }
         pump.breakElement();
-        System.out.println("[EVENT] PUMP_BROKEN %s%n" + pumpId);
+        System.out.printf("[EVENT] PUMP_BROKEN %s%n", pumpId);
     }
 
     public void produceComponentAt(String cisternId, String type) {
