@@ -40,7 +40,9 @@ public final class IdGenerator {
             case "Pump"     -> "PUMP";
             case "Cistern"  -> "CISTERN";
             case "Spring"   -> "SPRING";
-            default         -> "ELEM";
+            case "Plumber"  -> "PLUMBER";
+            case "Saboteur" -> "SABOTEUR";
+            default         -> "UNDEFINED";
         };
     }
 }
