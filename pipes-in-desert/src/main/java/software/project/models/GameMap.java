@@ -21,6 +21,13 @@ public class GameMap {
         return false;
     }
 
+    public boolean addElements(List<Element> elements) {
+        for (Element element : elements) {
+            addElement(element);
+        }
+        return true;
+    }
+
     public boolean isPositionOccupied(int x, int y) {
         if (x < 0 || y < 0) return false;
         for (Element e : elements) {
@@ -90,17 +97,61 @@ public class GameMap {
      *
      * Labels:
      * FE - Free End
-     * B# - Pipe - maybe you get it why is B :)
-     * P# - Pump
-     * C# - Cistern
-     * S# - Spring
+     * B# - PIPE# - maybe you get it why is B :)
+     * P# - PUMP#
+     * C# - CISTERN#
+     * S# - SPRING#
      * === or || - Pipes
      *
      * Spawn point: P1
      */
     private void buildMap() {
         IdGenerator.reset();
+        elements.clear();
 
+        // Note: 0,0 are dumb coordinates, later it is possible to define concrete positions
+        // Active Elements
+        Spring spring1 = new Spring( 0, 0);
+        Spring spring2 = new Spring( 0, 0);
+        Cistern cistern1 = new Cistern(0, 0);
+        Cistern cistern2 = new Cistern(0, 0);
+        Pump pump1 = new Pump(0,0);
+        Pump pump2 = new Pump(0,0);
+        Pump pump3 = new Pump(0,0);
+        Pump pump4 = new Pump(0,0);
+
+        // Pipes
+        Pipe pipe1 = new Pipe(0,0);
+        Pipe pipe2 = new Pipe(0,0);
+        Pipe pipe3 = new Pipe(0,0);
+        Pipe pipe4 = new Pipe(0,0);
+        Pipe pipe5 = new Pipe(0,0);
+        Pipe pipe6 = new Pipe(0,0);
+        Pipe pipe7 = new Pipe(0,0);
+        Pipe pipe8 = new Pipe(0,0);
+        Pipe pipe9 = new Pipe(0,0);
+
+        // Connections
+        pipe1.connectBothEnds(spring1, pump1);
+        pipe2.connectBothEnds(null, pump1);
+        pipe3.connectBothEnds(pump1, pump3);
+        pipe4.connectBothEnds(pump1, pump2);
+        pipe5.connectBothEnds(cistern1, pump2);
+        pipe6.connectBothEnds(pump2, pump4);
+        pipe7.connectBothEnds(pump4, cistern2);
+        pipe8.connectBothEnds(pump3, pump4);
+        pipe9.connectBothEnds(pump3, null);
+
+        // Register all elements
+        addElements(List.of(
+            spring1, spring2,
+            cistern1, cistern2,
+            pump1, pump2, pump3, pump4,
+            pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9
+        ));
+
+        // Spawn point
+        spawnPoint = pump1;
 
     }
 
