@@ -7,6 +7,7 @@ import software.project.parser.commands.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class CommandParser {
     private final Map<String, ICommand> commands = new HashMap<>();
@@ -24,6 +25,9 @@ public class CommandParser {
 
         /* Game Control Commands */
         commands.put("NEW_GAME", new NewGameCommand(app));
+
+        /* Random event commands */
+        commands.put("RANDOM_BREAK", new RandomBreakCommand());
     }
 
     public void parseAndExecute(String line, Game game) {
