@@ -150,6 +150,8 @@ public class GameMap {
         pipe8.connectBothEnds(pump3, pump4);
         pipe9.connectBothEnds(pump3, null);
 
+        pump1.setDirection(pipe1.getEnd2(),pipe4.getEnd1());
+        pump2.setDirection(pipe4.getEnd2(),pipe5.getEnd2());
         // Register all elements
         addElements(List.of(
             spring1, spring2,

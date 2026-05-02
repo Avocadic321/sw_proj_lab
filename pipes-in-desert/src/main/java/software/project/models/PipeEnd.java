@@ -9,26 +9,38 @@ public class PipeEnd {
     /** Active element currently connected to this end. */
     public ActiveElement connectedTo;
 
-    private int receivedWater;
+    /** Water available in CURRENT tick (read phase) */
+    private int currentWater = 0;
 
-    private boolean isInput;
+    /** Water written during compute phase (next tick) */
+    private int pendingWater = 0;
+    /**
+     * Read and consume current water (used by elements during compute phase)
+     */
+    public int consumeWater() {
+        int val = currentWater;
+        currentWater = 0;
+        return val;
+    }
+    /**
+     * Write water into this end for NEXT tick (compute phase only)
+     */
+    public void addPendingWater(int amount) {
+        if (amount <= 0) return;
+        pendingWater += amount;
+    }
 
-    public boolean isInput(){
-        return isInput;
-    }
-    public void setInput(int water) {
-        isInput = true;
-        receivedWater = water;
-    }
-    public void clearInput() {
-        isInput = false;
-        receivedWater = 0;
+    /**
+     * Commit all pending water into current state (commit phase)
+     */
+    public void commit() {
+        currentWater = pendingWater;
+        pendingWater = 0;
     }
 
-    public int getReceivedWater() {
-        return receivedWater;
+    public int getCurrentWater() {
+        return currentWater;
     }
-
     /**
      * Connects this end to an active element and registers it.
      *

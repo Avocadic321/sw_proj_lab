@@ -43,6 +43,10 @@ public class Cistern extends ActiveElement implements IConnectable {
         this.capacity = capacity;
         this.storedWater = 0;
     }
+
+    public int getStoredWater() {
+        return storedWater;
+    }
     /**
      * Accepts incoming water.
      *
@@ -51,11 +55,17 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public void receiveAndTransferWater() {
 
-        if(isFull()) return;
-      //  int newAmount = storedWater + amount;
-    //    storedWater = newAmount > capacity ? capacity : storedWater + newAmount;
 
+      for(PipeEnd end : getConnections()) {
+          int incoming = end.consumeWater();
+          if(incoming <= 0) continue;
+          int accepted = Math.min(incoming, capacity - storedWater);
+          storedWater += accepted;
+          int overflow = incoming - accepted;
+          System.out.println("[CISTERN] OVERFLOW " + overflow);
 
+      }
+        return;
     }
 
     /**

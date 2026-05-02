@@ -14,8 +14,8 @@ import java.util.Optional;
  * Pipe segment that connects two pipe ends and can carry water.
  */
 public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
-    private static final int DEFAULT_CAPACITY = 50;
-    public static final int MAX_CAPACITY = 500;
+    private static final int DEFAULT_CAPACITY = 1000;
+    public static final int MAX_CAPACITY = 1500;
 
     /** First pipe end. */
     private PipeEnd end1;
@@ -30,7 +30,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     /** Whether the pipe is broken. */
     private boolean isBroken;
 
-    private int waterPerTurn = 20; // magic number
+    private int waterPerTurn = 1000; // magic number
 
     public Pipe() {
         this(null, -1, -1, DEFAULT_CAPACITY);
@@ -95,31 +95,26 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      */
 
     // can be modified to a better thing
-    private List<PipeEnd> resolveInputAndOutputEnds(PipeEnd end1, PipeEnd end2) {
-        PipeEnd inputEnd = end1.isInput() ? end1
-                : end2.isInput() ? end2
-                : null;
-        if(inputEnd == null) throw new IllegalStateException("No Input pipe");
-        PipeEnd outputEnd = inputEnd == end1 ? end2 : end1;
-        return new ArrayList<>(List.of(inputEnd,outputEnd));
-    }
+
     public void receiveAndTransferWater() {
         if(end1.isFree() && end2.isFree()) return;
-        List<PipeEnd> pipeEnds = resolveInputAndOutputEnds(end1,end2);
-        PipeEnd inputEnd = pipeEnds.getFirst();
-        PipeEnd outputEnd = pipeEnds.getLast();
+        int fromA = end1.consumeWater();
+        int fromB = end2.consumeWater();
+        if(fromA <= 0 && fromB <= 0) return;
+        PipeEnd outputEnd = fromA > 0 ? end2 : end1;
 
 
-        ElementWaterState state = Helper.waterToBePumpedOut(inputEnd.getReceivedWater(),waterPerTurn,currentWater,capacity, this::breakElement);
+
+        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB,waterPerTurn,currentWater,capacity, this::breakElement);
         currentWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
-        inputEnd.clearInput();
+
         if(isBroken || outputEnd.isFree()) {
             currentWater = 0; // lose all water we hold
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), waterAmount);
             return;
         }
-        outputEnd.setInput(waterAmount);
+        outputEnd.addPendingWater(waterAmount);
 
     }
 
