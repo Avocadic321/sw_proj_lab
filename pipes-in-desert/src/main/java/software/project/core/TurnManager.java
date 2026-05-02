@@ -86,6 +86,15 @@ public class TurnManager {
     public void tick() {
         if (!isRunning || currentPlayer == null ) return;
         timer.tick();
+
+        // Debug - log remaining time in mm::ss
+        if (Debug.ENABLED) {
+            int secsLeft = timer.getTimeLeft();
+            int mins = secsLeft / 60;
+            int secs = secsLeft % 60;
+            Debug.log("Timer: %02d:%02d", mins, secs);
+        }
+
         if (timer.hasExpired()) {
             Debug.log("Time expired for %s (%s)", currentPlayer.getId(), activeTeam);
             endTurn();

@@ -29,7 +29,7 @@ public class GameConfig {
     public static final int MAX_GOAL_SCORE = 10000;
 
     // Turn Constants
-    public static final int DEFAULT_TURN_DURATION = 120;
+    public static final int DEFAULT_TURN_DURATION = 15;
     public static final int MIN_TURN_DURATION = 10;
     public static final int MAX_TURN_DURATION = 300;
     public static final boolean DEFAULT_REAL_TIME_SCORING = false;
