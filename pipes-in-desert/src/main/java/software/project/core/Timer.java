@@ -14,11 +14,13 @@ public class Timer {
     private int duration;
     private int timeLeft;
     private boolean isRunning;
+    private boolean expired;
 
     public Timer(int durationSeconds) {
         this.duration = durationSeconds;
         this.timeLeft = 0;
         this.isRunning = false;
+        this.expired = true;
     }
 
     /**
@@ -31,6 +33,7 @@ public class Timer {
     public void start() {
         timeLeft = duration;
         isRunning = true;
+        expired = false;
     }
 
     /**
@@ -64,6 +67,7 @@ public class Timer {
     public void stop() {
         isRunning = false;
         timeLeft = 0;
+        expired = true;
     }
 
     /**
@@ -75,7 +79,7 @@ public class Timer {
      * </p>
      */
     public void tick() {
-        if (!isRunning) {
+        if (!isRunning || expired) {
             return;
         }
 
@@ -84,14 +88,18 @@ public class Timer {
         if (timeLeft <= 0) {
             timeLeft = 0;
             isRunning = false;
+            expired = true;
         }
     }
 
-    /**
-     * Configures the total length of a player's turn.
-     *
-     * @param duration the turn duration in seconds
-     */
+    public boolean hasExpired() {
+        return expired;
+    }
+    public int getTimeLeft() { return timeLeft; }
+    public int getDuration() {
+        return duration;
+    }
+
     public void setTurnDuration(int duration) {
         this.duration = duration;
     }

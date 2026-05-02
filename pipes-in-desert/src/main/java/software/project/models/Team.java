@@ -101,6 +101,10 @@ public class Team {
         return score;
     }
 
+    public List<Player> getPlayers() {
+        return players;
+    }
+
     /**
      * Increments the team's total score by the specified amount.
      * <p>
