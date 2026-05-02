@@ -32,7 +32,8 @@ public class WaterSimulationTestRunner {
             System.out.println("========================");
 
             // 1. simulate
-            simulator.tick();
+           int lostWater = simulator.tick();
+           System.out.printf("Amount of lost water %d%n",lostWater);
 
             // 2. debug output
             printState();

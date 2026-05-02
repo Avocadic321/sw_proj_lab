@@ -91,10 +91,10 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     // * @param amount incoming amount
      * @return forwarded amount
      */
-    // TODO: handle tracking of moved amount and lost amount
-    public void receiveAndTransferWater()  {
 
-        if(inputPipe == null || outputPipe == null) return;
+    public int receiveAndTransferWater()  {
+
+        if(inputPipe == null || outputPipe == null) return 0;
         int incoming = inputPipe.consumeWater();
 
         ElementWaterState waterAmount = Helper.waterToBePumpedOut(incoming,1000,storedWater,MAX_TANK_CAPACITY, this::breakElement);
@@ -105,11 +105,13 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
 
 
         if(isBroken || outputPipe.isFree()) {
+            int lost = out + storedWater;
             storedWater = 0; // lose all water we hold
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), out);
-            return;
+            return lost;
         }
         outputPipe.addPendingWater(out);
+        return 0;
     }
 
     /** Breaks the pump. */

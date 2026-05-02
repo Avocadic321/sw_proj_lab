@@ -108,17 +108,18 @@ public class Spring extends ActiveElement implements IConnectable {
         return waterProductionRate * 100;
     }
     @Override
-    public void receiveAndTransferWater() {
+    public int receiveAndTransferWater() {
      int produced = generateWater();
 
      List<PipeEnd> ends = getConnections();
 
-     if(ends.isEmpty()) return;
+     if(ends.isEmpty()) return 0;
      int perEnd = produced / ends.size();
 
      for(PipeEnd end: ends) {
          end.addPendingWater(perEnd);
      }
+     return 0; // cannot lose since it is the source
       }
 
     /**
