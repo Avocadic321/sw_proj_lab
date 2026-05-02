@@ -23,18 +23,22 @@ package software.project.core;
  * </p>
  */
 public class GameConfig {
-    // Default values
-    private static final int DEFAULT_GOAL_SCORE = 1000;
-    private static final int DEFAULT_TURN_DURATION = 120;
-    private static final boolean DEFAULT_REAL_TIME_SCORING = false;
-    private static final int DEFAULT_PLAYERS = 4;
-    private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = false;
-
-    // Limits
+    // Goal Score Constants
+    public static final int DEFAULT_GOAL_SCORE = 1000;
     public static final int MIN_GOAL_SCORE = 10;
     public static final int MAX_GOAL_SCORE = 10000;
+
+    // Turn Constants
+    public static final int DEFAULT_TURN_DURATION = 120;
     public static final int MIN_TURN_DURATION = 10;
     public static final int MAX_TURN_DURATION = 300;
+    public static final boolean DEFAULT_REAL_TIME_SCORING = false;
+
+    // Random Events
+    private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = false;
+
+    // Number of Players Constants
+    public static final int DEFAULT_PLAYERS = 4;
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
 
