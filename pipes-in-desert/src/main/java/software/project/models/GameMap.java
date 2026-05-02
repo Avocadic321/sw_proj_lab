@@ -77,6 +77,15 @@ public class GameMap {
         return result;
     }
 
+    public Element getElementAt(int x, int y) {
+        for (Element element : elements) {
+            if (element.getX() == x && element.getY() == y) {
+                return element;
+            }
+        }
+        return null;
+    }
+
     public List<Spring> getAllSprings() {
         return getElementsByType(Spring.class);
     }
@@ -91,6 +100,23 @@ public class GameMap {
 
     public List<Pipe> getAllPipes() {
         return getElementsByType(Pipe.class);
+    }
+
+    public boolean areConnected(Element from, Element to) {
+        if (from == null || to == null) return false;
+
+        if (from instanceof Pipe pipe) {
+            return (pipe.getEnd1().connectedTo == to) ||
+                (pipe.getEnd2().connectedTo == to);
+        }
+
+        if (from instanceof ActiveElement active) {
+            for (PipeEnd end : active.getConnections()) {
+                if (end.pipe == to) return true;
+            }
+        }
+
+        return false;
     }
 
     /*           S1        S2
