@@ -32,6 +32,9 @@ public class GameMenu implements IMenu {
             System.out.print("> ");
             String line = sc.nextLine().trim();
             if (line.equalsIgnoreCase("EXIT")) {
+                if (app.getGame() != null) {
+                    app.getGame().endGame();
+                }
                 app.setGame(null);
                 return new MainMenu(app);
             }

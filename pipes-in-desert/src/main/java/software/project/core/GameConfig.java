@@ -50,11 +50,11 @@ public class GameConfig {
     // Pipe
     public static final int PIPE_DEFAULT_CAPACITY = 10;
     public static final int PIPE_MAX_CAPACITY = 20;
-    public static final int PIPE_FLOW_PER_TICK = 5;
+    public static final int PIPE_MAX_FLOW_PER_TICK = 5;
 
     // Pump Constants
     public static final int PUMP_TANK_CAPACITY = 5;
-    public static final int PUMP_FLOW_PER_TICK = 5;
+    public static final int PUMP_MAX_FLOW_PER_TICK = 5;
 
     // Spring
     public static final int SPRING_WATER_GENERATED_PER_TICK = 1;

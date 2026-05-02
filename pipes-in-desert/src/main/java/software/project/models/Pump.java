@@ -96,7 +96,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         int incoming = inputPipe.consumeWater();
 
         int maxCapacity = GameConfig.PUMP_TANK_CAPACITY;
-        int maxTransfer = GameConfig.PUMP_FLOW_PER_TICK;
+        int maxTransfer = GameConfig.PUMP_MAX_FLOW_PER_TICK;
 
         ElementWaterState waterAmount = Helper.waterToBePumpedOut(
             incoming,
