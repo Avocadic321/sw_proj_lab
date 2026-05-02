@@ -3,6 +3,7 @@ package software.project.models;
 import java.util.List;
 
 import software.project.interfaces.IConnectable;
+import software.project.utils.Debug;
 
 /**
  * Storage element that receives water and can produce new components.
@@ -59,6 +60,7 @@ public class Cistern extends ActiveElement implements IConnectable {
         int leaked = 0;
       for(PipeEnd end : getConnections()) {
           int incoming = end.consumeWater();
+          Debug.log("[CISTERN] %s AMOUNT RECEIVED %d",this.getId(),incoming);
           if(incoming <= 0) continue;
           int accepted = Math.min(incoming, capacity - storedWater);
           storedWater += accepted;

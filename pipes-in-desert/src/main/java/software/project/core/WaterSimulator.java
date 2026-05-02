@@ -4,6 +4,7 @@ import software.project.models.Element;
 import software.project.models.GameMap;
 import software.project.models.Pipe;
 import software.project.models.PipeEnd;
+import software.project.utils.Debug;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ Basically simulation runs every couple of seconds, and player input is just appl
         for(PipeEnd pipeEnd: getAllPipeEnds()) {
         pipeEnd.commit();
         }
+        Debug.log("LEAKED WATER: %d",lostWater);
         return lostWater;
     }
     private List<PipeEnd> getAllPipeEnds() {
