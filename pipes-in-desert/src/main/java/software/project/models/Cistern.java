@@ -53,9 +53,10 @@ public class Cistern extends ActiveElement implements IConnectable {
    //  * @param amount amount of water received
      */
     @Override
-    public void receiveAndTransferWater() {
+    public int receiveAndTransferWater() {
 
 
+        int leaked = 0;
       for(PipeEnd end : getConnections()) {
           int incoming = end.consumeWater();
           if(incoming <= 0) continue;
@@ -63,9 +64,10 @@ public class Cistern extends ActiveElement implements IConnectable {
           storedWater += accepted;
           int overflow = incoming - accepted;
           System.out.println("[CISTERN] OVERFLOW " + overflow);
+          leaked += overflow;
 
       }
-        return;
+        return leaked;
     }
 
     /**

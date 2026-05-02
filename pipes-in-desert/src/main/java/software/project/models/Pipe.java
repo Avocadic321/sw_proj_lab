@@ -96,11 +96,11 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     // can be modified to a better thing
 
-    public void receiveAndTransferWater() {
-        if(end1.isFree() && end2.isFree()) return;
+    public int receiveAndTransferWater() {
+        if(end1.isFree() && end2.isFree()) return 0;
         int fromA = end1.consumeWater();
         int fromB = end2.consumeWater();
-        if(fromA <= 0 && fromB <= 0) return;
+        if(fromA <= 0 && fromB <= 0) return 0;
         PipeEnd outputEnd = fromA > 0 ? end2 : end1;
 
 
@@ -110,11 +110,13 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         int waterAmount = state.pumpedWater();
 
         if(isBroken || outputEnd.isFree()) {
+            int lost = waterAmount + currentWater;
             currentWater = 0; // lose all water we hold
-            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), waterAmount);
-            return;
+            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), lost);
+            return lost;
         }
         outputEnd.addPendingWater(waterAmount);
+        return 0;
 
     }
 

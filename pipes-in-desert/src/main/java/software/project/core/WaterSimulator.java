@@ -23,19 +23,23 @@ public class WaterSimulator {
 Basically simulation runs every couple of seconds, and player input is just applied into the next tick
 
      */
+
+
     public WaterSimulator(GameMap map) {
         this.map = map;
     }
 
-    public void tick() {
+    public int tick() {
 
+        int lostWater = 0;
         for (Element e : map.getElements()) {
-            e.receiveAndTransferWater();
+           lostWater += e.receiveAndTransferWater();
 
         }
         for(PipeEnd pipeEnd: getAllPipeEnds()) {
         pipeEnd.commit();
         }
+        return lostWater;
     }
     private List<PipeEnd> getAllPipeEnds() {
         List<PipeEnd> ends = new ArrayList<>();
