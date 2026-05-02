@@ -4,6 +4,7 @@ import java.util.List;
 
 import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
+import software.project.utils.Debug;
 
 /**
  * Storage element that receives water and can produce new components.
@@ -67,7 +68,10 @@ public class Cistern extends ActiveElement implements IConnectable {
             int accepted = Math.min(incoming, capacity - storedWater);
             storedWater += accepted;
             int overflow = incoming - accepted;
-            System.out.println("[CISTERN] OVERFLOW " + overflow);
+            if (overflow > 0 && Debug.ENABLED) {
+                Debug.log("Cistern Overflow - Amount :%d%n", overflow);
+            }
+
             leaked += overflow;
 
         }
