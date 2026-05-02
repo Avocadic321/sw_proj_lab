@@ -3,6 +3,7 @@ package software.project.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
 
 /**
@@ -47,7 +48,6 @@ public class Spring extends ActiveElement implements IConnectable {
      * @param end pipe end to attach
      */
     public void connect(PipeEnd end) {
-        System.out.println("[Spring] connect()");
         if (!connections.contains(end)) {
             connections.add(end);
         }
@@ -63,7 +63,6 @@ public class Spring extends ActiveElement implements IConnectable {
      * @param end pipe end to detach
      */
     public void disconnect(PipeEnd end) {
-        System.out.println("[Spring] disconnect()");
         connections.remove(end);
         if (end.pipe != null) {
             attachedPipes.remove(end.pipe);
@@ -77,7 +76,6 @@ public class Spring extends ActiveElement implements IConnectable {
      * @return list of connected pipe ends
      */
     public List<PipeEnd> getConnections() {
-        System.out.println("[Spring] getConnections()");
         List<PipeEnd> ends = new ArrayList<>();
         for (Pipe p : attachedPipes) {
             if (p.getEnd1() != null && p.getEnd1().connectedTo == this)
@@ -94,7 +92,6 @@ public class Spring extends ActiveElement implements IConnectable {
      * @return list of attached pipes
      */
     public List<Pipe> getConnectedPipes() {
-        System.out.println("[Spring] getConnectedPipes()");
         return this.attachedPipes;
     }
 
@@ -104,8 +101,7 @@ public class Spring extends ActiveElement implements IConnectable {
      * @return amount of water generated
      */
     public int generateWater() {
-        System.out.println("[Spring] generateWater()");
-        return waterProductionRate * 100;
+        return GameConfig.SPRING_WATER_GENERATED_PER_TICK;
     }
     @Override
     public int receiveAndTransferWater() {

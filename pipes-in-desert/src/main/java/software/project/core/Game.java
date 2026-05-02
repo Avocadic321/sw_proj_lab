@@ -3,6 +3,10 @@ package software.project.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import software.project.models.*;
 import software.project.utils.Debug;
@@ -29,7 +33,10 @@ public class Game {
     private WaterSimulator waterSimulator;
 
     private final Random random = new Random();
-    private Thread loopThread;
+
+    // Game Loop Thread
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> gameLoopTask;
 
     /**
      * Creates a game with the provided configuration.
@@ -53,63 +60,140 @@ public class Game {
         saboteurs = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            String id = "PLUMBER" + i;
-            plumbers.addPlayer(new Plumber(id, gameMap.getSpawnPoint()));
+            plumbers.addPlayer(new Plumber("PLUMBER" + i, gameMap.getSpawnPoint()));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            String id = "SABOTEUR" + i;
-            saboteurs.addPlayer(new Saboteur(id, gameMap.getSpawnPoint()));
+            saboteurs.addPlayer(new Saboteur("SABOTEUR" + i, gameMap.getSpawnPoint()));
         }
 
         turnManager.setTeams(plumbers, saboteurs);
-        turnManager.startTurn();
         state = GameState.RUNNING;
+        turnManager.startTurn();
+
+        Debug.log("Starting Game Loop");
+        startGameLoop();
+    }
+
+    public void startGameLoop() {
+        Debug.log("startGameLoop() called.");
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+            Debug.log("New scheduler created.");
+        }
+        if (gameLoopTask == null || gameLoopTask.isDone()) {
+            gameLoopTask = scheduler.scheduleAtFixedRate(
+                this::tick, 0, 1, TimeUnit.SECONDS);
+            Debug.log("Game loop task scheduled at 1 sec interval.");
+        } else {
+            Debug.log("Game loop task already running.");
+        }
+    }
+
+    public void stopGameLoop() {
+        Debug.log("stopGameLoop() called.");
+        if (gameLoopTask != null) {
+            gameLoopTask.cancel(false);
+            gameLoopTask = null;
+            Debug.log("Game loop task cancelled.");
+        } else {
+            Debug.log("No active game loop task to cancel.");
+        }
+    }
+
+    public void terminateGameLoop() {
+        Debug.log("terminateGameLoop() called.");
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+            scheduler = null;
+            gameLoopTask = null;
+            Debug.log("Scheduler shut down completely.");
+        }
     }
 
     /** Pauses the game if it is currently running. */
     public void pauseGame() {
-        if (state != GameState.RUNNING) {
-            return;
-        }
+        if (state != GameState.RUNNING) return;
+        Debug.log("Game paused.");
         state = GameState.PAUSED;
         turnManager.suspendTurn();
+        stopGameLoop();
     }
 
     /** Resumes the game if it is currently paused. */
     public void resumeGame() {
-        if (state != GameState.PAUSED) {
-            return;
-        }
+        if (state != GameState.PAUSED) return;
+        Debug.log("Game resumed.");
         state = GameState.RUNNING;
         turnManager.resumeTurn();
+        startGameLoop();
     }
 
     /** Ends the game session. */
     public void endGame() {
-        if (state == GameState.FINALIZED) {
+        if (state == GameState.FINALIZED) return;
+        Debug.log("Ending game. Shutting down game loop...");
+        state = GameState.FINALIZED;
+        turnManager.endTurn();
+        terminateGameLoop();
+        System.out.println("[EVENT] GAME_OVER");
+    }
+
+    private void tick() {
+        if (state != GameState.RUNNING) {
             return;
         }
-        turnManager.endTurn();
-        state = GameState.FINALIZED;
+        // 1. Tick the Timer in TurnManager
+        turnManager.tick();
 
-        System.out.println("[EVENT] GAME_OVER");
+        // 2. Simulate the Water Flow
+        int leakedAmount = waterSimulator.tick();
+
+        // 3. Add the scores
+        calculateScore(leakedAmount);
+
+        // 4. Check win condition
+        checkWinner();
+
+        if (turnManager.justEnded()) {
+            onTurnEnded();
+        }
+    }
+
+    private void calculateScore(int leakedAmount) {
+        if (leakedAmount > 0) {
+            saboteurs.addScore(leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED);
+            Debug.log("Saboteur score +%d (total: %d)",
+                leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
+        }
+
+        int totalStored = 0;
+        for (Cistern c : gameMap.getAllCisterns()) {
+            totalStored += c.getStoredWater();
+        }
+        int oldPlumberScore = plumbers.getScore();
+        int additional = (totalStored * GameConfig.SCORE_PER_WATER_STORED) - oldPlumberScore;
+        if (additional != 0) {
+            plumbers.addScore(additional);
+            Debug.log("Plumber score +%d (total: %d)", additional, plumbers.getScore());
+        }
     }
 
     public void checkWinner() {
         if (state != GameState.RUNNING) {
             return;
         }
-
         int plumberScore = plumbers.getScore();
         int saboteurScore = saboteurs.getScore();
         int goal = config.getGoalScore();
 
         if (plumberScore >= goal) {
+            Debug.log("Plumbers reached goal. Ending game.");
             endGame();
-            System.out.printf("[EVENT] PLUMBERS WIN! %d Points (Goal: %d)", plumberScore, goal);
+            System.out.printf("[EVENT] PLUMBERS WIN! %d Points (Goal: %d)%n", plumberScore, goal);
         } else if (saboteurScore >= goal) {
+            Debug.log("Saboteurs reached goal. Ending game.");
             endGame();
-            System.out.printf("[EVENT] SABOTEURS WIN! %d Points (Goal: %d)", plumberScore, goal);
+            System.out.printf("[EVENT] SABOTEURS WIN! %d Points (Goal: %d)%n", saboteurScore, goal);
         }
     }
 
@@ -201,7 +285,7 @@ public class Game {
         if (Debug.ENABLED) {
             System.out.println("[DEBUG] onTurnEnded() running per‑turn actions");
         }
-        simulateWaterFlow();
+        // simulateWaterFlow();
         triggerRandomEvents();
         checkWinner();
     }

@@ -24,7 +24,7 @@ package software.project.core;
  */
 public class GameConfig {
     // Default values
-    private static final int DEFAULT_GOAL_SCORE = 50;
+    private static final int DEFAULT_GOAL_SCORE = 1000;
     private static final int DEFAULT_TURN_DURATION = 120;
     private static final boolean DEFAULT_REAL_TIME_SCORING = false;
     private static final int DEFAULT_PLAYERS = 4;
@@ -32,11 +32,32 @@ public class GameConfig {
 
     // Limits
     public static final int MIN_GOAL_SCORE = 10;
-    public static final int MAX_GOAL_SCORE = 1000;
+    public static final int MAX_GOAL_SCORE = 10000;
     public static final int MIN_TURN_DURATION = 10;
     public static final int MAX_TURN_DURATION = 300;
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
+
+    /* ===== Game Elements Constants =====*/
+    // Cistern
+    public static final int CISTERN_DEFAULT_CAPACITY = 500;
+    public static final int CISTERN_MAX_CAPACITY = 1000;
+
+    // Pipe
+    public static final int PIPE_DEFAULT_CAPACITY = 10;
+    public static final int PIPE_MAX_CAPACITY = 20;
+    public static final int PIPE_FLOW_PER_TICK = 5;
+
+    // Pump Constants
+    public static final int PUMP_TANK_CAPACITY = 5;
+    public static final int PUMP_FLOW_PER_TICK = 5;
+
+    // Spring
+    public static final int SPRING_WATER_GENERATED_PER_TICK = 1;
+
+    // Scoring Constants
+    public static final int SCORE_PER_WATER_LEAKED = 1;
+    public static final int SCORE_PER_WATER_STORED = 1;
 
     // Configuration fields
     private int goalScore;

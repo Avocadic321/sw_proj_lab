@@ -3,6 +3,7 @@ package software.project.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import software.project.core.GameConfig;
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
@@ -14,9 +15,6 @@ import software.project.utils.Helper;
  * Active element that routes water from an input to an output.
  */
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
-    public static final int MAX_CONNECTIONS = 8;
-
-    private static final int MAX_TANK_CAPACITY = 5;
 
     /** Connected pipe ends. */
     private List<PipeEnd> connections;
@@ -97,12 +95,20 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         if(inputPipe == null || outputPipe == null) return 0;
         int incoming = inputPipe.consumeWater();
 
-        ElementWaterState waterAmount = Helper.waterToBePumpedOut(incoming,1000,storedWater,MAX_TANK_CAPACITY, this::breakElement);
+        int maxCapacity = GameConfig.PUMP_TANK_CAPACITY;
+        int maxTransfer = GameConfig.PUMP_FLOW_PER_TICK;
+
+        ElementWaterState waterAmount = Helper.waterToBePumpedOut(
+            incoming,
+            maxTransfer,
+            storedWater,
+            maxCapacity,
+            this::breakElement
+        );
+
         storedWater = waterAmount.currentlyStoredWater();
 
-
         int out  = waterAmount.pumpedWater();
-
 
         if(isBroken || outputPipe.isFree()) {
             int lost = out + storedWater;
@@ -174,7 +180,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
      * @return true if full
      */
     public boolean isTankFull() {
-        return storedWater == MAX_TANK_CAPACITY;
+        return storedWater >= GameConfig.PUMP_TANK_CAPACITY;
     }
 
     /**
@@ -194,6 +200,5 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         System.out.println("[Pump] isConnectedToCistern()");
         return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
     }
-
 
 }

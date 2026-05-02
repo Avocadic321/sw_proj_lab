@@ -1,22 +1,16 @@
 package software.project.models;
 
+import software.project.core.GameConfig;
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
 import software.project.utils.Helper;
 import software.project.utils.ElementWaterState;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 /**
  * Pipe segment that connects two pipe ends and can carry water.
  */
 public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
-    private static final int DEFAULT_CAPACITY = 1000;
-    public static final int MAX_CAPACITY = 1500;
-
     /** First pipe end. */
     private PipeEnd end1;
     /** Second pipe end. */
@@ -30,27 +24,25 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     /** Whether the pipe is broken. */
     private boolean isBroken;
 
-    private int waterPerTurn = 1000; // magic number
-
     public Pipe() {
-        this(null, -1, -1, DEFAULT_CAPACITY);
+        this(null, -1, -1, GameConfig.PIPE_DEFAULT_CAPACITY);
     }
 
     public Pipe(String id) {
-        this(id, -1, -1, DEFAULT_CAPACITY);
+        this(id, -1, -1, GameConfig.PIPE_DEFAULT_CAPACITY);
     }
 
     public Pipe(int x, int y) {
-        this(null, x, y, DEFAULT_CAPACITY);
+        this(null, x, y, GameConfig.PIPE_DEFAULT_CAPACITY);
     }
 
     public Pipe(String id, int x, int y) {
-        this(id, x, y, DEFAULT_CAPACITY);
+        this(id, x, y, GameConfig.PIPE_DEFAULT_CAPACITY);
     }
 
     public Pipe(String id, int x, int y, int capacity) {
         super(id, x, y);
-        if (capacity < 1 || capacity > MAX_CAPACITY) {
+        if (capacity < 1 || capacity > GameConfig.PIPE_MAX_CAPACITY) {
             throw new IllegalArgumentException("[ERROR] PIPE INVALID_CAPACITY");
         }
         this.capacity = capacity;
@@ -89,27 +81,26 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     /**
      * Transfers water through this pipe.
+     * <p>
+     *   * @param amount incoming water amount
      *
- //    * @param amount incoming water amount
      * @return forwarded water amount
      */
 
     // can be modified to a better thing
-
     public int receiveAndTransferWater() {
-        if(end1.isFree() && end2.isFree()) return 0;
+        if (end1.isFree() && end2.isFree()) return 0;
         int fromA = end1.consumeWater();
         int fromB = end2.consumeWater();
-        if(fromA <= 0 && fromB <= 0) return 0;
+        if (fromA <= 0 && fromB <= 0) return 0;
         PipeEnd outputEnd = fromA > 0 ? end2 : end1;
 
-
-
-        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB,waterPerTurn,currentWater,capacity, this::breakElement);
+        int maxTransfer = GameConfig.PIPE_FLOW_PER_TICK;
+        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB, maxTransfer, currentWater, capacity, this::breakElement);
         currentWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
 
-        if(isBroken || outputEnd.isFree()) {
+        if (isBroken || outputEnd.isFree()) {
             int lost = waterAmount + currentWater;
             currentWater = 0; // lose all water we hold
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), lost);
