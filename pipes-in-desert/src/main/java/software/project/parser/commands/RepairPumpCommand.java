@@ -1,0 +1,54 @@
+package software.project.parser.commands;
+
+import software.project.core.Game;
+import software.project.models.Plumber;
+import software.project.models.Player;
+import software.project.models.Pump;
+import software.project.parser.ICommand;
+
+public class RepairPumpCommand implements ICommand {
+
+    @Override
+    public void execute(Game game, String[] args) {
+        if (game == null) {
+            System.out.println("[ERROR] REPAIR_PUMP GAME_NOT_INITIALIZED");
+            return;
+        }
+
+        if (args == null || args.length != 1) {
+            System.out.println("[ERROR] REPAIR_PUMP INVALID_ARGS. Usage: REPAIR_PUMP <pumpId>");
+            return;
+        }
+
+        String pumpId = args[0].trim();
+        Pump pump = game.getGameMap().getElement(pumpId, Pump.class);
+        if (pump == null) {
+            System.out.println("[ERROR] REPAIR_PUMP PUMP_NOT_FOUND " + pumpId);
+            return;
+        }
+
+        if (!pump.isBroken()) {
+            System.out.println("[ERROR] REPAIR_PUMP NOT_BROKEN " + pumpId);
+            return;
+        }
+
+        Player p = game.getTurnManager().getCurrentPlayer();
+        if (p == null) {
+            System.out.println("[ERROR] REPAIR_PUMP NO_CURRENT_PLAYER");
+            return;
+        }
+
+        if (!(p instanceof Plumber)) {
+            System.out.println("[ERROR] REPAIR_PUMP NOT_A_PLUMBER");
+            return;
+        }
+
+        if (p.getCurrentPosition() != pump) {
+            System.out.println("[ERROR] REPAIR_PUMP NOT_AT_PUMP");
+            return;
+        }
+
+        ((Plumber) p).repair(pump);
+        System.out.println("[OK] REPAIR_PUMP " + pumpId);
+    }
+}
