@@ -159,7 +159,10 @@ public class Game {
         checkWinner();
 
         if (turnManager.justEnded()) {
-            onTurnEnded();
+            onTurnEnded();               // random events, win check
+            if (state == GameState.RUNNING) {
+                turnManager.startNextTurn();
+            }
         }
     }
 

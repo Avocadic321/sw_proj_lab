@@ -113,16 +113,17 @@ public class TurnManager {
         Teams finishingTeam = activeTeam;
         timer.stop();
         isRunning = false;
-        advanceToNextPlayer();
         turnEnded = true;
 
-        Debug.log("Turn ended: %s (%s). Next player: %s (%s)",
-            finishingPlayer.getId(), finishingTeam,
-            currentPlayer != null ? currentPlayer.getId() : "none",
-            activeTeam);
+        Debug.log("Turn ended: %s (%s)",
+            finishingPlayer.getId(), finishingTeam);
+    }
 
+    public void startNextTurn() {
+        if (players.isEmpty()) return;
+        advanceToNextPlayer();
         if (currentPlayer != null) {
-            startTurn();               // start the next player's turn
+            startTurn();
         }
     }
 
