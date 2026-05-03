@@ -5,6 +5,7 @@ import software.project.models.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class SabotagePipeCommand implements ICommand {
 
@@ -12,6 +13,11 @@ public class SabotagePipeCommand implements ICommand {
     public void execute(Game game, String[] args) {
         if (game == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE GAME_NOT_INITIALIZED");
+            return;
+        }
+
+        if (game.getState() != GameState.RUNNING) {
+            System.out.println("[ERROR] SABOTAGE_PIPE GAME_NOT_RUNNING");
             return;
         }
 

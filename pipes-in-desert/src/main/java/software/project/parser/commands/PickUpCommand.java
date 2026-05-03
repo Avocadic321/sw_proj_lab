@@ -7,6 +7,7 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Pump;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class PickUpCommand implements ICommand {
 
@@ -14,6 +15,11 @@ public class PickUpCommand implements ICommand {
     public void execute(Game game, String[] args) {
         if (game == null) {
             System.out.println("[ERROR] PICK_UP GAME_NOT_INITIALIZED");
+            return;
+        }
+
+        if (game.getState() != GameState.RUNNING) {
+            System.out.println("[ERROR] PICK_UP GAME_NOT_RUNNING");
             return;
         }
 

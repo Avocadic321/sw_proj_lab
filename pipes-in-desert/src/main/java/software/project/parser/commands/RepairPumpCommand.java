@@ -1,10 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.Game;
-import software.project.models.Plumber;
 import software.project.models.Player;
+import software.project.models.Plumber;
 import software.project.models.Pump;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class RepairPumpCommand implements ICommand {
 
@@ -12,6 +13,11 @@ public class RepairPumpCommand implements ICommand {
     public void execute(Game game, String[] args) {
         if (game == null) {
             System.out.println("[ERROR] REPAIR_PUMP GAME_NOT_INITIALIZED");
+            return;
+        }
+
+        if (game.getState() != GameState.RUNNING) {
+            System.out.println("[ERROR] REPAIR_PUMP GAME_NOT_RUNNING");
             return;
         }
 

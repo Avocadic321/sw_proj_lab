@@ -3,9 +3,10 @@ package software.project.parser.commands;
 import software.project.core.Game;
 import software.project.models.Pipe;
 import software.project.models.PipeEnd;
-import software.project.models.Plumber;
 import software.project.models.Player;
+import software.project.models.Plumber;
 import software.project.parser.ICommand;
+import software.project.utils.GameState;
 
 public class DisconnectCommand implements ICommand {
 
@@ -13,6 +14,11 @@ public class DisconnectCommand implements ICommand {
     public void execute(Game game, String[] args) {
         if (game == null) {
             System.out.println("[ERROR] DISCONNECT GAME_NOT_INITIALIZED");
+            return;
+        }
+
+        if (game.getState() != GameState.RUNNING) {
+            System.out.println("[ERROR] DISCONNECT GAME_NOT_RUNNING");
             return;
         }
 
