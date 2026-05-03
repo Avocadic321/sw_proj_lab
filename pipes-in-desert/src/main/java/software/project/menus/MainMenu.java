@@ -1,8 +1,8 @@
 package software.project.menus;
 
-import software.project.App;
-
 import java.util.Scanner;
+
+import software.project.App;
 
 public class MainMenu implements IMenu {
     private final App app;
@@ -25,7 +25,9 @@ public class MainMenu implements IMenu {
             switch (choice) {
                 case "1":
                     app.getParser().parseAndExecute("NEW_GAME");
-                    if (app.getGame() != null) {return new GameMenu(app);}
+                    if (app.getGame() != null) {
+                        return new GameMenu(app);
+                    }
                     break;
                 case "2":
                     return new ConfigMenu(app);
