@@ -276,8 +276,7 @@ public class Game {
     }
 
     /** Simulates water flow through the network. */
-    public void simulateWaterFlow() {
-    }
+    public void simulateWaterFlow() {}
 
     public void onTurnEnded() {
         Debug.log("onTurnEnded() running per‑turn actions");
@@ -286,9 +285,8 @@ public class Game {
         checkWinner();
     }
 
-    public GameMap getGameMap() {
-        return gameMap;
-    }
+    public GameMap getGameMap() { return gameMap; }
+    public TurnManager getTurnManager() { return turnManager; }
     public Team getPlumbersTeam() { return plumbers; }
     public Team getSaboteursTeam() {
         return saboteurs;

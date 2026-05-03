@@ -38,8 +38,6 @@ public class TurnManager {
         isRunning = false;
     }
 
-
-
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
         List<Player> plList = plumbers.getPlayers();
