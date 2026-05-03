@@ -4,7 +4,6 @@ import software.project.App;
 import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
 
 public class SetPlayersCommand implements ICommand {
     private final App app;

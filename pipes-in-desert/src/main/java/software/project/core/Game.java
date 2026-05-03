@@ -8,7 +8,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import software.project.models.*;
+import software.project.models.Cistern;
+import software.project.models.GameMap;
+import software.project.models.Plumber;
+import software.project.models.Pump;
+import software.project.models.Saboteur;
+import software.project.models.Team;
 import software.project.utils.Debug;
 import software.project.utils.GameState;
 import software.project.utils.Teams;
@@ -18,9 +23,9 @@ import software.project.utils.Teams;
  */
 public class Game {
     /** Manages turns and timing. */
-    private TurnManager turnManager;
+    private final TurnManager turnManager;
     /** All elements currently in the game. */
-    private GameMap gameMap;
+    private final GameMap gameMap;
     /** Saboteur team instance. */
     private Team saboteurs;
     /** Plumber team instance. */
@@ -28,9 +33,9 @@ public class Game {
     /** Current game state. */
     private GameState state;
     /** Game configuration settings. */
-    private GameConfig config;
+    private final GameConfig config;
 
-    private WaterSimulator waterSimulator;
+    private final WaterSimulator waterSimulator;
 
     private final Random random = new Random();
 

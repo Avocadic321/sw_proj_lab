@@ -157,4 +157,9 @@ public class Player {
     public String getId() {
         return id;
     }
+
+    /** Returns the element the player is currently positioned on. */
+    public Element getCurrentPosition() {
+        return currentPosition;
+    }
 }

@@ -1,8 +1,8 @@
 package software.project.menus;
 
-import software.project.App;
-
 import java.util.Scanner;
+
+import software.project.App;
 
 public class GameMenu implements IMenu {
     private final App app;
@@ -30,19 +30,27 @@ public class GameMenu implements IMenu {
     public IMenu run() {
         Scanner sc = app.getScanner();
         while (true) {
-            System.out.println("\n===== Available Actions =====");
-            System.out.println("MOVE <playerId> <elementId>");
-            System.out.println("REPAIR_PIPE <playerId> <pipeId>");
-            System.out.println("REPAIR_PUMP <playerId> <pumpId>");
-            System.out.println("SET_DIRECTION <playerId> <pumpId> <in> <out>");
-            System.out.println("CONNECT <playerId> <pipeEnd> <element>");
-            System.out.println("DISCONNECT <playerId> <pipeEnd>");
-            System.out.println("PICKUP_PIPE <playerId> <cistern>");
-            System.out.println("PICKUP_PUMP <playerId> <cistern> <maxConn>");
-            System.out.println("INSERT_PUMP <playerId> <pipe> <pump>");
+            System.out.println("===== Game Control Commands =====");
             System.out.println("END_TURN");
             System.out.println("PAUSE");
-            System.out.println("SHOW_STATE");
+            System.out.println("RESUME");
+            System.out.println("END_GAME");
+            System.out.println("SCORE");
+            System.out.println("===== Random Event Commands =====");
+            System.out.println("RANDOM_BREAK <pumpId>");
+            System.out.println("RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
+            System.out.println("===== Player Action Commands =====");
+            System.out.println("MOVE <elementId>");
+            System.out.println("CONNECT <pipeId> <end(1|2)> <elementId>");
+            System.out.println("DISCONNECT <pipeId> <end(1|2)>");
+            System.out.println("SET_DIRECTION <pumpId> <inPipeId> <outPipeId>");
+            System.out.println("REPAIR_PUMP <pumpId>");
+            System.out.println("SABOTAGE_PUMP <pumpId>");
+            System.out.println("SABOTAGE_PIPE <pipeId>");
+            System.out.println("PICK_UP <elementId>");
+            System.out.println("PICK_UP <cisternId> <PIPE|PUMP>");
+            System.out.println("EXTEND_PIPE_SYSTEM");
+            System.out.println("===== Other Commands =====");
             System.out.println("EXIT");
             System.out.print("> ");
             String line = sc.nextLine().trim();
