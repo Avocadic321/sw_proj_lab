@@ -7,6 +7,7 @@ import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IConnectable;
 import software.project.interfaces.IRepairable;
+import software.project.utils.Debug;
 import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
 
@@ -110,6 +111,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), out);
             return lost;
         }
+        Debug.log("[PUMP] %s AMOUNT FORWARDED %d",this.getId(),out);
         outputPipe.addPendingWater(out);
         return 0;
     }

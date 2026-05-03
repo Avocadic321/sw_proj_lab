@@ -3,6 +3,7 @@ package software.project.models;
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
+import software.project.utils.Debug;
 import software.project.utils.Helper;
 import software.project.utils.ElementWaterState;
 
@@ -115,6 +116,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), lost);
             return lost;
         }
+        Debug.log("[PIPE] %s AMOUNT FORWARDED %d",this.getId(),waterAmount);
         outputEnd.addPendingWater(waterAmount);
         return 0;
 
