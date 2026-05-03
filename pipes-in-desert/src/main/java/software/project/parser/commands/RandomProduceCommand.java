@@ -19,7 +19,8 @@ public class RandomProduceCommand implements ICommand {
         }
 
         if (args == null || args.length < 2 || args[0].isBlank() || args[1].isBlank()) {
-            System.out.println("[ERROR] RANDOM_PRODUCE requires cistern ID and type (PIPE or PUMP). Usage: RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
+            System.out.println(
+                    "[ERROR] RANDOM_PRODUCE requires cistern ID and type (PIPE or PUMP). Usage: RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
             return;
         }
         game.produceComponentAt(args[0].trim(), args[1].trim().toUpperCase());

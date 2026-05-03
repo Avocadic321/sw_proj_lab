@@ -12,7 +12,7 @@ public class RandomBreakCommand implements ICommand {
             System.out.println("[ERROR] RANDOM_BREAK GAME_NOT_INITIALIZED");
             return;
         }
-        
+
         if (game.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] RANDOM_BREAK GAME_NOT_RUNNING");
             return;
