@@ -276,11 +276,13 @@ public class Game {
     }
 
     /** Simulates water flow through the network. */
-    public void simulateWaterFlow() {}
+    public void flow(int ticks) {
+
+    }
 
     public void onTurnEnded() {
         Debug.log("onTurnEnded() running per‑turn actions");
-        // simulateWaterFlow();
+
         triggerRandomEvents();
         checkWinner();
     }
