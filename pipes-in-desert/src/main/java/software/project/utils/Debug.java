@@ -13,7 +13,7 @@ public final class Debug {
 
     public static void log(String str) {
         if (Debug.ENABLED) {
-            System.out.println("[DEBUG]" + str);
+            System.out.println("[DEBUG] " + str);
         }
     }
 }
