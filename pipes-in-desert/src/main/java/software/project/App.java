@@ -55,6 +55,8 @@ public class App {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             System.setOut(new PrintStream(buffer, true)); // auto-flush
 
+            gameConfig.setTestMode(true);
+
             try (Scanner fileScanner = new Scanner(new File(inputFile))) {
                 while (fileScanner.hasNextLine()) {
                     String line = fileScanner.nextLine().trim();

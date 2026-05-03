@@ -23,6 +23,9 @@ package software.project.core;
  * </p>
  */
 public class GameConfig {
+    // Test Mode Flag
+    private boolean testMode = false;
+
     // Goal Score Constants
     public static final int DEFAULT_GOAL_SCORE = 1000;
     public static final int MIN_GOAL_SCORE = 10;
@@ -79,6 +82,10 @@ public class GameConfig {
         this.randomEventsEnabled = DEFAULT_RANDOM_EVENTS_ENABLED;
     }
 
+    public boolean isTestMode() {
+        return testMode;
+    }
+
     /**
      * Returns the score required for a team to win.
      *
@@ -118,6 +125,10 @@ public class GameConfig {
 
     public boolean areRandomEventsEnabled() {
         return randomEventsEnabled;
+    }
+
+    public void setTestMode(boolean testMode) {
+        this.testMode = testMode;
     }
 
     /**

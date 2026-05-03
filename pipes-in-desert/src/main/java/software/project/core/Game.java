@@ -70,8 +70,12 @@ public class Game {
         state = GameState.RUNNING;
         turnManager.startTurn();
 
-        Debug.log("Starting Game Loop");
-        startGameLoop();
+        if (!config.isTestMode()) {
+            Debug.log("Starting Game Loop");
+            startGameLoop();
+        } else {
+            Debug.log("Test Mode – game loop not started");
+        }
     }
 
     public void startGameLoop() {
