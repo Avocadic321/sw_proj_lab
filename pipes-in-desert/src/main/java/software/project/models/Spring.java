@@ -5,6 +5,7 @@ import java.util.List;
 
 import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
+import software.project.utils.Debug;
 
 /**
  * Water source that can connect to pipe ends and produce water each turn.
@@ -112,6 +113,7 @@ public class Spring extends ActiveElement implements IConnectable {
      if(ends.isEmpty()) return 0;
      int perEnd = produced / ends.size();
 
+     Debug.log("[SPRING] %s AMOUNT GENERATED %d",this.getId(),produced);
      for(PipeEnd end: ends) {
          end.addPendingWater(perEnd);
      }
