@@ -310,8 +310,6 @@ public class Game {
     public GameMap getGameMap() { return gameMap; }
     public TurnManager getTurnManager() { return turnManager; }
     public Team getPlumbersTeam() { return plumbers; }
-    public Team getSaboteursTeam() {
-        return saboteurs;
-    }
+    public Team getSaboteursTeam() { return saboteurs; }
     public GameState getState() { return state; }
 }

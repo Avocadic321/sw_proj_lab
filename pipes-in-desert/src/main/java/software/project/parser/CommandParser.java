@@ -31,6 +31,7 @@ public class CommandParser {
         commands.put("PAUSE", new PauseGameCommand());
         commands.put("RESUME", new ResumeGameCommand());
         commands.put("END_GAME", new EndGameCommand());
+        commands.put("SCORE", new ScoreCommand());
 
         /* Random event commands */
         commands.put("RANDOM_BREAK", new RandomBreakCommand());
