@@ -2,6 +2,7 @@ package software.project.models;
 
 import java.util.List;
 
+import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
 import software.project.utils.Debug;
 
@@ -9,28 +10,32 @@ import software.project.utils.Debug;
  * Storage element that receives water and can produce new components.
  */
 public class Cistern extends ActiveElement implements IConnectable {
-    private static final int DEFAULT_CAPACITY = 100;
-    private static final int MAX_CAPACITY = 1000;
-
-    /** Current amount of water stored. */
+    /**
+     * Current amount of water stored.
+     */
     private int storedWater;
-    /** Maximum water capacity. */
+    /**
+     * Maximum water capacity.
+     */
     private int capacity;
 
-    /** Currently stored pipe */
+    /**
+     * Currently stored pipe
+     */
     private Pipe storedPipe;
 
-    /** Currently stored pump */
+    /**
+     * Currently stored pump
+     */
     private Pump storedPump;
 
 
-
     public Cistern(int x, int y) {
-        this(null, x, y, DEFAULT_CAPACITY);
+        this(null, x, y, GameConfig.CISTERN_DEFAULT_CAPACITY);
     }
 
     public Cistern(String id, int x, int y) {
-        this(id, x, y, DEFAULT_CAPACITY);
+        this(id, x, y, GameConfig.CISTERN_DEFAULT_CAPACITY);
     }
 
     public Cistern(String id, int x, int y, int capacity) {
@@ -38,7 +43,7 @@ public class Cistern extends ActiveElement implements IConnectable {
         if (x < 0 || y < 0) {
             throw new IllegalArgumentException("[ERROR] CISTERN INVALID_COORDINATES");
         }
-        if (capacity < 1 || capacity > MAX_CAPACITY) {
+        if (capacity < 1 || capacity > GameConfig.CISTERN_MAX_CAPACITY) {
             throw new IllegalArgumentException("[ERROR] CISTERN INVALID_CAPACITY");
         }
         this.capacity = capacity;
@@ -48,27 +53,28 @@ public class Cistern extends ActiveElement implements IConnectable {
     public int getStoredWater() {
         return storedWater;
     }
+
     /**
      * Accepts incoming water.
-     *
-   //  * @param amount amount of water received
+     * <p>
+     * //  * @param amount amount of water received
      */
     @Override
     public int receiveAndTransferWater() {
-
-
         int leaked = 0;
-      for(PipeEnd end : getConnections()) {
-          int incoming = end.consumeWater();
-          Debug.log("[CISTERN] %s AMOUNT RECEIVED %d",this.getId(),incoming);
-          if(incoming <= 0) continue;
-          int accepted = Math.min(incoming, capacity - storedWater);
-          storedWater += accepted;
-          int overflow = incoming - accepted;
-          System.out.println("[CISTERN] OVERFLOW " + overflow);
-          leaked += overflow;
+        for (PipeEnd end : getConnections()) {
+            int incoming = end.consumeWater();
+            if (incoming <= 0) continue;
+            int accepted = Math.min(incoming, capacity - storedWater);
+            storedWater += accepted;
+            int overflow = incoming - accepted;
+            if (overflow > 0 && Debug.ENABLED) {
+                Debug.log("Cistern Overflow - Amount :%d%n", overflow);
+            }
 
-      }
+            leaked += overflow;
+
+        }
         return leaked;
     }
 
@@ -78,12 +84,16 @@ public class Cistern extends ActiveElement implements IConnectable {
      * @return true if full
      */
     public boolean isFull() {
-        System.out.println("[Cistern] isFull()");
-        return storedWater >=  capacity;
+        return storedWater >= capacity;
     }
 
-    public Pipe getStoredPipe() { return storedPipe; }
-    public Pump getStoredPump() { return storedPump; }
+    public Pipe getStoredPipe() {
+        return storedPipe;
+    }
+
+    public Pump getStoredPump() {
+        return storedPump;
+    }
 
     /**
      * Produces a new pipe component.
@@ -91,11 +101,11 @@ public class Cistern extends ActiveElement implements IConnectable {
      * @return new pipe instance
      */
     public void producePipe() {
-        if(storedPipe != null) return;
+        if (storedPipe != null) return;
         System.out.println("[Cistern] producePipe()");
-       Pipe pipe = new Pipe();
-       this.connect(pipe.getEnd1());
-       this.storedPipe = pipe;
+        Pipe pipe = new Pipe();
+        this.connect(pipe.getEnd1());
+        this.storedPipe = pipe;
     }
 
     public Pipe pickUpPipe() {
@@ -105,6 +115,7 @@ public class Cistern extends ActiveElement implements IConnectable {
         storedPipe = null;
         return pipe;
     }
+
     /**
      * Produces a new pump component.
      *
@@ -122,7 +133,6 @@ public class Cistern extends ActiveElement implements IConnectable {
     }
 
 
-
     /**
      * Connects a pipe end to this cistern.
      *
@@ -130,7 +140,6 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     @Override
     public void connect(PipeEnd end) {
-        System.out.println("[Cistern] connect()");
         super.connect(end);
     }
 
@@ -141,7 +150,6 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     @Override
     public void disconnect(PipeEnd end) {
-        System.out.println("[Cistern] disconnect()");
         super.disconnect(end);
     }
 
@@ -152,7 +160,6 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     @Override
     public List<PipeEnd> getConnections() {
-        System.out.println("[Cistern] getConnections()");
         return super.getConnections();
     }
 }

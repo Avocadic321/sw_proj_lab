@@ -38,8 +38,6 @@ public class TurnManager {
         isRunning = false;
     }
 
-
-
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
         List<Player> plList = plumbers.getPlayers();
@@ -86,6 +84,15 @@ public class TurnManager {
     public void tick() {
         if (!isRunning || currentPlayer == null ) return;
         timer.tick();
+
+        // Debug - log remaining time in mm::ss
+        if (Debug.ENABLED) {
+            int secsLeft = timer.getTimeLeft();
+            int mins = secsLeft / 60;
+            int secs = secsLeft % 60;
+            Debug.log("Timer: %02d:%02d", mins, secs);
+        }
+
         if (timer.hasExpired()) {
             Debug.log("Time expired for %s (%s)", currentPlayer.getId(), activeTeam);
             endTurn();
@@ -106,16 +113,17 @@ public class TurnManager {
         Teams finishingTeam = activeTeam;
         timer.stop();
         isRunning = false;
-        advanceToNextPlayer();
         turnEnded = true;
 
-        Debug.log("Turn ended: %s (%s). Next player: %s (%s)",
-            finishingPlayer.getId(), finishingTeam,
-            currentPlayer != null ? currentPlayer.getId() : "none",
-            activeTeam);
+        Debug.log("Turn ended: %s (%s)",
+            finishingPlayer.getId(), finishingTeam);
+    }
 
+    public void startNextTurn() {
+        if (players.isEmpty()) return;
+        advanceToNextPlayer();
         if (currentPlayer != null) {
-            startTurn();               // start the next player's turn
+            startTurn();
         }
     }
 

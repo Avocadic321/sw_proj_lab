@@ -7,8 +7,23 @@ import java.util.Scanner;
 public class GameMenu implements IMenu {
     private final App app;
 
+    private static final String MAP_DIAGRAM = """
+              S1        S2
+              ||
+              B1
+              ||
+    FE===B2===P1===B3===P3===B9===FE
+              ||        ||
+              B4        B8
+              ||        ||
+    C1===B5===P2===B6===P4===B7===C2
+    """;
+
     public GameMenu(App app) {
         this.app = app;
+        System.out.println("============= Map ==============\n");
+        System.out.println(MAP_DIAGRAM);
+        System.out.println("================================");
     }
 
     @Override
@@ -32,6 +47,9 @@ public class GameMenu implements IMenu {
             System.out.print("> ");
             String line = sc.nextLine().trim();
             if (line.equalsIgnoreCase("EXIT")) {
+                if (app.getGame() != null) {
+                    app.getGame().endGame();
+                }
                 app.setGame(null);
                 return new MainMenu(app);
             }
