@@ -277,7 +277,20 @@ public class Game {
 
     /** Simulates water flow through the network. */
     public void flow(int ticks) {
+        if (state != GameState.RUNNING) {
+            System.out.println("[ERROR] FLOW GAME_NOT_RUNNING");
+            return;
+        }
 
+        for (int i = 0; i < ticks; i++) {
+            int leakedAmount = waterSimulator.tick();
+            calculateScore(leakedAmount);
+            checkWinner();
+
+            if (state == GameState.FINALIZED) {
+                break;
+            }
+        }
     }
 
     public void onTurnEnded() {
