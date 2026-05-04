@@ -51,6 +51,7 @@ public class GameMenu implements IMenu {
             System.out.println("PICK_UP <cisternId> <PIPE|PUMP>");
             System.out.println("EXTEND_PIPE_SYSTEM");
             System.out.println("===== Other Commands =====");
+            System.out.println("SHOW_STATE");
             System.out.println("EXIT");
             System.out.print("> ");
             String line = sc.nextLine().trim();
