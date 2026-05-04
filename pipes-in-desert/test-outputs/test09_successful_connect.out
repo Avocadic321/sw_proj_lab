@@ -1,0 +1,8 @@
+[OK] SET_RANDOM OFF
+[OK] SET_PLAYERS 4
+[OK] NEW_GAME
+[OK] DISCONNECT PLUMBER0 PIPE1_END2
+[STATE] PIPE PIPE1 broken=false currentWater=0 end1=SPRING1 end2=FREE occupant=NONE
+[OK] CONNECT PLUMBER0 PIPE1_END2 PUMP1
+[STATE] PIPE PIPE1 broken=false currentWater=0 end1=SPRING1 end2=PUMP1 occupant=NONE
+[STATE] PUMP PUMP1 broken=false storedWater=0 input=PIPE1_END2 output=PIPE4_END1

@@ -30,6 +30,9 @@ public class Player {
     public Player(String id, Element startPosition) {
         this.id = id;
         this.currentPosition = startPosition;
+        if (startPosition != null) {
+            startPosition.addOccupant(this);
+        }
     }
 
     /**

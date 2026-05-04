@@ -1,6 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.core.Game;
+import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -23,6 +24,6 @@ public class RandomProduceCommand implements ICommand {
                     "[ERROR] RANDOM_PRODUCE requires cistern ID and type (PIPE or PUMP). Usage: RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
             return;
         }
-        game.produceComponentAt(args[0].trim(), args[1].trim().toUpperCase());
+        game.produceComponentAt(CommandUtils.normalizeId(args[0].trim()), args[1].trim().toUpperCase());
     }
 }

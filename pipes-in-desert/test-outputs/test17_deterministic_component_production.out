@@ -1,0 +1,6 @@
+[OK] SET_RANDOM OFF
+[OK] SET_PLAYERS 4
+[OK] NEW_GAME
+[Cistern] producePump()
+[EVENT] COMPONENT_PRODUCED CISTERN1 PUMP
+[STATE] CISTERN CISTERN1 storedWater=0 capacity=500 storedPipe=NONE storedPump=PUMP5 connections=1

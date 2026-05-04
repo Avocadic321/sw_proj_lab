@@ -1,0 +1,6 @@
+# TC05 - Invalid Move: Disconnected Element
+SET_RANDOM OFF
+SET_PLAYERS 4
+NEW_GAME
+MOVE PL1 CIS1
+SHOW_STATE PL1

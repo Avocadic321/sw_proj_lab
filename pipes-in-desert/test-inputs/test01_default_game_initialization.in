@@ -1,0 +1,4 @@
+# TC01 - Default Game Initialization
+SET_RANDOM OFF
+NEW_GAME
+SHOW_STATE

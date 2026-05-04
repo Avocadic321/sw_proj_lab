@@ -1,0 +1,9 @@
+[OK] SET_RANDOM OFF
+[OK] SET_GOAL 20
+[OK] SET_PLAYERS 4
+[OK] NEW_GAME
+[OK] FLOW 1
+[STATE] GAME GAME state=RUNNING currentPlayer=PLUMBER0 activeTeam=PLUMBERS plumbersScore=0 saboteursScore=0 mapElements=17
+[OK] FLOW 1
+[STATE] GAME GAME state=RUNNING currentPlayer=PLUMBER0 activeTeam=PLUMBERS plumbersScore=0 saboteursScore=0 mapElements=17
+[SCORE] Plumbers: 0, Saboteurs: 0
