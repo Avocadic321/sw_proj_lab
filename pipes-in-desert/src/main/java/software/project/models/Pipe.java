@@ -5,8 +5,8 @@ import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
 import software.project.utils.Debug;
-import software.project.utils.Helper;
 import software.project.utils.ElementWaterState;
+import software.project.utils.Helper;
 
 /**
  * Pipe segment that connects two pipe ends and can carry water.
@@ -83,21 +83,25 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     /**
      * Transfers water through this pipe.
      * <p>
-     *   * @param amount incoming water amount
+     * * @param amount incoming water amount
      *
      * @return forwarded water amount
      */
 
     // can be modified to a better thing
+    @Override
     public int receiveAndTransferWater() {
-        if (end1.isFree() && end2.isFree()) return 0;
+        if (end1.isFree() && end2.isFree())
+            return 0;
         int fromA = end1.consumeWater();
         int fromB = end2.consumeWater();
-        if (fromA <= 0 && fromB <= 0) return 0;
+        if (fromA <= 0 && fromB <= 0)
+            return 0;
         PipeEnd outputEnd = fromA > 0 ? end2 : end1;
 
         int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
-        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB, maxTransfer, currentWater, capacity, this::breakElement);
+        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB, maxTransfer, currentWater,
+                capacity, this::breakElement);
         currentWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
 
@@ -107,7 +111,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), lost);
             return lost;
         }
-        Debug.log("[PIPE] %s AMOUNT FORWARDED %d",this.getId(),waterAmount);
+        Debug.log("[PIPE] %s AMOUNT FORWARDED %d", this.getId(), waterAmount);
         outputEnd.addPendingWater(waterAmount);
         return 0;
 
@@ -191,5 +195,21 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     public boolean canOccupy() {
         boolean can = occupants.isEmpty();
         return can;
+    }
+
+    @Override
+    public String toString() {
+        String end1State = end1 == null || end1.connectedTo == null ? "FREE" : end1.connectedTo.getId();
+        String end2State = end2 == null || end2.connectedTo == null ? "FREE" : end2.connectedTo.getId();
+        String occupant = occupants.isEmpty() ? "NONE" : occupants.getFirst().getId();
+
+        return String.format(
+                "[STATE] PIPE %s broken=%s currentWater=%d end1=%s end2=%s occupant=%s",
+                getId(),
+                isBroken,
+                currentWater,
+                end1State,
+                end2State,
+                occupant);
     }
 }

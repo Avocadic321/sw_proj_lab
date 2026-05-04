@@ -105,6 +105,10 @@ public class Team {
         return players;
     }
 
+    public Teams getTeam() {
+        return team;
+    }
+
     /**
      * Increments the team's total score by the specified amount.
      * <p>
@@ -117,6 +121,19 @@ public class Team {
      */
     public void addScore(int score) {
         this.score += score;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder playerIds = new StringBuilder();
+        for (int i = 0; i < players.size(); i++) {
+            if (i > 0) {
+                playerIds.append(',');
+            }
+            playerIds.append(players.get(i).getId());
+        }
+
+        return String.format("[STATE] TEAM %s score=%d players=%s", team, score, playerIds);
     }
 
 }

@@ -36,7 +36,7 @@ public class Spring extends ActiveElement implements IConnectable {
         if (x < 0 || y < 0) {
             throw new IllegalArgumentException("[ERROR] SPRING INVALID_COORDINATES");
         }
-        if (waterProductionRate < 1 ||  waterProductionRate > MAX_PRODUCTION_RATE) {
+        if (waterProductionRate < 1 || waterProductionRate > MAX_PRODUCTION_RATE) {
             throw new IllegalArgumentException("[ERROR] SPRING INVALID_PRODUCTION_RATE");
         }
         this.waterProductionRate = waterProductionRate;
@@ -104,21 +104,23 @@ public class Spring extends ActiveElement implements IConnectable {
     public int generateWater() {
         return GameConfig.SPRING_WATER_GENERATED_PER_TICK;
     }
+
     @Override
     public int receiveAndTransferWater() {
-     int produced = generateWater();
+        int produced = generateWater();
 
-     List<PipeEnd> ends = getConnections();
+        List<PipeEnd> ends = getConnections();
 
-     if(ends.isEmpty()) return 0;
-     int perEnd = produced / ends.size();
+        if (ends.isEmpty())
+            return 0;
+        int perEnd = produced / ends.size();
 
-     Debug.log("[SPRING] %s AMOUNT GENERATED %d",this.getId(),produced);
-     for(PipeEnd end: ends) {
-         end.addPendingWater(perEnd);
-     }
-     return 0; // cannot lose since it is the source
-      }
+        Debug.log("[SPRING] %s AMOUNT GENERATED %d", this.getId(), produced);
+        for (PipeEnd end : ends) {
+            end.addPendingWater(perEnd);
+        }
+        return 0; // cannot lose since it is the source
+    }
 
     /**
      * Adds a pipe to the attached list without changing connection state.
@@ -129,5 +131,13 @@ public class Spring extends ActiveElement implements IConnectable {
         attachedPipes.add(p);
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "[STATE] SPRING %s productionRate=%d connections=%d",
+                getId(),
+                waterProductionRate,
+                getConnections().size());
+    }
 
 }

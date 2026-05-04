@@ -1,5 +1,7 @@
 package software.project.models;
 
+import java.util.Locale;
+
 /**
  * Represents a participant in the game.
  * <p>
@@ -161,5 +163,12 @@ public class Player {
     /** Returns the element the player is currently positioned on. */
     public Element getCurrentPosition() {
         return currentPosition;
+    }
+
+    @Override
+    public String toString() {
+        String type = getClass().getSimpleName().toUpperCase(Locale.ROOT);
+        String positionId = currentPosition == null ? "NONE" : currentPosition.getId();
+        return String.format("[STATE] %s %s position=%s", type, id, positionId);
     }
 }

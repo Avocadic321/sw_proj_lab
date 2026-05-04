@@ -26,6 +26,7 @@ import software.project.parser.commands.SetGoalCommand;
 import software.project.parser.commands.SetPlayersCommand;
 import software.project.parser.commands.SetRandomCommand;
 import software.project.parser.commands.SetTurnDurationCommand;
+import software.project.parser.commands.ShowStateCommand;
 
 public class CommandParser {
     private final App app;
@@ -50,6 +51,7 @@ public class CommandParser {
         commands.put("RESUME", new ResumeGameCommand());
         commands.put("END_GAME", new EndGameCommand());
         commands.put("SCORE", new ScoreCommand());
+        commands.put("SHOW_STATE", new ShowStateCommand());
 
         /* Random event commands */
         commands.put("RANDOM_BREAK", new RandomBreakCommand());

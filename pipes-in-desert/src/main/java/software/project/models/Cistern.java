@@ -29,7 +29,6 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     private Pump storedPump;
 
-
     public Cistern(int x, int y) {
         this(null, x, y, GameConfig.CISTERN_DEFAULT_CAPACITY);
     }
@@ -57,14 +56,15 @@ public class Cistern extends ActiveElement implements IConnectable {
     /**
      * Accepts incoming water.
      * <p>
-     * //  * @param amount amount of water received
+     * // * @param amount amount of water received
      */
     @Override
     public int receiveAndTransferWater() {
         int leaked = 0;
         for (PipeEnd end : getConnections()) {
             int incoming = end.consumeWater();
-            if (incoming <= 0) continue;
+            if (incoming <= 0)
+                continue;
             int accepted = Math.min(incoming, capacity - storedWater);
             storedWater += accepted;
             int overflow = incoming - accepted;
@@ -101,7 +101,8 @@ public class Cistern extends ActiveElement implements IConnectable {
      * @return new pipe instance
      */
     public void producePipe() {
-        if (storedPipe != null) return;
+        if (storedPipe != null)
+            return;
         System.out.println("[Cistern] producePipe()");
         Pipe pipe = new Pipe();
         this.connect(pipe.getEnd1());
@@ -132,7 +133,6 @@ public class Cistern extends ActiveElement implements IConnectable {
         return pump;
     }
 
-
     /**
      * Connects a pipe end to this cistern.
      *
@@ -161,5 +161,20 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public List<PipeEnd> getConnections() {
         return super.getConnections();
+    }
+
+    @Override
+    public String toString() {
+        String pipeId = storedPipe == null ? "NONE" : storedPipe.getId();
+        String pumpId = storedPump == null ? "NONE" : storedPump.getId();
+
+        return String.format(
+                "[STATE] CISTERN %s storedWater=%d capacity=%d storedPipe=%s storedPump=%s connections=%d",
+                getId(),
+                storedWater,
+                capacity,
+                pipeId,
+                pumpId,
+                getConnections().size());
     }
 }

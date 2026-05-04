@@ -11,7 +11,8 @@ import software.project.interfaces.IRepairable;
  * <p>
  * Plumbers can repair damaged pipes and pumps, pick up new components from
  * cisterns, and modify the network by connecting, disconnecting, or inserting
- * pumps into pipes. Their score is based on water successfully delivered to cisterns.
+ * pumps into pipes. Their score is based on water successfully delivered to
+ * cisterns.
  * </p>
  *
  * @see Player
@@ -251,7 +252,8 @@ public class Plumber extends Player {
         currentPosition = pump;
 
         System.out.println("[OK] INSERT_PUMP " + id + " " + pipe.getId() + " " + pump.getId());
-        System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + pipe1.getId() + "," + pipe2.getId() + " via " + pump.getId());
+        System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + pipe1.getId() + "," + pipe2.getId()
+                + " via " + pump.getId());
     }
 
     private PipeEnd getFreeEnd(Pipe pipe) {
@@ -296,6 +298,20 @@ public class Plumber extends Player {
         }
 
         return pipeId;
+    }
+
+    @Override
+    public String toString() {
+        String positionId = currentPosition == null ? "NONE" : currentPosition.getId();
+        String carried = "NONE";
+
+        if (carriedItem instanceof Element element) {
+            carried = element.getId();
+        } else if (carriedItem != null) {
+            carried = carriedItem.getClass().getSimpleName().toUpperCase();
+        }
+
+        return String.format("[STATE] PLUMBER %s position=%s carriedItem=%s", id, positionId, carried);
     }
 
 }
