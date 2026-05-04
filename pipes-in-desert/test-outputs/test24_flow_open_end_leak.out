@@ -1,0 +1,7 @@
+[OK] SET_RANDOM OFF
+[OK] SET_PLAYERS 4
+[OK] NEW_GAME
+[OK] DISCONNECT PLUMBER0 PIPE2_END2
+[STATE] PIPE PIPE2 broken=false currentWater=0 end1=FREE end2=FREE occupant=NONE
+[OK] FLOW 1
+[SCORE] Plumbers: 0, Saboteurs: 0

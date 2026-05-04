@@ -57,7 +57,9 @@ public abstract class ActiveElement extends Element {
      */
     public void disconnect(PipeEnd end) {
         connections.remove(end);
-        end.disconnect();
+        if (end != null && end.connectedTo == this) {
+            end.connectedTo = null;
+        }
     }
 
     /**

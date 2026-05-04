@@ -3,6 +3,7 @@ package software.project.parser.commands;
 import software.project.core.Game;
 import software.project.models.Element;
 import software.project.models.Player;
+import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -20,19 +21,21 @@ public class MovePlayerCommand implements ICommand {
             return;
         }
 
-        if (args == null || args.length != 1) {
+        if (args == null || (args.length != 1 && args.length != 2)) {
             System.out.println("[ERROR] MOVE INVALID_ARGS");
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = args.length == 2
+                ? CommandUtils.findPlayer(game, args[0])
+                : game.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] MOVE NO_CURRENT_PLAYER");
             return;
         }
 
-        String targetId = args[0].trim();
-        Element target = game.getGameMap().getElement(targetId);
+        String targetId = args[args.length - 1].trim();
+        Element target = CommandUtils.findElement(game, targetId);
         if (target == null) {
             System.out.println("[ERROR] MOVE TARGET_NOT_FOUND " + targetId);
             return;
