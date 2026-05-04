@@ -56,6 +56,15 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     public int getStoredWater() {
         return storedWater;
     }
+
+    public PipeEnd getInputPipe() {
+        return inputPipe;
+    }
+
+    public PipeEnd getOutputPipe() {
+        return outputPipe;
+    }
+
     /**
      * Sets the input and output pipe ends for this pump.
      *
@@ -87,37 +96,39 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     /**
      * Transfers water through the pump.
      *
-    // * @param amount incoming amount
+     * // * @param amount incoming amount
+     * 
      * @return forwarded amount
      */
 
-    public int receiveAndTransferWater()  {
+    @Override
+    public int receiveAndTransferWater() {
 
-        if(inputPipe == null || outputPipe == null) return 0;
+        if (inputPipe == null || outputPipe == null)
+            return 0;
         int incoming = inputPipe.consumeWater();
 
         int maxCapacity = GameConfig.PUMP_TANK_CAPACITY;
         int maxTransfer = GameConfig.PUMP_MAX_FLOW_PER_TICK;
 
         ElementWaterState waterAmount = Helper.waterToBePumpedOut(
-            incoming,
-            maxTransfer,
-            storedWater,
-            maxCapacity,
-            this::breakElement
-        );
+                incoming,
+                maxTransfer,
+                storedWater,
+                maxCapacity,
+                this::breakElement);
 
         storedWater = waterAmount.currentlyStoredWater();
 
-        int out  = waterAmount.pumpedWater();
+        int out = waterAmount.pumpedWater();
 
-        if(isBroken || outputPipe.isFree()) {
+        if (isBroken || outputPipe.isFree()) {
             int lost = out + storedWater;
             storedWater = 0; // lose all water we hold
             System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), out);
             return lost;
         }
-        Debug.log("[PUMP] %s AMOUNT FORWARDED %d",this.getId(),out);
+        Debug.log("[PUMP] %s AMOUNT FORWARDED %d", this.getId(), out);
         outputPipe.addPendingWater(out);
         return 0;
     }
@@ -201,6 +212,36 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     public boolean isConnectedToCistern() {
         System.out.println("[Pump] isConnectedToCistern()");
         return outputPipe != null && outputPipe.connectedTo instanceof Cistern;
+    }
+
+    @Override
+    public String toString() {
+        String inputId = inputPipe == null || inputPipe.pipe == null ? "NONE" : toPipeEndId(inputPipe);
+        String outputId = outputPipe == null || outputPipe.pipe == null ? "NONE" : toPipeEndId(outputPipe);
+
+        return String.format(
+                "[STATE] PUMP %s broken=%s storedWater=%d input=%s output=%s",
+                getId(),
+                isBroken,
+                storedWater,
+                inputId,
+                outputId);
+    }
+
+    private String toPipeEndId(PipeEnd end) {
+        if (end == null || end.pipe == null) {
+            return "NONE";
+        }
+
+        if (end.pipe.getEnd1() == end) {
+            return end.pipe.getId() + "_END1";
+        }
+
+        if (end.pipe.getEnd2() == end) {
+            return end.pipe.getId() + "_END2";
+        }
+
+        return end.pipe.getId();
     }
 
 }
