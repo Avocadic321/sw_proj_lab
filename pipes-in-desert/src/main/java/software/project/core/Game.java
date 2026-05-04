@@ -91,7 +91,7 @@ public class Game {
         }
         if (gameLoopTask == null || gameLoopTask.isDone()) {
             gameLoopTask = scheduler.scheduleAtFixedRate(
-                this::tick, 0, 1, TimeUnit.SECONDS);
+                    this::tick, 0, 1, TimeUnit.SECONDS);
             Debug.log("Game loop task scheduled at 1 sec interval.");
         } else {
             Debug.log("Game loop task already running.");
@@ -121,7 +121,8 @@ public class Game {
 
     /** Pauses the game if it is currently running. */
     public void pauseGame() {
-        if (state != GameState.RUNNING) return;
+        if (state != GameState.RUNNING)
+            return;
         Debug.log("Game paused.");
         state = GameState.PAUSED;
         turnManager.suspendTurn();
@@ -130,7 +131,8 @@ public class Game {
 
     /** Resumes the game if it is currently paused. */
     public void resumeGame() {
-        if (state != GameState.PAUSED) return;
+        if (state != GameState.PAUSED)
+            return;
         Debug.log("Game resumed.");
         state = GameState.RUNNING;
         turnManager.resumeTurn();
@@ -139,7 +141,8 @@ public class Game {
 
     /** Ends the game session. */
     public void endGame() {
-        if (state == GameState.FINALIZED) return;
+        if (state == GameState.FINALIZED)
+            return;
         Debug.log("Ending game. Shutting down game loop...");
         state = GameState.FINALIZED;
         turnManager.endTurn();
@@ -164,7 +167,7 @@ public class Game {
         checkWinner();
 
         if (turnManager.justEnded()) {
-            onTurnEnded();               // random events, win check
+            onTurnEnded(); // random events, win check
             if (state == GameState.RUNNING) {
                 turnManager.startNextTurn();
             }
@@ -175,7 +178,7 @@ public class Game {
         if (leakedAmount > 0) {
             saboteurs.addScore(leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED);
             Debug.log("Saboteur score +%d (total: %d)",
-                leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
+                    leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
         }
 
         int totalStored = 0;
@@ -222,7 +225,9 @@ public class Game {
             }
         }
 
-        if (unbrokenPumps.isEmpty()) { return; }
+        if (unbrokenPumps.isEmpty()) {
+            return;
+        }
 
         Pump target = unbrokenPumps.get(random.nextInt(unbrokenPumps.size()));
         target.breakElement();
@@ -231,7 +236,8 @@ public class Game {
 
     public void produceRandomComponent() {
         List<Cistern> cisterns = gameMap.getAllCisterns();
-        if (cisterns.isEmpty()) return;
+        if (cisterns.isEmpty())
+            return;
 
         Cistern c = cisterns.get(random.nextInt(cisterns.size()));
         boolean producePipe = random.nextBoolean();
@@ -312,9 +318,42 @@ public class Game {
         checkWinner();
     }
 
-    public GameMap getGameMap() { return gameMap; }
-    public TurnManager getTurnManager() { return turnManager; }
-    public Team getPlumbersTeam() { return plumbers; }
-    public Team getSaboteursTeam() { return saboteurs; }
-    public GameState getState() { return state; }
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
+    public TurnManager getTurnManager() {
+        return turnManager;
+    }
+
+    public Team getPlumbersTeam() {
+        return plumbers;
+    }
+
+    public Team getSaboteursTeam() {
+        return saboteurs;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
+    @Override
+    public String toString() {
+        String currentPlayer = turnManager.getCurrentPlayer() == null
+                ? "NONE"
+                : turnManager.getCurrentPlayer().getId();
+        String activeTeam = turnManager.getActiveTeam() == null
+                ? "NONE"
+                : turnManager.getActiveTeam().name();
+
+        return String.format(
+                "[STATE] GAME GAME state=%s currentPlayer=%s activeTeam=%s plumbersScore=%d saboteursScore=%d mapElements=%d",
+                state,
+                currentPlayer,
+                activeTeam,
+                plumbers == null ? 0 : plumbers.getScore(),
+                saboteurs == null ? 0 : saboteurs.getScore(),
+                gameMap.getElements().size());
+    }
 }
