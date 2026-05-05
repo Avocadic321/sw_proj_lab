@@ -6,6 +6,8 @@ import software.project.models.Team;
 import software.project.utils.Debug;
 import software.project.utils.Teams;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class TurnManager {
     private final List<Player> players = new ArrayList<>();
     private int currentIndex = 0;
     private Player currentPlayer;
+    private PropertyChangeSupport playerSupport;
     private boolean isRunning;
     private Teams activeTeam;
 
@@ -36,8 +39,16 @@ public class TurnManager {
         timer = new Timer(turnDuration);
         currentPlayer = null;
         isRunning = false;
+        playerSupport = new PropertyChangeSupport(this);
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        playerSupport.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        playerSupport.removePropertyChangeListener(pcl);
+    }
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
         List<Player> plList = plumbers.getPlayers();
@@ -130,9 +141,11 @@ public class TurnManager {
     private void advanceToNextPlayer() {
         if (players.isEmpty()) return;
         currentIndex = (currentIndex + 1) % players.size();
+        Player oldPlayer = currentPlayer;
         currentPlayer = players.get(currentIndex);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
+        playerSupport.firePropertyChange("playerChanged",oldPlayer,this.currentPlayer);
     }
 
     /**
