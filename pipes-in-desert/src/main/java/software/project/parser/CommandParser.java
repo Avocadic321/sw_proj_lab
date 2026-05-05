@@ -5,28 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import software.project.App;
-import software.project.parser.commands.ConnectCommand;
-import software.project.parser.commands.DisconnectCommand;
-import software.project.parser.commands.EndGameCommand;
-import software.project.parser.commands.EndTurnCommand;
-import software.project.parser.commands.ExtendPipeCommand;
-import software.project.parser.commands.MovePlayerCommand;
-import software.project.parser.commands.NewGameCommand;
-import software.project.parser.commands.PauseGameCommand;
-import software.project.parser.commands.PickUpCommand;
-import software.project.parser.commands.RandomBreakCommand;
-import software.project.parser.commands.RandomProduceCommand;
-import software.project.parser.commands.RepairPumpCommand;
-import software.project.parser.commands.ResumeGameCommand;
-import software.project.parser.commands.SabotagePipeCommand;
-import software.project.parser.commands.SabotagePumpCommand;
-import software.project.parser.commands.ScoreCommand;
-import software.project.parser.commands.SetDirectionCommand;
-import software.project.parser.commands.SetGoalCommand;
-import software.project.parser.commands.SetPlayersCommand;
-import software.project.parser.commands.SetRandomCommand;
-import software.project.parser.commands.SetTurnDurationCommand;
-import software.project.parser.commands.ShowStateCommand;
+import software.project.parser.commands.*;
 
 public class CommandParser {
     private final App app;
@@ -52,6 +31,7 @@ public class CommandParser {
         commands.put("END_GAME", new EndGameCommand());
         commands.put("SCORE", new ScoreCommand());
         commands.put("SHOW_STATE", new ShowStateCommand());
+        commands.put("FLOW", new FlowCommand());
 
         /* Random event commands */
         commands.put("RANDOM_BREAK", new RandomBreakCommand());
@@ -63,10 +43,14 @@ public class CommandParser {
         commands.put("DISCONNECT", new DisconnectCommand());
         commands.put("SET_DIRECTION", new SetDirectionCommand());
         commands.put("REPAIR_PUMP", new RepairPumpCommand());
+        commands.put("REPAIR_PIPE", new RepairPipeCommand());
         commands.put("SABOTAGE_PUMP", new SabotagePumpCommand());
         commands.put("SABOTAGE_PIPE", new SabotagePipeCommand());
         commands.put("PICK_UP", new PickUpCommand());
+        commands.put("PICKUP_PIPE", new PickupPipeCommand());
+        commands.put("PICKUP_PUMP", new PickupPumpCommand());
         commands.put("EXTEND_PIPE_SYSTEM", new ExtendPipeCommand());
+        commands.put("INSERT_PUMP", new InsertPumpCommand());
     }
 
     public void parseAndExecute(String line) {
