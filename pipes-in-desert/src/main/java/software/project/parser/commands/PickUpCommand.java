@@ -6,7 +6,6 @@ import software.project.models.Pipe;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Pump;
-import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -33,7 +32,7 @@ public class PickUpCommand implements ICommand {
             return;
         }
 
-        String id = CommandUtils.normalizeId(args[0].trim());
+        String id = args[0].trim();
         Player p = game.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] PICK_UP NO_CURRENT_PLAYER");
@@ -48,7 +47,7 @@ public class PickUpCommand implements ICommand {
         Plumber plumber = (Plumber) p;
 
         // If target is a pipe or pump in the world
-        Pipe pipe = CommandUtils.findElement(game, id, Pipe.class);
+        Pipe pipe = game.getGameMap().getElement(id, Pipe.class);
         if (pipe != null) {
             try {
                 plumber.pickUpPipe(pipe);
@@ -59,7 +58,7 @@ public class PickUpCommand implements ICommand {
             return;
         }
 
-        Pump pump = CommandUtils.findElement(game, id, Pump.class);
+        Pump pump = game.getGameMap().getElement(id, Pump.class);
         if (pump != null) {
             try {
                 plumber.pickUpPump(pump);
@@ -71,7 +70,7 @@ public class PickUpCommand implements ICommand {
         }
 
         // If target is a cistern (pickup from produced components)
-        Cistern cistern = CommandUtils.findElement(game, id, Cistern.class);
+        Cistern cistern = game.getGameMap().getElement(id, Cistern.class);
         if (cistern != null) {
             if (args.length == 2) {
                 String type = args[1].trim().toUpperCase();

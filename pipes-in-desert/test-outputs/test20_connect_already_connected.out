@@ -1,5 +1,0 @@
-[OK] SET_RANDOM OFF
-[OK] SET_PLAYERS 4
-[OK] NEW_GAME
-[ERROR] CONNECT Pipe end is already connected
-[STATE] PIPE PIPE1 broken=false currentWater=0 end1=SPRING1 end2=PUMP1 occupant=NONE
