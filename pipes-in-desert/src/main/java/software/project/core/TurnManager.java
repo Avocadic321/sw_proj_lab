@@ -4,6 +4,7 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
 import software.project.utils.Debug;
+import software.project.utils.Events;
 import software.project.utils.Teams;
 
 import java.beans.PropertyChangeListener;
@@ -145,7 +146,7 @@ public class TurnManager {
         currentPlayer = players.get(currentIndex);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
-        playerSupport.firePropertyChange("playerChanged",oldPlayer,this.currentPlayer);
+        playerSupport.firePropertyChange(Events.ON_PLAYER_TURN_CHANGE,oldPlayer,this.currentPlayer);
     }
 
     /**

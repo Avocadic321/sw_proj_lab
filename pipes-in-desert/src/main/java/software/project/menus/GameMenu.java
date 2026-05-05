@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import software.project.App;
 import software.project.models.Player;
+import software.project.utils.Events;
 
 public class GameMenu implements IMenu, PropertyChangeListener {
     private final App app;
@@ -27,6 +28,7 @@ public class GameMenu implements IMenu, PropertyChangeListener {
         System.out.println("============= Map ==============\n");
         System.out.println(MAP_DIAGRAM);
         System.out.println("================================");
+        app.getGame().getTurnManager().addPropertyChangeListener(this);
     }
 
     private void printOptions(){
@@ -76,7 +78,7 @@ public class GameMenu implements IMenu, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals("playerChanged")) {
+        if(evt.getPropertyName().equals(Events.ON_PLAYER_TURN_CHANGE)) {
             Player newPlayer = (Player) evt.getNewValue();
             System.out.println("\n--- Turn changed to " + newPlayer.getId() + " ---");
             printOptions();

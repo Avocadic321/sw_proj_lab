@@ -26,9 +26,7 @@ public class MainMenu implements IMenu {
                 case "1":
                     app.getParser().parseAndExecute("NEW_GAME");
                     if (app.getGame() != null) {
-                        GameMenu menu = new GameMenu(app);
-                        this.app.getGame().getTurnManager().addPropertyChangeListener(menu);
-                        return menu;
+                        return new GameMenu(app);
                     }
                     break;
                 case "2":
