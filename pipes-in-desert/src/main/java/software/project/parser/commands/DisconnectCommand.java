@@ -9,6 +9,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Disconnects a pipe end from an active element.
+ */
 public class DisconnectCommand implements ICommand {
 
     @Override

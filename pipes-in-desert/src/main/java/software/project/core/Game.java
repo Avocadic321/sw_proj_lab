@@ -83,6 +83,9 @@ public class Game {
         }
     }
 
+    /**
+     * Starts the background game loop that runs every second.
+     */
     public void startGameLoop() {
         Debug.log("startGameLoop() called.");
         if (scheduler == null || scheduler.isShutdown()) {
@@ -98,6 +101,9 @@ public class Game {
         }
     }
 
+    /**
+     * Stops the currently running game loop.
+     */
     public void stopGameLoop() {
         Debug.log("stopGameLoop() called.");
         if (gameLoopTask != null) {
@@ -109,6 +115,9 @@ public class Game {
         }
     }
 
+    /**
+     * Terminates the game loop scheduler completely.
+     */
     public void terminateGameLoop() {
         Debug.log("terminateGameLoop() called.");
         if (scheduler != null) {
@@ -212,6 +221,9 @@ public class Game {
         }
     }
 
+    /**
+     * Breaks a random unbroken pump on the map (random event).
+     */
     public void breakRandomPump() {
         List<Pump> pumpList = gameMap.getAllPumps();
         if (pumpList.isEmpty()) {
@@ -234,6 +246,9 @@ public class Game {
         System.out.printf("[EVENT] RANDOM_PUMP_BROKEN %s%n", target.getId());
     }
 
+    /**
+     * Produces a random component (pipe or pump) at a random cistern.
+     */
     public void produceRandomComponent() {
         List<Cistern> cisterns = gameMap.getAllCisterns();
         if (cisterns.isEmpty())
@@ -253,6 +268,9 @@ public class Game {
         // TODO: Add logic later for placing the produced component
     }
 
+    /**
+     * Triggers all random events if random events are enabled.
+     */
     public void triggerRandomEvents() {
         if (!config.areRandomEventsEnabled()) {
             return;
@@ -261,6 +279,11 @@ public class Game {
         produceRandomComponent();
     }
 
+    /**
+     * Breaks a specific pump by ID.
+     *
+     * @param pumpId the ID of the pump to break
+     */
     public void breakSpecificPump(String pumpId) {
         Pump pump = gameMap.getElement(pumpId, Pump.class);
         if (pump == null) {
@@ -275,6 +298,12 @@ public class Game {
         System.out.printf("[EVENT] PUMP_BROKEN %s%n", pumpId);
     }
 
+    /**
+     * Produces a specific component type at a specified cistern.
+     *
+     * @param cisternId the ID of the cistern
+     * @param type      the component type ("PIPE" or "PUMP")
+     */
     public void produceComponentAt(String cisternId, String type) {
         Debug.log("produceComponentAt called for %s type=%s%n", cisternId, type);
         Cistern cistern = gameMap.getElement(cisternId, Cistern.class);
@@ -311,6 +340,9 @@ public class Game {
         }
     }
 
+    /**
+     * Called at the end of each turn to handle random events and win conditions.
+     */
     public void onTurnEnded() {
         Debug.log("onTurnEnded() running per‑turn actions");
 
@@ -318,22 +350,47 @@ public class Game {
         checkWinner();
     }
 
+    /**
+     * Returns the current game map.
+     *
+     * @return the game map containing all game elements
+     */
     public GameMap getGameMap() {
         return gameMap;
     }
 
+    /**
+     * Returns the turn manager.
+     *
+     * @return the turn manager that handles turn timing and player rotation
+     */
     public TurnManager getTurnManager() {
         return turnManager;
     }
 
+    /**
+     * Returns the plumbers team.
+     *
+     * @return the plumbers team
+     */
     public Team getPlumbersTeam() {
         return plumbers;
     }
 
+    /**
+     * Returns the saboteurs team.
+     *
+     * @return the saboteurs team
+     */
     public Team getSaboteursTeam() {
         return saboteurs;
     }
 
+    /**
+     * Returns the current game state.
+     *
+     * @return the current game state (RUNNING, PAUSED, FINALIZED, etc.)
+     */
     public GameState getState() {
         return state;
     }

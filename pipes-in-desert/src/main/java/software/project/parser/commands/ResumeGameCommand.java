@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Resumes a paused game.
+ */
 public class ResumeGameCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

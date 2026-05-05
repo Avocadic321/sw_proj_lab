@@ -8,6 +8,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Repairs a broken pump.
+ */
 public class RepairPumpCommand implements ICommand {
 
     @Override

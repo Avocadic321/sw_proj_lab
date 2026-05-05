@@ -5,6 +5,9 @@ import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
+/**
+ * Sets the duration (in seconds) for each player's turn.
+ */
 public class SetTurnDurationCommand implements ICommand {
     private final App app;
 

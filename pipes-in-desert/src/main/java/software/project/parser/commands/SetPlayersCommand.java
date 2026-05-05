@@ -5,6 +5,9 @@ import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
+/**
+ * Sets the number of players in the game (before it starts).
+ */
 public class SetPlayersCommand implements ICommand {
     private final App app;
 

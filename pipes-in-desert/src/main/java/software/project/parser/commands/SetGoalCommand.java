@@ -5,6 +5,9 @@ import software.project.core.Game;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
+/**
+ * Sets the goal score that a team must reach to win the game.
+ */
 public class SetGoalCommand implements ICommand {
     private final App app;
 

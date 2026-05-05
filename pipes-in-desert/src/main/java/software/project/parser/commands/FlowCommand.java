@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Simulates fluid flow through the pipe system for a specified number of ticks.
+ */
 public class FlowCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

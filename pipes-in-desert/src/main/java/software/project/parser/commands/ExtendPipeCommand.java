@@ -6,6 +6,9 @@ import software.project.models.Plumber;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Extends the pipe system by the current plumber player.
+ */
 public class ExtendPipeCommand implements ICommand {
 
     @Override

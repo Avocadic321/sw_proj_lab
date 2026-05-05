@@ -9,6 +9,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Inserts a pump that a plumber is carrying into a pipe.
+ */
 public class InsertPumpCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

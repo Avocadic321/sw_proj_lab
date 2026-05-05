@@ -7,6 +7,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Moves a player to an adjacent element on the map.
+ */
 public class MovePlayerCommand implements ICommand {
 
     @Override
