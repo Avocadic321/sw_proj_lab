@@ -11,6 +11,9 @@ import software.project.models.Team;
 import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 
+/**
+ * Displays the current state of the game or a specific game element.
+ */
 public class ShowStateCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

@@ -4,6 +4,9 @@ import software.project.App;
 import software.project.core.Game;
 import software.project.parser.ICommand;
 
+/**
+ * Initializes and starts a new game.
+ */
 public class NewGameCommand implements ICommand {
     private final App app;
 

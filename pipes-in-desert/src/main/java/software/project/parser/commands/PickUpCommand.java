@@ -10,6 +10,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Picks up a component (pipe or pump) from the ground or from a cistern.
+ */
 public class PickUpCommand implements ICommand {
 
     @Override

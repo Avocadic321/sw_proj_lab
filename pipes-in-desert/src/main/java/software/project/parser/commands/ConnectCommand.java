@@ -10,6 +10,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Connects a pipe end to an active element (pump or cistern).
+ */
 public class ConnectCommand implements ICommand {
 
     @Override

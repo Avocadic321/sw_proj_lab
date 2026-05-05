@@ -8,6 +8,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Repairs a broken pipe at the player's current location.
+ */
 public class RepairPipeCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

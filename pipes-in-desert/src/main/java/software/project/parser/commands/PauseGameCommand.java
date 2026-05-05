@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Pauses the currently running game.
+ */
 public class PauseGameCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

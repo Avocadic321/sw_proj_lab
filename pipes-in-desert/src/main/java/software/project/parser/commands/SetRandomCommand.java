@@ -4,6 +4,9 @@ import software.project.App;
 import software.project.core.Game;
 import software.project.parser.ICommand;
 
+/**
+ * Enables or disables random events in the game.
+ */
 public class SetRandomCommand implements ICommand {
     private final App app;
 

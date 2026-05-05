@@ -45,7 +45,7 @@ public class GameConfig {
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
 
-    /* ===== Game Elements Constants =====*/
+    /* ===== Game Elements Constants ===== */
     // Cistern
     public static final int CISTERN_DEFAULT_CAPACITY = 500;
     public static final int CISTERN_MAX_CAPACITY = 1000;
@@ -123,6 +123,11 @@ public class GameConfig {
         return numberOfPlayers;
     }
 
+    /**
+     * Returns whether random events are enabled.
+     *
+     * @return true if random events are enabled, false otherwise
+     */
     public boolean areRandomEventsEnabled() {
         return randomEventsEnabled;
     }
@@ -168,10 +173,15 @@ public class GameConfig {
         if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
             this.numberOfPlayers = count;
         } else {
-            System.out.printf("[ERROR] SET_PLAYERS OUT_OF_RANGE [%d, %d]%n",  MIN_PLAYERS, MAX_PLAYERS);
+            System.out.printf("[ERROR] SET_PLAYERS OUT_OF_RANGE [%d, %d]%n", MIN_PLAYERS, MAX_PLAYERS);
         }
     }
 
+    /**
+     * Enables or disables random events in the game.
+     *
+     * @param randomEventsEnabled true to enable random events, false to disable
+     */
     public void setRandomEventsEnabled(boolean randomEventsEnabled) {
         this.randomEventsEnabled = randomEventsEnabled;
     }
@@ -193,12 +203,11 @@ public class GameConfig {
     @Override
     public String toString() {
         return String.format(
-            "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
-            goalScore,
-            turnDurationSeconds,
-            realTimeScoring ? "ON" : "OFF",
-            numberOfPlayers,
-            randomEventsEnabled ? "ON" : "OFF"
-        );
+                "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
+                goalScore,
+                turnDurationSeconds,
+                realTimeScoring ? "ON" : "OFF",
+                numberOfPlayers,
+                randomEventsEnabled ? "ON" : "OFF");
     }
 }

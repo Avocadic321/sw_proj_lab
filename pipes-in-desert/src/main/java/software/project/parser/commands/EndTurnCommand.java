@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Ends the current player's turn and advances to the next player.
+ */
 public class EndTurnCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {
@@ -20,8 +23,8 @@ public class EndTurnCommand implements ICommand {
             return;
         }
 
-        game.getTurnManager().endTurn();       // just stops the timer
-        game.onTurnEnded();                    // triggers events + win check
+        game.getTurnManager().endTurn(); // just stops the timer
+        game.onTurnEnded(); // triggers events + win check
         if (game.getState() == GameState.RUNNING) {
             game.getTurnManager().startNextTurn();
         }

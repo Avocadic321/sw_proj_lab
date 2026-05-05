@@ -5,6 +5,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Breaks a specific pump (for testing or random events).
+ */
 public class RandomBreakCommand implements ICommand {
 
     @Override

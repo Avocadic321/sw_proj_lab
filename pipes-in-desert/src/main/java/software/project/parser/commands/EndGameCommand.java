@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Ends the current game.
+ */
 public class EndGameCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

@@ -8,6 +8,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Picks up a pump from a cistern.
+ */
 public class PickupPumpCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

@@ -9,6 +9,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Sets the flow direction of a pump by specifying its input and output pipes.
+ */
 public class SetDirectionCommand implements ICommand {
 
     @Override

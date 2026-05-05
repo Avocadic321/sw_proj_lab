@@ -4,6 +4,9 @@ import software.project.core.Game;
 import software.project.parser.ICommand;
 import software.project.models.Team;
 
+/**
+ * Displays the current scores of both teams.
+ */
 public class ScoreCommand implements ICommand {
     @Override
     public void execute(Game game, String[] args) {

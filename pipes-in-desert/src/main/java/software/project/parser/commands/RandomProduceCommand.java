@@ -5,6 +5,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Produces a component (pipe or pump) at a specified cistern.
+ */
 public class RandomProduceCommand implements ICommand {
 
     @Override

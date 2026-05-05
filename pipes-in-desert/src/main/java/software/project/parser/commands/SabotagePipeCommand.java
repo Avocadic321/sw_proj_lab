@@ -8,6 +8,9 @@ import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
+/**
+ * Sabotages (breaks) a pipe as a saboteur action.
+ */
 public class SabotagePipeCommand implements ICommand {
 
     @Override
