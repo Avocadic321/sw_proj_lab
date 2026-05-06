@@ -66,8 +66,6 @@ public class Game {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             plumbers.addPlayer(new Plumber(gameMap.getSpawnPoint()));
-        }
-        for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             saboteurs.addPlayer(new Saboteur(gameMap.getSpawnPoint()));
         }
 
