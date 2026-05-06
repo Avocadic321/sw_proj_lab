@@ -12,17 +12,27 @@ import software.project.utils.Helper;
  * Pipe segment that connects two pipe ends and can carry water.
  */
 public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
-    /** First pipe end. */
-    private PipeEnd end1;
-    /** Second pipe end. */
-    private PipeEnd end2;
+    /**
+     * First pipe end.
+     */
+    private final PipeEnd end1;
+    /**
+     * Second pipe end.
+     */
+    private final PipeEnd end2;
 
-    /** Maximum water capacity. */
-    private int capacity;
-    /** Current water amount. */
+    /**
+     * Maximum water capacity.
+     */
+    private final int capacity;
+    /**
+     * Current water amount.
+     */
     private int currentWater;
 
-    /** Whether the pipe is broken. */
+    /**
+     * Whether the pipe is broken.
+     */
     private boolean isBroken;
 
     public Pipe() {
@@ -101,7 +111,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
         int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
         ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB, maxTransfer, currentWater,
-                capacity, this::breakElement);
+            capacity, this::breakElement);
         currentWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
 
@@ -117,7 +127,9 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     }
 
-    /** Breaks the pipe, causing leakage. */
+    /**
+     * Breaks the pipe, causing leakage.
+     */
     @Override
     public void breakElement() {
         this.isBroken = true;
@@ -133,7 +145,9 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return this.isBroken;
     }
 
-    /** Repairs the pipe. */
+    /**
+     * Repairs the pipe.
+     */
     @Override
     public void repair() {
         this.isBroken = false;
@@ -171,7 +185,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         leftPipe.end2.connectsTo(carriedPump);
         rightPipe.end1.connectsTo(carriedPump);
 
-        return new Pipe[] { leftPipe, rightPipe };
+        return new Pipe[]{leftPipe, rightPipe};
     }
 
     /**
@@ -204,12 +218,12 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         String occupant = occupants.isEmpty() ? "NONE" : occupants.getFirst().getId();
 
         return String.format(
-                "[STATE] PIPE %s broken=%s currentWater=%d end1=%s end2=%s occupant=%s",
-                getId(),
-                isBroken,
-                currentWater,
-                end1State,
-                end2State,
-                occupant);
+            "[STATE] PIPE %s broken=%s currentWater=%d end1=%s end2=%s occupant=%s",
+            getId(),
+            isBroken,
+            currentWater,
+            end1State,
+            end2State,
+            occupant);
     }
 }

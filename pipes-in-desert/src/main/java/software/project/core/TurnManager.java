@@ -16,10 +16,9 @@ import java.util.List;
  * Manages the turn-based flow of a game session.
  *
  * <p>
- * Controls turn order, tracks the currently active player, and coordinates
- * turn transitions. The timer enforces time limits per player turn. When a turn
- * ends (either by player action or timer expiration), the manager advances to
- * the next player.
+ * Controls turn order, tracks the currently active player, and coordinates turn transitions. The timer enforces time
+ * limits per player turn. When a turn ends (either by player action or timer expiration), the manager advances to the
+ * next player.
  * </p>
  *
  * @see Timer
@@ -50,6 +49,7 @@ public class TurnManager {
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         playerSupport.removePropertyChangeListener(pcl);
     }
+
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
         List<Player> plList = plumbers.getPlayers();
@@ -94,7 +94,7 @@ public class TurnManager {
     }
 
     public void tick() {
-        if (!isRunning || currentPlayer == null ) return;
+        if (!isRunning || currentPlayer == null) return;
         timer.tick();
 
         // Debug - log remaining time in mm::ss
@@ -115,8 +115,7 @@ public class TurnManager {
      * Terminates the current turn.
      *
      * <p>
-     * Stops the timer, clears the running flag, and advances to the next
-     * player.
+     * Stops the timer, clears the running flag, and advances to the next player.
      * </p>
      */
     public void endTurn() {
@@ -146,15 +145,14 @@ public class TurnManager {
         currentPlayer = players.get(currentIndex);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
-        playerSupport.firePropertyChange(Events.ON_PLAYER_TURN_CHANGE,oldPlayer,this.currentPlayer);
+        playerSupport.firePropertyChange(Events.ON_PLAYER_TURN_CHANGE, oldPlayer, this.currentPlayer);
     }
 
     /**
      * Suspends the current turn without ending it.
      *
      * <p>
-     * Stops the timer but preserves the turn state for later resumption.
-     * Used when the game is paused.
+     * Stops the timer but preserves the turn state for later resumption. Used when the game is paused.
      * </p>
      */
     public void suspendTurn() {

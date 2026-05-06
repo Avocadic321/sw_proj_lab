@@ -1,27 +1,27 @@
 package software.project.menus;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Scanner;
-
 import software.project.App;
 import software.project.models.Player;
 import software.project.utils.Events;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Scanner;
 
 public class GameMenu implements IMenu, PropertyChangeListener {
     private final App app;
 
     private static final String MAP_DIAGRAM = """
-              S1        S2
-              ||
-              B1
-              ||
-    FE===B2===P1===B3===P3===B9===FE
-              ||        ||
-              B4        B8
-              ||        ||
-    C1===B5===P2===B6===P4===B7===C2
-    """;
+                  S1        S2
+                  ||
+                  B1
+                  ||
+        FE===B2===P1===B3===P3===B9===FE
+                  ||        ||
+                  B4        B8
+                  ||        ||
+        C1===B5===P2===B6===P4===B7===C2
+        """;
 
     public GameMenu(App app) {
         this.app = app;
@@ -31,7 +31,7 @@ public class GameMenu implements IMenu, PropertyChangeListener {
         app.getGame().getTurnManager().addPropertyChangeListener(this);
     }
 
-    private void printOptions(){
+    private void printOptions() {
         System.out.println("===== Game Control Commands =====");
         System.out.println("END_TURN");
         System.out.println("PAUSE");
@@ -57,6 +57,7 @@ public class GameMenu implements IMenu, PropertyChangeListener {
         System.out.println("EXIT");
         System.out.print("> ");
     }
+
     @Override
     public IMenu run() {
         Scanner sc = app.getScanner();
@@ -78,7 +79,7 @@ public class GameMenu implements IMenu, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Events.ON_PLAYER_TURN_CHANGE)) {
+        if (evt.getPropertyName().equals(Events.ON_PLAYER_TURN_CHANGE)) {
             Player newPlayer = (Player) evt.getNewValue();
             System.out.println("\n--- Turn changed to " + newPlayer.getId() + " ---");
             printOptions();

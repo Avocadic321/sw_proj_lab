@@ -7,10 +7,14 @@ import java.util.List;
  * Base class for elements that can accept pipe-end connections.
  */
 public abstract class ActiveElement extends Element {
-    /** Current pipe ends connected to this element. */
+    /**
+     * Current pipe ends connected to this element.
+     */
     protected List<PipeEnd> connections;
 
-    /** Creates an active element with default values. */
+    /**
+     * Creates an active element with default values.
+     */
     protected ActiveElement() {
         super();
         this.connections = new ArrayList<>();

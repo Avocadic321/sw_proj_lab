@@ -34,15 +34,16 @@ Basically simulation runs every couple of seconds, and player input is just appl
 
         int lostWater = 0;
         for (Element e : map.getElements()) {
-           lostWater += e.receiveAndTransferWater();
+            lostWater += e.receiveAndTransferWater();
 
         }
-        for(PipeEnd pipeEnd: getAllPipeEnds()) {
-        pipeEnd.commit();
+        for (PipeEnd pipeEnd : getAllPipeEnds()) {
+            pipeEnd.commit();
         }
-        Debug.log("LEAKED WATER: %d",lostWater);
+        Debug.log("LEAKED WATER: %d", lostWater);
         return lostWater;
     }
+
     private List<PipeEnd> getAllPipeEnds() {
         List<PipeEnd> ends = new ArrayList<>();
 

@@ -1,8 +1,5 @@
 package software.project.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import software.project.core.GameConfig;
 import software.project.interfaces.IBreakable;
 import software.project.interfaces.ICarriable;
@@ -12,23 +9,36 @@ import software.project.utils.Debug;
 import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Active element that routes water from an input to an output.
  */
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
 
-    /** Connected pipe ends. */
-    private List<PipeEnd> connections;
+    /**
+     * Connected pipe ends.
+     */
+    private final List<PipeEnd> connections;
 
-    /** Selected input pipe end. */
+    /**
+     * Selected input pipe end.
+     */
     private PipeEnd inputPipe;
-    /** Selected output pipe end. */
+    /**
+     * Selected output pipe end.
+     */
     private PipeEnd outputPipe;
 
-    /** Current amount stored in the pump tank. */
+    /**
+     * Current amount stored in the pump tank.
+     */
     private int storedWater;
 
-    /** Whether the pump is broken. */
+    /**
+     * Whether the pump is broken.
+     */
     private boolean isBroken;
 
     public Pump() {
@@ -95,9 +105,9 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
 
     /**
      * Transfers water through the pump.
-     *
+     * <p>
      * // * @param amount incoming amount
-     * 
+     *
      * @return forwarded amount
      */
 
@@ -112,11 +122,11 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         int maxTransfer = GameConfig.PUMP_MAX_FLOW_PER_TICK;
 
         ElementWaterState waterAmount = Helper.waterToBePumpedOut(
-                incoming,
-                maxTransfer,
-                storedWater,
-                maxCapacity,
-                this::breakElement);
+            incoming,
+            maxTransfer,
+            storedWater,
+            maxCapacity,
+            this::breakElement);
 
         storedWater = waterAmount.currentlyStoredWater();
 
@@ -133,7 +143,9 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         return 0;
     }
 
-    /** Breaks the pump. */
+    /**
+     * Breaks the pump.
+     */
     @Override
     public void breakElement() {
         this.isBroken = true;
@@ -181,7 +193,9 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         return connections;
     }
 
-    /** Repairs the pump. */
+    /**
+     * Repairs the pump.
+     */
     @Override
     public void repair() {
         this.isBroken = false;
@@ -220,12 +234,12 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         String outputId = outputPipe == null || outputPipe.pipe == null ? "NONE" : toPipeEndId(outputPipe);
 
         return String.format(
-                "[STATE] PUMP %s broken=%s storedWater=%d input=%s output=%s",
-                getId(),
-                isBroken,
-                storedWater,
-                inputId,
-                outputId);
+            "[STATE] PUMP %s broken=%s storedWater=%d input=%s output=%s",
+            getId(),
+            isBroken,
+            storedWater,
+            inputId,
+            outputId);
     }
 
     private String toPipeEndId(PipeEnd end) {

@@ -31,14 +31,25 @@ public class App {
         this.gameConfig = new GameConfig();
     }
 
-    public void setGame(Game game) { this.game = game; }
+    public void setGame(Game game) {
+        this.game = game;
+    }
 
     public GameConfig getGameConfig() {
         return gameConfig;
     }
-    public CommandParser getParser() { return parser; }
-    public Game getGame() { return game; }
-    public Scanner getScanner() { return scanner; }
+
+    public CommandParser getParser() {
+        return parser;
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public Scanner getScanner() {
+        return scanner;
+    }
 
     public void runInteractive() {
         scanner = new Scanner(System.in);
@@ -69,7 +80,7 @@ public class App {
 
             System.out.flush();
             try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
-                writer.print(buffer.toString());
+                writer.print(buffer);
             }
 
         } catch (IOException e) {
