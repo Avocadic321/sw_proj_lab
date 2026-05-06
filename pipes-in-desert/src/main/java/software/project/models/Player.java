@@ -1,6 +1,9 @@
 package software.project.models;
 
+import software.project.utils.IdGenerator;
+
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Represents a participant in the game.
@@ -28,11 +31,24 @@ public class Player {
     protected Element currentPosition;
 
     public Player(String id, Element startPosition) {
-        this.id = id;
-        this.currentPosition = startPosition;
-        if (startPosition != null) {
-            startPosition.addOccupant(this);
+        if (startPosition == null) {
+            throw new IllegalArgumentException("[ERROR] PLAYER INVALID_START_POSITION");
         }
+        if (id == null || id.isEmpty()) {
+            this.id = IdGenerator.generateId(this.getClass());
+        } else {
+            if (!IdGenerator.isIdAvailable(id)) {
+                throw new IllegalArgumentException("[ERROR] PLAYER DUPLICATE_ID");
+            }
+            IdGenerator.markIdUsed(id);
+            this.id = id;
+        }
+        this.currentPosition = startPosition;
+        startPosition.addOccupant(this);
+    }
+
+    public Player(Element startPosition) {
+        this(null, startPosition);
     }
 
     /**

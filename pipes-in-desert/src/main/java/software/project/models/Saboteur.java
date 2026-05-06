@@ -18,6 +18,10 @@ public class Saboteur extends Player {
         super(id, startPosition);
     }
 
+    public Saboteur(Element startPosition) {
+        super(startPosition);
+    }
+
     /**
      * Damages the specified pipe, causing it to leak water.
      * <p>

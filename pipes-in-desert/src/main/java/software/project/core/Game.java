@@ -65,10 +65,10 @@ public class Game {
         saboteurs = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            plumbers.addPlayer(new Plumber("PLUMBER" + i, gameMap.getSpawnPoint()));
+            plumbers.addPlayer(new Plumber(gameMap.getSpawnPoint()));
         }
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            saboteurs.addPlayer(new Saboteur("SABOTEUR" + i, gameMap.getSpawnPoint()));
+            saboteurs.addPlayer(new Saboteur(gameMap.getSpawnPoint()));
         }
 
         turnManager.setTeams(plumbers, saboteurs);

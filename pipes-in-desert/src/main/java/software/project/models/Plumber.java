@@ -29,6 +29,10 @@ public class Plumber extends Player {
         this.carriedItem = null;
     }
 
+    public Plumber(Element startPosition) {
+        super(startPosition);
+    }
+
     /**
      * Repairs a broken or damaged element, restoring it to full functionality.
      *
