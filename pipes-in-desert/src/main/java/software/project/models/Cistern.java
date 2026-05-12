@@ -1,10 +1,10 @@
 package software.project.models;
 
-import java.util.List;
-
 import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
 import software.project.utils.Debug;
+
+import java.util.List;
 
 /**
  * Storage element that receives water and can produce new components.
@@ -17,7 +17,7 @@ public class Cistern extends ActiveElement implements IConnectable {
     /**
      * Maximum water capacity.
      */
-    private int capacity;
+    private final int capacity;
 
     /**
      * Currently stored pipe
@@ -169,12 +169,12 @@ public class Cistern extends ActiveElement implements IConnectable {
         String pumpId = storedPump == null ? "NONE" : storedPump.getId();
 
         return String.format(
-                "[STATE] CISTERN %s storedWater=%d capacity=%d storedPipe=%s storedPump=%s connections=%d",
-                getId(),
-                storedWater,
-                capacity,
-                pipeId,
-                pumpId,
-                getConnections().size());
+            "[STATE] CISTERN %s storedWater=%d capacity=%d storedPipe=%s storedPump=%s connections=%d",
+            getId(),
+            storedWater,
+            capacity,
+            pipeId,
+            pumpId,
+            getConnections().size());
     }
 }

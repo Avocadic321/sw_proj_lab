@@ -5,33 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import software.project.App;
-import software.project.parser.commands.ConnectCommand;
-import software.project.parser.commands.DisconnectCommand;
-import software.project.parser.commands.EndGameCommand;
-import software.project.parser.commands.EndTurnCommand;
-import software.project.parser.commands.ExtendPipeCommand;
-import software.project.parser.commands.FlowCommand;
-import software.project.parser.commands.InsertPumpCommand;
-import software.project.parser.commands.MovePlayerCommand;
-import software.project.parser.commands.NewGameCommand;
-import software.project.parser.commands.PauseGameCommand;
-import software.project.parser.commands.PickupPipeCommand;
-import software.project.parser.commands.PickupPumpCommand;
-import software.project.parser.commands.PickUpCommand;
-import software.project.parser.commands.RandomBreakCommand;
-import software.project.parser.commands.RandomProduceCommand;
-import software.project.parser.commands.RepairPipeCommand;
-import software.project.parser.commands.RepairPumpCommand;
-import software.project.parser.commands.ResumeGameCommand;
-import software.project.parser.commands.SabotagePipeCommand;
-import software.project.parser.commands.SabotagePumpCommand;
-import software.project.parser.commands.ScoreCommand;
-import software.project.parser.commands.SetDirectionCommand;
-import software.project.parser.commands.SetGoalCommand;
-import software.project.parser.commands.SetPlayersCommand;
-import software.project.parser.commands.SetRandomCommand;
-import software.project.parser.commands.SetTurnDurationCommand;
-import software.project.parser.commands.ShowStateCommand;
+import software.project.parser.commands.*;
 
 public class CommandParser {
     private final App app;
@@ -46,7 +20,6 @@ public class CommandParser {
         /* Game Configuration Commands */
         commands.put("SET_GOAL", new SetGoalCommand(app));
         commands.put("SET_TURN_DURATION", new SetTurnDurationCommand(app));
-        commands.put("SET_TURN", new SetTurnDurationCommand(app));
         commands.put("SET_PLAYERS", new SetPlayersCommand(app));
         commands.put("SET_RANDOM", new SetRandomCommand(app));
 

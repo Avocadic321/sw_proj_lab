@@ -3,11 +3,9 @@ package software.project.core;
 /**
  * Measures and controls the time allocated to each player's turn.
  * <p>
- * The timer maintains the total turn duration and the remaining time,
- * and provides controls to start, pause, resume, and stop the countdown.
- * The timer ticks down at regular intervals and notifies the turn manager
- * when time expires, ensuring that turns are properly limited according
- * to the game configuration.
+ * The timer maintains the total turn duration and the remaining time, and provides controls to start, pause, resume,
+ * and stop the countdown. The timer ticks down at regular intervals and notifies the turn manager when time expires,
+ * ensuring that turns are properly limited according to the game configuration.
  * </p>
  */
 public class Timer {
@@ -26,8 +24,7 @@ public class Timer {
     /**
      * Begins the countdown from the full duration.
      * <p>
-     * Sets timeLeft to turnDuration and isRunning to true.
-     * Typically called at the beginning of a player's turn.
+     * Sets timeLeft to turnDuration and isRunning to true. Typically called at the beginning of a player's turn.
      * </p>
      */
     public void start() {
@@ -39,8 +36,7 @@ public class Timer {
     /**
      * Temporarily suspends the countdown.
      * <p>
-     * Sets isRunning to false while preserving the current timeLeft.
-     * Used when the game is paused.
+     * Sets isRunning to false while preserving the current timeLeft. Used when the game is paused.
      * </p>
      */
     public void pause() {
@@ -60,8 +56,7 @@ public class Timer {
     /**
      * Ends the countdown entirely.
      * <p>
-     * Sets isRunning to false and resets timeLeft to zero.
-     * Used when a turn ends normally or the game finishes.
+     * Sets isRunning to false and resets timeLeft to zero. Used when a turn ends normally or the game finishes.
      * </p>
      */
     public void stop() {
@@ -73,9 +68,8 @@ public class Timer {
     /**
      * Decrements timeLeft by one second.
      * <p>
-     * Called repeatedly by a system clock while isRunning is true.
-     * When timeLeft reaches zero, this method triggers the turn manager
-     * to end the current turn.
+     * Called repeatedly by a system clock while isRunning is true. When timeLeft reaches zero, this method triggers the
+     * turn manager to end the current turn.
      * </p>
      */
     public void tick() {
@@ -95,7 +89,11 @@ public class Timer {
     public boolean hasExpired() {
         return expired;
     }
-    public int getTimeLeft() { return timeLeft; }
+
+    public int getTimeLeft() {
+        return timeLeft;
+    }
+
     public int getDuration() {
         return duration;
     }

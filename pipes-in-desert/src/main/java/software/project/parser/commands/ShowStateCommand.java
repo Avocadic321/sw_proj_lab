@@ -8,7 +8,6 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.models.Team;
-import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 
 /**
@@ -95,7 +94,7 @@ public class ShowStateCommand implements ICommand {
             return null;
         }
 
-        String normalizedId = CommandUtils.normalizeId(objectId.trim());
+        String normalizedId = objectId.trim();
         if ("GAME".equalsIgnoreCase(normalizedId)) {
             return game;
         }

@@ -3,7 +3,8 @@ package software.project.utils;
 import java.io.PrintStream;
 
 public final class Debug {
-    private Debug() {}
+    private Debug() {
+    }
 
     public static final boolean ENABLED = false;
 
@@ -15,8 +16,13 @@ public final class Debug {
         }
     }
 
-    public static void useStdout() { output = System.out; }
-    public static void useStderr() { output = System.err; }
+    public static void useStdout() {
+        output = System.out;
+    }
+
+    public static void useStderr() {
+        output = System.err;
+    }
 
     public static void log(String fmt, Object... args) {
         if (ENABLED) {

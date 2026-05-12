@@ -4,7 +4,6 @@ import software.project.core.Game;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Pump;
-import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -25,14 +24,13 @@ public class RepairPumpCommand implements ICommand {
             return;
         }
 
-        if (args == null || (args.length != 1 && args.length != 2)) {
+        if (args == null || args.length != 1) {
             System.out.println("[ERROR] REPAIR_PUMP INVALID_ARGS. Usage: REPAIR_PUMP <pumpId>");
             return;
         }
 
-        boolean documentedForm = args.length == 2 && CommandUtils.findPlayer(game, args[0]) != null;
-        String pumpId = args[documentedForm ? 1 : 0].trim();
-        Pump pump = CommandUtils.findElement(game, pumpId, Pump.class);
+        String pumpId = args[0].trim();
+        Pump pump = game.getGameMap().getElement(pumpId, Pump.class);
         if (pump == null) {
             System.out.println("[ERROR] REPAIR_PUMP PUMP_NOT_FOUND " + pumpId);
             return;
@@ -43,9 +41,7 @@ public class RepairPumpCommand implements ICommand {
             return;
         }
 
-        Player p = documentedForm
-                ? CommandUtils.findPlayer(game, args[0])
-                : game.getTurnManager().getCurrentPlayer();
+        Player p = game.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] REPAIR_PUMP NO_CURRENT_PLAYER");
             return;

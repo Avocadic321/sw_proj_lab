@@ -11,6 +11,7 @@ public class ConfigMenu implements IMenu {
     public ConfigMenu(App app) {
         this.app = app;
     }
+
     @Override
     public IMenu run() {
         Scanner sc = app.getScanner();

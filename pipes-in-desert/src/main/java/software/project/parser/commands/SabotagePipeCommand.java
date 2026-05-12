@@ -4,7 +4,6 @@ import software.project.core.Game;
 import software.project.models.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
-import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -25,22 +24,19 @@ public class SabotagePipeCommand implements ICommand {
             return;
         }
 
-        if (args == null || (args.length != 1 && args.length != 2)) {
+        if (args == null || args.length != 1) {
             System.out.println("[ERROR] SABOTAGE_PIPE INVALID_ARGS. Usage: SABOTAGE_PIPE <pipeId>");
             return;
         }
 
-        boolean documentedForm = args.length == 2 && CommandUtils.findPlayer(game, args[0]) != null;
-        String pipeId = args[documentedForm ? 1 : 0].trim();
-        Pipe pipe = CommandUtils.findElement(game, pipeId, Pipe.class);
+        String pipeId = args[0].trim();
+        Pipe pipe = game.getGameMap().getElement(pipeId, Pipe.class);
         if (pipe == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE PIPE_NOT_FOUND " + pipeId);
             return;
         }
 
-        Player p = documentedForm
-                ? CommandUtils.findPlayer(game, args[0])
-                : game.getTurnManager().getCurrentPlayer();
+        Player p = game.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE NO_CURRENT_PLAYER");
             return;

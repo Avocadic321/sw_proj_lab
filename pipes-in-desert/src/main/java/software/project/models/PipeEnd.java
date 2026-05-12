@@ -4,15 +4,23 @@ package software.project.models;
  * Endpoint of a pipe that can connect to an active element.
  */
 public class PipeEnd {
-    /** Owning pipe for this end. */
+    /**
+     * Owning pipe for this end.
+     */
     public Pipe pipe;
-    /** Active element currently connected to this end. */
+    /**
+     * Active element currently connected to this end.
+     */
     public ActiveElement connectedTo;
 
-    /** Water available in CURRENT tick (read phase) */
+    /**
+     * Water available in CURRENT tick (read phase)
+     */
     private int currentWater = 0;
 
-    /** Water written during compute phase (next tick) */
+    /**
+     * Water written during compute phase (next tick)
+     */
     private int pendingWater = 0;
 
     /**
@@ -92,11 +100,11 @@ public class PipeEnd {
         String connectedId = connectedTo == null ? "FREE" : connectedTo.getId();
 
         return String.format(
-                "[STATE] PIPE_END %s pipe=%s connectedTo=%s currentWater=%d pendingWater=%d",
-                id,
-                pipeId,
-                connectedId,
-                currentWater,
-                pendingWater);
+            "[STATE] PIPE_END %s pipe=%s connectedTo=%s currentWater=%d pendingWater=%d",
+            id,
+            pipeId,
+            connectedId,
+            currentWater,
+            pendingWater);
     }
 }

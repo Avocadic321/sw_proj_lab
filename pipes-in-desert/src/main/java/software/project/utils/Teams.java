@@ -3,8 +3,8 @@ package software.project.utils;
 /**
  * Identifies the two opposing teams in the game.
  * <p>
- * The team type determines the role-specific rules, available actions,
- * and scoring criteria for all players belonging to that team.
+ * The team type determines the role-specific rules, available actions, and scoring criteria for all players belonging
+ * to that team.
  * </p>
  * <p>
  * The two teams have opposing objectives:

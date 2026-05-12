@@ -1,17 +1,16 @@
 package software.project.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import software.project.interfaces.ICarriable;
 import software.project.interfaces.IRepairable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A player whose role is to maintain and extend the pipe network.
  * <p>
- * Plumbers can repair damaged pipes and pumps, pick up new components from
- * cisterns, and modify the network by connecting, disconnecting, or inserting
- * pumps into pipes. Their score is based on water successfully delivered to
+ * Plumbers can repair damaged pipes and pumps, pick up new components from cisterns, and modify the network by
+ * connecting, disconnecting, or inserting pumps into pipes. Their score is based on water successfully delivered to
  * cisterns.
  * </p>
  *
@@ -29,6 +28,10 @@ public class Plumber extends Player {
         this.carriedItem = null;
     }
 
+    public Plumber(Element startPosition) {
+        super(startPosition);
+    }
+
     /**
      * Repairs a broken or damaged element, restoring it to full functionality.
      *
@@ -39,8 +42,7 @@ public class Plumber extends Player {
     }
 
     /**
-     * Places the currently carried item (pipe or pump) into the network
-     * at the plumber's current position.
+     * Places the currently carried item (pipe or pump) into the network at the plumber's current position.
      */
     public void extendPipeSystem() {
         if (carriedItem == null || currentPosition == null) {
@@ -222,8 +224,8 @@ public class Plumber extends Player {
     /**
      * Inserts a carried pump into the middle of an existing pipe.
      * <p>
-     * The pipe is split into two separate pipes, each connected to the new pump.
-     * This implements the "splicing" mechanic.
+     * The pipe is split into two separate pipes, each connected to the new pump. This implements the "splicing"
+     * mechanic.
      * </p>
      *
      * @param pump the pump to insert (must be carried)
@@ -253,7 +255,7 @@ public class Plumber extends Player {
 
         System.out.println("[OK] INSERT_PUMP " + id + " " + pipe.getId() + " " + pump.getId());
         System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + pipe1.getId() + "," + pipe2.getId()
-                + " via " + pump.getId());
+            + " via " + pump.getId());
     }
 
     private PipeEnd getFreeEnd(Pipe pipe) {

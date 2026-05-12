@@ -1,11 +1,11 @@
 package software.project.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;
 import software.project.utils.Debug;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Water source that can connect to pipe ends and produce water each turn.
@@ -14,11 +14,11 @@ public class Spring extends ActiveElement implements IConnectable {
     /**
      * Base water production rate used by {@link #generateWater()}.
      */
-    private int waterProductionRate;
+    private final int waterProductionRate;
     /**
      * Pipes currently attached to this spring.
      */
-    private List<Pipe> attachedPipes = new ArrayList<>();
+    private final List<Pipe> attachedPipes = new ArrayList<>();
 
     private static final int DEFAULT_PRODUCTION_RATE = 1;
     public static final int MAX_PRODUCTION_RATE = 100;
@@ -134,10 +134,10 @@ public class Spring extends ActiveElement implements IConnectable {
     @Override
     public String toString() {
         return String.format(
-                "[STATE] SPRING %s productionRate=%d connections=%d",
-                getId(),
-                waterProductionRate,
-                getConnections().size());
+            "[STATE] SPRING %s productionRate=%d connections=%d",
+            getId(),
+            waterProductionRate,
+            getConnections().size());
     }
 
 }

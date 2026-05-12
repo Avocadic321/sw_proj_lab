@@ -1,6 +1,0 @@
-[OK] SET_RANDOM OFF
-[OK] SET_PLAYERS 4
-[OK] NEW_GAME
-[OK] FLOW 1
-[STATE] CISTERN CISTERN1 storedWater=0 capacity=500 storedPipe=NONE storedPump=NONE connections=1
-[SCORE] Plumbers: 0, Saboteurs: 0

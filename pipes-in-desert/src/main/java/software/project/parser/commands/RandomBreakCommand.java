@@ -1,7 +1,6 @@
 package software.project.parser.commands;
 
 import software.project.core.Game;
-import software.project.parser.CommandUtils;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -26,6 +25,6 @@ public class RandomBreakCommand implements ICommand {
             System.out.println("[ERROR] RANDOM_BREAK requires a pump ID. Usage: RANDOM_BREAK <pumpId>");
             return;
         }
-        game.breakSpecificPump(CommandUtils.normalizeId(args[0].trim()));
+        game.breakSpecificPump(args[0].trim());
     }
 }

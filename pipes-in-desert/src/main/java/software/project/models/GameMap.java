@@ -144,25 +144,25 @@ public class GameMap {
         elements.clear();
 
         // Active Elements
-        Spring spring1 = new Spring( 2, 0);
-        Spring spring2 = new Spring( 4, 0);
+        Spring spring1 = new Spring(2, 0);
+        Spring spring2 = new Spring(4, 0);
         Cistern cistern1 = new Cistern(0, 4);
         Cistern cistern2 = new Cistern(6, 4);
-        Pump pump1 = new Pump(2,2);
-        Pump pump2 = new Pump(2,4);
-        Pump pump3 = new Pump(4,2);
-        Pump pump4 = new Pump(4,4);
+        Pump pump1 = new Pump(2, 2);
+        Pump pump2 = new Pump(2, 4);
+        Pump pump3 = new Pump(4, 2);
+        Pump pump4 = new Pump(4, 4);
 
         // Pipes
-        Pipe pipe1 = new Pipe(2,1);
-        Pipe pipe2 = new Pipe(1,2);
-        Pipe pipe3 = new Pipe(3,2);
-        Pipe pipe4 = new Pipe(2,3);
-        Pipe pipe5 = new Pipe(1,4);
-        Pipe pipe6 = new Pipe(3,4);
-        Pipe pipe7 = new Pipe(5,4);
-        Pipe pipe8 = new Pipe(4,3);
-        Pipe pipe9 = new Pipe(5,2);
+        Pipe pipe1 = new Pipe(2, 1);
+        Pipe pipe2 = new Pipe(1, 2);
+        Pipe pipe3 = new Pipe(3, 2);
+        Pipe pipe4 = new Pipe(2, 3);
+        Pipe pipe5 = new Pipe(1, 4);
+        Pipe pipe6 = new Pipe(3, 4);
+        Pipe pipe7 = new Pipe(5, 4);
+        Pipe pipe8 = new Pipe(4, 3);
+        Pipe pipe9 = new Pipe(5, 2);
 
         // Connections
         pipe1.connectBothEnds(spring1, pump1);
@@ -175,8 +175,8 @@ public class GameMap {
         pipe8.connectBothEnds(pump3, pump4);
         pipe9.connectBothEnds(pump3, null);
 
-        pump1.setDirection(pipe1.getEnd2(),pipe4.getEnd1());
-        pump2.setDirection(pipe4.getEnd2(),pipe5.getEnd2());
+        pump1.setDirection(pipe1.getEnd2(), pipe4.getEnd1());
+        pump2.setDirection(pipe4.getEnd2(), pipe5.getEnd2());
         // Register all elements
         addElements(List.of(
             spring1, spring2,

@@ -1,8 +1,8 @@
 package software.project.menus;
 
-import java.util.Scanner;
-
 import software.project.App;
+
+import java.util.Scanner;
 
 public class MainMenu implements IMenu {
     private final App app;

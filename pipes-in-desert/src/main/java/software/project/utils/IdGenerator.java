@@ -1,7 +1,5 @@
 package software.project.utils;
 
-import software.project.models.Element;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,7 +9,8 @@ public final class IdGenerator {
     private static final Map<Class<?>, Integer> counters = new HashMap<>();
     private static final Set<String> usedIds = new HashSet<>();
 
-    private IdGenerator() {}
+    private IdGenerator() {
+    }
 
     public static String generateId(Class<?> type) {
         int next = counters.getOrDefault(type, 0) + 1;
@@ -37,13 +36,13 @@ public final class IdGenerator {
 
     private static String getPrefix(Class<?> type) {
         return switch (type.getSimpleName()) {
-            case "Pipe"     -> "PIPE";
-            case "Pump"     -> "PUMP";
-            case "Cistern"  -> "CISTERN";
-            case "Spring"   -> "SPRING";
-            case "Plumber"  -> "PLUMBER";
+            case "Pipe" -> "PIPE";
+            case "Pump" -> "PUMP";
+            case "Cistern" -> "CISTERN";
+            case "Spring" -> "SPRING";
+            case "Plumber" -> "PLUMBER";
             case "Saboteur" -> "SABOTEUR";
-            default         -> "ENTITY";
+            default -> "ENTITY";
         };
     }
 }

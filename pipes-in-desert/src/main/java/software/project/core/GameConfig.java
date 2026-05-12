@@ -73,7 +73,9 @@ public class GameConfig {
     private int numberOfPlayers;
     private boolean randomEventsEnabled;
 
-    /** Creates a new config with all default values. */
+    /**
+     * Creates a new config with all default values.
+     */
     public GameConfig() {
         this.goalScore = DEFAULT_GOAL_SCORE;
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
@@ -107,8 +109,8 @@ public class GameConfig {
     /**
      * Returns whether real-time scoring mode is enabled.
      *
-     * @return {@code true} if scores update continuously during turns,
-     *         {@code false} if scores update only after each full round
+     * @return {@code true} if scores update continuously during turns, {@code false} if scores update only after each
+     * full round
      */
     public boolean isRealTimeScoring() {
         return realTimeScoring;
@@ -157,8 +159,7 @@ public class GameConfig {
     /**
      * Enables or disables real-time scoring mode.
      *
-     * @param enabled true = scores update every second, false = scores update after
-     *                each full round
+     * @param enabled true = scores update every second, false = scores update after each full round
      */
     public void setRealTimeScoring(boolean enabled) {
         this.realTimeScoring = enabled;
@@ -186,7 +187,9 @@ public class GameConfig {
         this.randomEventsEnabled = randomEventsEnabled;
     }
 
-    /** Restores all settings to their default values. */
+    /**
+     * Restores all settings to their default values.
+     */
     public void resetToDefault() {
         this.goalScore = DEFAULT_GOAL_SCORE;
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
@@ -203,11 +206,11 @@ public class GameConfig {
     @Override
     public String toString() {
         return String.format(
-                "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
-                goalScore,
-                turnDurationSeconds,
-                realTimeScoring ? "ON" : "OFF",
-                numberOfPlayers,
-                randomEventsEnabled ? "ON" : "OFF");
+            "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
+            goalScore,
+            turnDurationSeconds,
+            realTimeScoring ? "ON" : "OFF",
+            numberOfPlayers,
+            randomEventsEnabled ? "ON" : "OFF");
     }
 }
