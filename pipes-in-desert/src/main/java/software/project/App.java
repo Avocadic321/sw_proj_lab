@@ -23,7 +23,6 @@ import java.util.Scanner;
 public class App {
     private GameModel gameModel;
     private final CommandParser parser;
-    private Scanner scanner;
     private final GameConfig gameConfig;
 
     public App() {
@@ -45,19 +44,6 @@ public class App {
 
     public GameModel getGame() {
         return gameModel;
-    }
-
-    public Scanner getScanner() {
-        return scanner;
-    }
-
-    public void runInteractive() {
-        scanner = new Scanner(System.in);
-
-        IMenu currentMenu = new MainMenu(this);
-        while (currentMenu != null) {
-            currentMenu = currentMenu.run();
-        }
     }
 
     public void runTest(String inputFile, String outputFile) {
