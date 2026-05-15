@@ -46,10 +46,15 @@ public class SpriteManager {
                 return;
             }
             BufferedImage sheetImage = ImageIO.read(is);
+            if (sheetImage == null) {
+                System.err.println("[ERROR] Failed to read image: " + path);
+                return;
+            }
+            System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x" + sheetImage.getHeight());
             SpriteSheet sheet = new SpriteSheet(sheetImage, frameWidth, frameHeight);
             spriteSheets.put(key, sheet);
-
         } catch (IOException e) {
+            System.err.println("[ERROR] IOException loading " + path + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -64,5 +69,9 @@ public class SpriteManager {
             return null;
         }
         return sheet.getSprite(col, row);
+    }
+
+    public SpriteSheet getSpriteSheet(String key) {
+        return spriteSheets.get(key);
     }
 }

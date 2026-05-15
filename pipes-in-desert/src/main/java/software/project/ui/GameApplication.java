@@ -2,6 +2,7 @@ package software.project.ui;
 
 import software.project.ui.layers.Layer;
 import software.project.graphics.ResourceManager;
+import software.project.ui.layers.MainMenuLayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +18,14 @@ import static javax.swing.JFrame.EXIT_ON_CLOSE;
  * Manages a stack of {@link Layer} (screens/overlays) and forwards input/updates.
  */
 public class GameApplication {
-    public static final int TILE_SIZE = 32;
-    private static final int MAP_WIDTH_TILES = 7;   // x coordinates 0..6
-    private static final int MAP_HEIGHT_TILES = 5;  // y coordinates 0..4
+    private final int TARGET_UPS = 60;
+    private final int TARGET_FPS = 60;
+
+    public static final int DEFAULT_TILE_SIZE = 32;
+    public static final float SCALE = 2f;
+    public static final int MAP_WIDTH_TILES = 15;
+    public static final int MAP_HEIGHT_TILES = 10;
+    public static final int TILE_SIZE = (int) (DEFAULT_TILE_SIZE * SCALE);
     public static final int WIDTH = MAP_WIDTH_TILES * TILE_SIZE;
     public static final int HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE;
 
@@ -28,13 +34,10 @@ public class GameApplication {
     private JFrame frame;
     private GamePanel panel;
 
-
     private final List<Layer> layerStack = new ArrayList<>();
-
 
     private Thread gameThread;
     private volatile boolean running = true;
-
 
     public GameApplication() {
         // Load all assets (sprites, buttons, sounds) before showing the window
@@ -64,13 +67,12 @@ public class GameApplication {
      * Pushes the initial layer (e.g., main menu).
      */
     private void initLayers() {
-        // TODO: replace with your actual MainMenuLayer
-        // pushLayer(new MainMenuLayer(this));
+        pushLayer(new MainMenuLayer(this));
     }
 
     public void pushLayer(Layer layer) {
         if (!layerStack.isEmpty()) {
-            layerStack.get(layerStack.size() - 1).onExit();
+            layerStack.getLast().onExit();
         }
         layerStack.add(layer);
         layer.onEnter();
@@ -78,10 +80,10 @@ public class GameApplication {
 
     public void popLayer() {
         if (layerStack.isEmpty()) return;
-        Layer top = layerStack.remove(layerStack.size() - 1);
+        Layer top = layerStack.removeLast();
         top.onExit();
         if (!layerStack.isEmpty()) {
-            layerStack.get(layerStack.size() - 1).onEnter();
+            layerStack.getLast().onEnter();
         }
     }
 
@@ -101,8 +103,6 @@ public class GameApplication {
     }
 
     private void gameLoop() {
-        final int TARGET_UPS = 60;
-        final int TARGET_FPS = 60;
         double timePerUpdate = 1_000_000_000.0 / TARGET_UPS;
         double timePerFrame  = 1_000_000_000.0 / TARGET_FPS;
         long lastTime = System.nanoTime();
