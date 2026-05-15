@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.models.Player;
 import software.project.models.Pump;
 import software.project.models.Saboteur;
@@ -13,13 +13,13 @@ import software.project.utils.GameState;
 public class SabotagePumpCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] SABOTAGE_PUMP GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] SABOTAGE_PUMP GAME_NOT_RUNNING");
             return;
         }
@@ -30,13 +30,13 @@ public class SabotagePumpCommand implements ICommand {
         }
 
         String pumpId = args[0].trim();
-        Pump pump = game.getGameMap().getElement(pumpId, Pump.class);
+        Pump pump = gameModel.getGameMap().getElement(pumpId, Pump.class);
         if (pump == null) {
             System.out.println("[ERROR] SABOTAGE_PUMP PUMP_NOT_FOUND " + pumpId);
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] SABOTAGE_PUMP NO_CURRENT_PLAYER");
             return;

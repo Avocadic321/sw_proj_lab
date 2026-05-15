@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.models.Element;
 import software.project.models.Pipe;
 import software.project.models.PipeEnd;
@@ -15,8 +15,8 @@ import software.project.parser.ICommand;
  */
 public class ShowStateCommand implements ICommand {
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] SHOW_STATE GAME_NOT_INITIALIZED");
             return;
         }
@@ -27,7 +27,7 @@ public class ShowStateCommand implements ICommand {
         }
 
         if (args.length == 0) {
-            printAllStates(game);
+            printAllStates(gameModel);
             return;
         }
 
@@ -45,7 +45,7 @@ public class ShowStateCommand implements ICommand {
             objectId = args[0];
         }
 
-        Object target = resolveById(game, objectId);
+        Object target = resolveById(gameModel, objectId);
         if (target == null) {
             System.out.println("[ERROR] SHOW_STATE OBJECT_NOT_FOUND " + objectId);
             return;
@@ -61,10 +61,10 @@ public class ShowStateCommand implements ICommand {
         System.out.println(target.toString());
     }
 
-    private void printAllStates(Game game) {
-        System.out.println(game.toString());
+    private void printAllStates(GameModel gameModel) {
+        System.out.println(gameModel.toString());
 
-        Team plumbers = game.getPlumbersTeam();
+        Team plumbers = gameModel.getPlumbersTeam();
         if (plumbers != null) {
             System.out.println(plumbers.toString());
             for (Player player : plumbers.getPlayers()) {
@@ -72,7 +72,7 @@ public class ShowStateCommand implements ICommand {
             }
         }
 
-        Team saboteurs = game.getSaboteursTeam();
+        Team saboteurs = gameModel.getSaboteursTeam();
         if (saboteurs != null) {
             System.out.println(saboteurs.toString());
             for (Player player : saboteurs.getPlayers()) {
@@ -80,7 +80,7 @@ public class ShowStateCommand implements ICommand {
             }
         }
 
-        for (Element element : game.getGameMap().getElements()) {
+        for (Element element : gameModel.getGameMap().getElements()) {
             System.out.println(element.toString());
             if (element instanceof Pipe pipe) {
                 System.out.println(pipe.getEnd1().toString());
@@ -89,18 +89,18 @@ public class ShowStateCommand implements ICommand {
         }
     }
 
-    private Object resolveById(Game game, String objectId) {
+    private Object resolveById(GameModel gameModel, String objectId) {
         if (objectId == null || objectId.isBlank()) {
             return null;
         }
 
         String normalizedId = objectId.trim();
         if ("GAME".equalsIgnoreCase(normalizedId)) {
-            return game;
+            return gameModel;
         }
 
-        Team plumbers = game.getPlumbersTeam();
-        Team saboteurs = game.getSaboteursTeam();
+        Team plumbers = gameModel.getPlumbersTeam();
+        Team saboteurs = gameModel.getSaboteursTeam();
 
         if (plumbers != null && "PLUMBERS".equalsIgnoreCase(normalizedId)) {
             return plumbers;
@@ -119,12 +119,12 @@ public class ShowStateCommand implements ICommand {
             return player;
         }
 
-        Element element = game.getGameMap().getElement(normalizedId);
+        Element element = gameModel.getGameMap().getElement(normalizedId);
         if (element != null) {
             return element;
         }
 
-        return findPipeEndById(game, normalizedId);
+        return findPipeEndById(gameModel, normalizedId);
     }
 
     private Player findPlayerById(Team team, String playerId) {
@@ -141,8 +141,8 @@ public class ShowStateCommand implements ICommand {
         return null;
     }
 
-    private PipeEnd findPipeEndById(Game game, String pipeEndId) {
-        for (Pipe pipe : game.getGameMap().getAllPipes()) {
+    private PipeEnd findPipeEndById(GameModel gameModel, String pipeEndId) {
+        for (Pipe pipe : gameModel.getGameMap().getAllPipes()) {
             String end1Id = pipe.getId() + "_END1";
             if (end1Id.equalsIgnoreCase(pipeEndId)) {
                 return pipe.getEnd1();
@@ -163,7 +163,7 @@ public class ShowStateCommand implements ICommand {
 
     private boolean isTypeMatch(Object object, String expectedType) {
         return switch (expectedType) {
-            case "GAME" -> object instanceof Game;
+            case "GAME" -> object instanceof GameModel;
             case "TEAM" -> object instanceof Team;
             case "PLAYER" -> object instanceof Player;
             case "PLUMBER" -> object instanceof Plumber;

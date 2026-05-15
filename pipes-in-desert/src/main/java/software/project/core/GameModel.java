@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Coordinates gameplay flow, state, and high-level actions.
  */
-public class Game {
+public class GameModel {
     /**
      * Manages turns and timing.
      */
@@ -55,7 +55,7 @@ public class Game {
      *
      * @param config game configuration
      */
-    public Game(GameConfig config) {
+    public GameModel(GameConfig config) {
         this.gameMap = new GameMap();
         this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;

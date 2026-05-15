@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.models.Element;
 import software.project.models.Player;
 import software.project.parser.ICommand;
@@ -12,13 +12,13 @@ import software.project.utils.GameState;
 public class MovePlayerCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] MOVE GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] MOVE GAME_NOT_RUNNING");
             return;
         }
@@ -28,14 +28,14 @@ public class MovePlayerCommand implements ICommand {
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] MOVE NO_CURRENT_PLAYER");
             return;
         }
 
         String targetId = args[0].trim();
-        Element target = game.getGameMap().getElement(targetId);
+        Element target = gameModel.getGameMap().getElement(targetId);
         if (target == null) {
             System.out.println("[ERROR] MOVE TARGET_NOT_FOUND " + targetId);
             return;

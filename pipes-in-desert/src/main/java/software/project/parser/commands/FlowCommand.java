@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -9,12 +9,12 @@ import software.project.utils.GameState;
  */
 public class FlowCommand implements ICommand {
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] FLOW GAME_NOT_INITIALIZED");
             return;
         }
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] FLOW GAME_NOT_RUNNING");
             return;
         }
@@ -36,7 +36,7 @@ public class FlowCommand implements ICommand {
                 return;
             }
         }
-        game.flow(ticks);
+        gameModel.flow(ticks);
         System.out.println("[OK] FLOW " + ticks);
     }
 }

@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.App;
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.parser.ICommand;
 
 /**
@@ -15,7 +15,7 @@ public class SetRandomCommand implements ICommand {
     }
 
     @Override
-    public void execute(Game game, String[] args) {
+    public void execute(GameModel gameModel, String[] args) {
         if (args.length != 1) {
             System.out.println("[ERROR] SET_RANDOM INVALID_ARGS");
             return;

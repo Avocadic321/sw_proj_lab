@@ -1,6 +1,6 @@
 package software.project;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.core.GameConfig;
 import software.project.menus.IMenu;
 import software.project.menus.MainMenu;
@@ -21,7 +21,7 @@ import java.util.Scanner;
  * @since 2026-03-30
  */
 public class App {
-    private Game game;
+    private GameModel gameModel;
     private final CommandParser parser;
     private Scanner scanner;
     private final GameConfig gameConfig;
@@ -31,8 +31,8 @@ public class App {
         this.gameConfig = new GameConfig();
     }
 
-    public void setGame(Game game) {
-        this.game = game;
+    public void setGame(GameModel gameModel) {
+        this.gameModel = gameModel;
     }
 
     public GameConfig getGameConfig() {
@@ -43,8 +43,8 @@ public class App {
         return parser;
     }
 
-    public Game getGame() {
-        return game;
+    public GameModel getGame() {
+        return gameModel;
     }
 
     public Scanner getScanner() {
