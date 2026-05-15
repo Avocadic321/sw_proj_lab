@@ -1,4 +1,4 @@
-package software.project.interfaces;
+package software.project.map.interfaces;
 
 /**
  * Represents game elements that can become damaged or broken during gameplay.

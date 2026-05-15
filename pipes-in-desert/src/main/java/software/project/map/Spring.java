@@ -1,7 +1,7 @@
 package software.project.map;
 
 import software.project.core.GameConfig;
-import software.project.interfaces.IConnectable;
+import software.project.map.interfaces.IConnectable;
 import software.project.utils.Debug;
 
 import java.util.ArrayList;

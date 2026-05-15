@@ -1,4 +1,4 @@
-package software.project.interfaces;
+package software.project.map.interfaces;
 
 import software.project.map.Pipe;
 import software.project.map.Pump;

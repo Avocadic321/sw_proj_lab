@@ -1,10 +1,10 @@
 package software.project.map;
 
 import software.project.core.GameConfig;
-import software.project.interfaces.IBreakable;
-import software.project.interfaces.ICarriable;
-import software.project.interfaces.IConnectable;
-import software.project.interfaces.IRepairable;
+import software.project.map.interfaces.IBreakable;
+import software.project.map.interfaces.ICarriable;
+import software.project.map.interfaces.IConnectable;
+import software.project.map.interfaces.IRepairable;
 import software.project.utils.Debug;
 import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
