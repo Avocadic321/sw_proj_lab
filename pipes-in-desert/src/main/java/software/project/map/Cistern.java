@@ -1,4 +1,4 @@
-package software.project.models;
+package software.project.map;
 
 import software.project.core.GameConfig;
 import software.project.interfaces.IConnectable;

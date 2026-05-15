@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.models.Element;
+import software.project.map.Element;
 import software.project.models.Player;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;

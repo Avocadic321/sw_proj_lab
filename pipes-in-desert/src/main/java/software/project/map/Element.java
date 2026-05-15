@@ -1,5 +1,6 @@
-package software.project.models;
+package software.project.map;
 
+import software.project.models.Player;
 import software.project.utils.IdGenerator;
 
 import java.util.ArrayList;

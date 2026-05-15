@@ -1,4 +1,4 @@
-package software.project.models;
+package software.project.map;
 
 import java.util.ArrayList;
 import java.util.List;

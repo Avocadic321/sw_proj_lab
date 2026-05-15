@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.models.Pipe;
+import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;

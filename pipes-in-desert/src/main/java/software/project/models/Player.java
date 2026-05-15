@@ -1,5 +1,6 @@
 package software.project.models;
 
+import software.project.map.*;
 import software.project.utils.IdGenerator;
 
 import java.util.Locale;

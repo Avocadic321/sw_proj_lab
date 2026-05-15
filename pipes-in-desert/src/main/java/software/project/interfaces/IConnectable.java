@@ -1,14 +1,17 @@
 package software.project.interfaces;
 
-import software.project.models.PipeEnd;
+import software.project.map.PipeEnd;
+import software.project.map.Cistern;
+import software.project.map.Pump;
+import software.project.map.Spring;
 
 import java.util.List;
 
 /**
  * Defines the behavior for game elements that can serve as connection points in the pipe network.
  * <p>
- * Classes implementing this interface (specifically {@link software.project.models.Pump},
- * {@link software.project.models.Cistern}, and {@link software.project.models.Spring}) can have {@link PipeEnd} objects
+ * Classes implementing this interface (specifically {@link Pump},
+ * {@link Cistern}, and {@link Spring}) can have {@link PipeEnd} objects
  * attached to or detached from them, thereby forming the links that constitute the water transport infrastructure.
  * </p>
  * <p>

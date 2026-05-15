@@ -1,9 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.models.Element;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
+import software.project.map.*;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
@@ -169,9 +167,9 @@ public class ShowStateCommand implements ICommand {
             case "PLUMBER" -> object instanceof Plumber;
             case "SABOTEUR" -> object instanceof Saboteur;
             case "PIPE" -> object instanceof Pipe;
-            case "PUMP" -> object instanceof software.project.models.Pump;
-            case "CISTERN" -> object instanceof software.project.models.Cistern;
-            case "SPRING" -> object instanceof software.project.models.Spring;
+            case "PUMP" -> object instanceof Pump;
+            case "CISTERN" -> object instanceof Cistern;
+            case "SPRING" -> object instanceof Spring;
             case "PIPE_END", "PIPEEND" -> object instanceof PipeEnd;
             default -> false;
         };

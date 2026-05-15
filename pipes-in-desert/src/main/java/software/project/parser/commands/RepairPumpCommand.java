@@ -3,7 +3,7 @@ package software.project.parser.commands;
 import software.project.core.GameModel;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.models.Pump;
+import software.project.map.Pump;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 

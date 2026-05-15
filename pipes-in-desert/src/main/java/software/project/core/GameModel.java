@@ -1,6 +1,9 @@
 package software.project.core;
 
 import software.project.models.*;
+import software.project.map.Cistern;
+import software.project.map.GameMap;
+import software.project.map.Pump;
 import software.project.utils.Debug;
 import software.project.utils.GameState;
 import software.project.utils.Teams;

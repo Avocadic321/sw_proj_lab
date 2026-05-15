@@ -1,9 +1,9 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.models.ActiveElement;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
+import software.project.map.ActiveElement;
+import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
