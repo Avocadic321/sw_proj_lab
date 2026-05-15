@@ -3,6 +3,7 @@ package software.project.ui.layers;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.ui.GameApplication;
+import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
 
 import java.awt.*;
@@ -10,41 +11,34 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static software.project.ui.components.MenuButton.BUTTON_HEIGHT;
-
 public class MainMenuLayer extends Layer {
 
     private static final int BUTTON_COUNT = 4;
 
-    // Fallback dimensions (used only if menu background image is missing)
+    // Fallback dimensions (used only if menu panel sprite is missing)
     private static final int FALLBACK_MENU_WIDTH = 282;
     private static final int FALLBACK_MENU_HEIGHT = 406;
 
     // Layout percentages (relative to menu panel height)
-    private static final double TOP_MARGIN_PERCENT = 0.23;      // 23% from top edge
-    private static final double BOTTOM_MARGIN_PERCENT = 0.07;   // 7% from bottom edge
-    private static final double INNER_PADDING_PERCENT = 0.02;   // extra 2% inside (top & bottom)
-
-    // Effective margins (top margin + inner padding, bottom margin + inner padding)
+    private static final double TOP_MARGIN_PERCENT = 0.23;
+    private static final double BOTTOM_MARGIN_PERCENT = 0.07;
+    private static final double INNER_PADDING_PERCENT = 0.02;
     private static final double EFFECTIVE_TOP = TOP_MARGIN_PERCENT + INNER_PADDING_PERCENT;
     private static final double EFFECTIVE_BOTTOM = BOTTOM_MARGIN_PERCENT + INNER_PADDING_PERCENT;
 
-    // Sprite sheet row indices for each menu item (matching button atlas)
-    // Atlas rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
-    // Desired menu order: PLAY, OPTIONS, CREDITS, QUIT
+    // Global menu scale factor (1.0 = fit exactly; lower = smaller)
+    private static final float MENU_SCALE_FACTOR = 0.72f;
+
+    // Sprite sheet rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
+    // Desired order: PLAY, OPTIONS, CREDITS, QUIT
     private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
 
-    // ------------------------------------------------------------
-    // Fields
-    // ------------------------------------------------------------
     private final GameApplication app;
     private final List<MenuButton> buttons = new ArrayList<>();
 
     private Sprite menuPanelSprite;
-    private int panelX;
-    private int panelY;
-    private int panelWidth;
-    private int panelHeight;
+    private int originalPanelWidth, originalPanelHeight;
+    private int panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight;
 
     public MainMenuLayer(GameApplication app) {
         this.app = app;
@@ -55,27 +49,43 @@ public class MainMenuLayer extends Layer {
     private void loadBackground() {
         menuPanelSprite = SpriteManager.getInstance().getSprite("menu_background");
         if (menuPanelSprite == null) {
-            System.err.println("[ERROR] Background sprite 'menu_background' not found. Using fallback.");
-            panelWidth = FALLBACK_MENU_WIDTH;
-            panelHeight = FALLBACK_MENU_HEIGHT;
+            System.err.println("[WARN] Menu panel sprite missing. Using fallback.");
+            originalPanelWidth = FALLBACK_MENU_WIDTH;
+            originalPanelHeight = FALLBACK_MENU_HEIGHT;
         } else {
-            panelWidth = menuPanelSprite.getWidth();
-            panelHeight = menuPanelSprite.getHeight();
+            originalPanelWidth = menuPanelSprite.getWidth();
+            originalPanelHeight = menuPanelSprite.getHeight();
         }
+        recomputeLayout(); // initial layout using current screen dimensions
+    }
 
-        // Centre the panel (original size, no scaling)
-        panelX = (GameApplication.WIDTH - panelWidth) / 2;
-        panelY = (GameApplication.HEIGHT - panelHeight) / 2;
+    /** Recalculates panel size and position, and updates button global scale. */
+    private void recomputeLayout() {
+        int virtualW = ScreenManager.getInstance().getVirtualWidth();
+        int virtualH = ScreenManager.getInstance().getVirtualHeight();
+
+        // Scale to fit the panel inside virtual screen (preserving aspect ratio)
+        double fitScaleX = (double) virtualW / originalPanelWidth;
+        double fitScaleY = (double) virtualH / originalPanelHeight;
+        double fitScale = Math.min(fitScaleX, fitScaleY);
+        double finalScale = fitScale * MENU_SCALE_FACTOR;
+
+        panelDrawWidth = (int) (originalPanelWidth * finalScale);
+        panelDrawHeight = (int) (originalPanelHeight * finalScale);
+        panelDrawX = (virtualW - panelDrawWidth) / 2;
+        panelDrawY = (virtualH - panelDrawHeight) / 2;
+
+        // Apply the same scale to all buttons (global static scale)
+        MenuButton.setGlobalScale((float) finalScale);
     }
 
     private void createButtons() {
-        // Compute vertical positions inside the panel
+        buttons.clear();
+        recomputeLayout(); // ensure layout is up‑to‑date
+
         int[] yPositions = computeButtonPositions();
+        int centerX = panelDrawX + panelDrawWidth / 2;
 
-        // Horizontal centre = panel centre
-        int centerX = panelX + panelWidth / 2;
-
-        // Create and store buttons
         for (int i = 0; i < BUTTON_COUNT; i++) {
             MenuButton btn = new MenuButton(BUTTON_ROW_INDICES[i], centerX, yPositions[i]);
             btn.setAction(getActionForIndex(i));
@@ -83,96 +93,97 @@ public class MainMenuLayer extends Layer {
         }
     }
 
-    /**
-     * Calculates the Y coordinates for all buttons based on margins, padding,
-     * button height, and auto‑computed gaps.
-     *
-     * @return array of Y positions (relative to screen, not panel)
-     */
+    /** Calculates Y positions for all buttons inside the scaled panel. */
     private int[] computeButtonPositions() {
-        int usableHeight = (int) (panelHeight * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
-        int totalButtonsHeight = BUTTON_COUNT * BUTTON_HEIGHT;
+        int scaledButtonHeight = MenuButton.getScaledHeight();
+        int usableHeight = (int) (panelDrawHeight * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
+        int totalButtonsHeight = BUTTON_COUNT * scaledButtonHeight;
         int gapBetweenButtons;
 
         if (totalButtonsHeight > usableHeight) {
             gapBetweenButtons = 0; // not enough space – no gaps
         } else {
             int remaining = usableHeight - totalButtonsHeight;
-            gapBetweenButtons = remaining / (BUTTON_COUNT - 1); // 3 gaps for 4 buttons
+            gapBetweenButtons = remaining / (BUTTON_COUNT - 1);
         }
 
-        int startY = panelY + (int) (panelHeight * EFFECTIVE_TOP);
+        int startY = panelDrawY + (int) (panelDrawHeight * EFFECTIVE_TOP);
         int[] yPositions = new int[BUTTON_COUNT];
         for (int i = 0; i < BUTTON_COUNT; i++) {
-            yPositions[i] = startY + i * (BUTTON_HEIGHT + gapBetweenButtons);
+            yPositions[i] = startY + i * (scaledButtonHeight + gapBetweenButtons);
         }
         return yPositions;
     }
 
-    /**
-     * Returns the action (Runnable) for the button at the given index (0‑based in menu order).
-     * Index 0 = PLAY, 1 = OPTIONS, 2 = CREDITS, 3 = QUIT.
-     */
+    /** Returns the action for each button based on its position in menu order. */
     private Runnable getActionForIndex(int index) {
-        // Placeholder actions – replace with actual layer pushes when those layers exist
         return switch (index) {
-            case 0 -> () -> {}; // PLAY → push PlayingLayer
-            case 1 -> () -> {}; // OPTIONS → push SettingsLayer
-            case 2 -> () -> {}; // CREDITS → push CreditsLayer
-            case 3 -> () -> System.exit(0); // QUIT
+            case 0 -> () -> {
+                System.out.println("PLAY clicked – replace with PlayingLayer");
+                // app.replaceLayer(new PlayingLayer(app));
+            };
+            case 1 -> () -> System.out.println("OPTIONS clicked");
+            case 2 -> () -> System.out.println("CREDITS clicked");
+            case 3 -> () -> System.exit(0);
             default -> () -> {};
         };
     }
 
+    // ------------------------------------------------------------------------
+    // Layer overrides
+    // ------------------------------------------------------------------------
+    @Override
+    public void onResolutionChanged(int newWidth, int newHeight) {
+        // When the screen size changes (window resize or fullscreen toggle),
+        // rebuild the buttons so they reposition correctly.
+        createButtons();
+    }
+
     @Override
     public void update(float deltaTime) {
-        for (MenuButton button : buttons) {
-            button.update();
-        }
+        for (MenuButton btn : buttons) btn.update();
     }
 
     @Override
     public void render(Graphics2D g) {
-        // Full‑screen background
+        // Full‑screen background (dark blue)
         g.setColor(new Color(20, 30, 50));
-        g.fillRect(0, 0, GameApplication.WIDTH, GameApplication.HEIGHT);
+        g.fillRect(0, 0,
+            ScreenManager.getInstance().getVirtualWidth(),
+            ScreenManager.getInstance().getVirtualHeight());
 
-        // Draw menu panel (if available)
+        // Draw the menu panel (scaled and centred)
         if (menuPanelSprite != null) {
-            menuPanelSprite.draw(g, panelX, panelY);
+            menuPanelSprite.draw(g, panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight);
         } else {
-            // Fallback panel
+            // Fallback rounded rectangle
             g.setColor(new Color(40, 50, 70));
-            g.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 20, 20);
+            g.fillRoundRect(panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight, 20, 20);
         }
 
-        // Draw all buttons
-        for (MenuButton button : buttons) {
-            button.draw(g);
-        }
+        // Draw all buttons (they already use the global scale internally)
+        for (MenuButton btn : buttons) btn.draw(g);
     }
 
+    // ------------------------------------------------------------------------
+    // Input handling – mouse events are already transformed to virtual coordinates
+    // by GamePanel, so we forward them directly to each button.
+    // ------------------------------------------------------------------------
     @Override
     public boolean mouseMoved(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mouseMoved(e);
-        }
+        for (MenuButton btn : buttons) btn.mouseMoved(e);
         return true;
     }
 
     @Override
     public boolean mousePressed(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mousePressed(e);
-        }
+        for (MenuButton btn : buttons) btn.mousePressed(e);
         return true;
     }
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mouseReleased(e);
-        }
+        for (MenuButton btn : buttons) btn.mouseReleased(e);
         return true;
     }
 }

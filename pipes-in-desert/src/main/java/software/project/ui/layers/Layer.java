@@ -10,9 +10,10 @@ public abstract class Layer {
     public void update(float deltaTime) {}
     public void render(Graphics2D g) {}
 
-    // --- Input handling (only top layer receives these) ---
-    // Return true if the event is consumed (no further processing).
+    /** Called when the window is resized (virtual resolution changed). */
+    public void onResolutionChanged(int newWidth, int newHeight) {}
 
+    // --- Input handling (only top layer receives these) ---
     public boolean keyPressed(KeyEvent e) { return false; }
     public boolean keyReleased(KeyEvent e) { return false; }
     public boolean mousePressed(MouseEvent e) { return false; }

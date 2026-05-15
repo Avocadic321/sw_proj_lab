@@ -9,14 +9,30 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
 public class MenuButton {
-    public static final int BUTTON_WIDTH = 140;
-    public static final int BUTTON_HEIGHT = 56;
+    // Base size (original art size)
+    public static final int BASE_WIDTH = 140;
+    public static final int BASE_HEIGHT = 56;
 
-    private int x, y;
+    // Global scale factor for all buttons (set once, e.g., from MainMenuLayer)
+    private static float globalScale = 1.0f;
+
+    public static void setGlobalScale(float scale) {
+        globalScale = scale;
+    }
+
+    public static int getScaledWidth() {
+        return (int) (BASE_WIDTH * globalScale);
+    }
+
+    public static int getScaledHeight() {
+        return (int) (BASE_HEIGHT * globalScale);
+    }
+
+    // Instance fields
+    private int x, y;               // centre position (in virtual coordinates)
     private Sprite normal, hover, pressed;
     private Sprite currentSprite;
     private boolean mouseOver, mousePressed;
-
     private Runnable action;
 
     public MenuButton(int rowIndex, int x, int y) {
@@ -29,7 +45,7 @@ public class MenuButton {
             return;
         }
 
-        this.normal = sheet.getSprite(0, rowIndex);   // col 0, row = button index
+        this.normal = sheet.getSprite(0, rowIndex);
         this.hover  = sheet.getSprite(1, rowIndex);
         this.pressed = sheet.getSprite(2, rowIndex);
         this.currentSprite = normal;
@@ -51,7 +67,9 @@ public class MenuButton {
 
     public void draw(Graphics2D g) {
         if (currentSprite != null) {
-            currentSprite.draw(g, x - BUTTON_WIDTH/2, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+            int w = getScaledWidth();
+            int h = getScaledHeight();
+            currentSprite.draw(g, x - w/2, y, w, h);
         }
     }
 
@@ -71,6 +89,8 @@ public class MenuButton {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x - BUTTON_WIDTH/2, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+        int w = getScaledWidth();
+        int h = getScaledHeight();
+        return new Rectangle(x - w/2, y, w, h);
     }
 }

@@ -37,8 +37,8 @@ public class ResourceManager {
         sm.loadSpriteSheet(
             "buttons",
             "/ui/button_atlas.png",
-            MenuButton.BUTTON_WIDTH,
-            MenuButton.BUTTON_HEIGHT
+            MenuButton.BASE_WIDTH,
+            MenuButton.BASE_HEIGHT
         );
     }
 
