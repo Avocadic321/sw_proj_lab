@@ -7,12 +7,13 @@ import java.awt.image.BufferedImage;
 
 public class GamePanel extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
     private BufferedImage virtualBuffer;
-    private int lastBufferW = -1, lastBufferH = -1;
-    private GameApplication app; // set by GameApplication after creation
+    private int lastBufferW = -1;
+    private int lastBufferH = -1;
+    private GameApplication app;
 
     public GamePanel() {
         setFocusable(true);
-        setBackground(Color.BLACK);
+        setBackground(new Color(20, 30, 50));
         addKeyListener(this);
         addMouseListener(this);
         addMouseMotionListener(this);

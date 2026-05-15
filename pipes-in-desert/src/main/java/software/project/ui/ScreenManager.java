@@ -7,13 +7,15 @@ import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
+
 public class ScreenManager {
     private static ScreenManager instance;
     private JFrame frame;
     private GamePanel panel;
 
-    public static final int GAME_WIDTH = 800;
-    public static final int GAME_HEIGHT = 600;
+    public static final int GAME_WIDTH = 1280;
+    public static final int GAME_HEIGHT = 800;
 
     // Virtual resolution (game coordinates)
     private int virtualWidth = GAME_WIDTH;
@@ -42,7 +44,7 @@ public class ScreenManager {
         panel = new GamePanel();
         frame.add(panel);
         frame.setResizable(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(480, 360));
         frame.setSize(initialWidth, initialHeight);
         frame.setLocationRelativeTo(null);

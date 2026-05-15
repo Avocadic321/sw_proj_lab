@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameApplication implements ScreenManager.ResolutionListener {
-    private final int TARGET_UPS = 60;
-    private final int TARGET_FPS = 60;
+    private static final int TARGET_UPS = 60;
+    private static final int TARGET_FPS = 60;
     private final List<Layer> layerStack = new ArrayList<>();
     private Thread gameThread;
     private volatile boolean running = true;

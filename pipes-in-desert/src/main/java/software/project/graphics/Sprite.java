@@ -5,7 +5,8 @@ import java.awt.image.BufferedImage;
 
 public class Sprite {
     private BufferedImage image;
-    private int width, height;
+    private final int width;
+    private final int height;
 
     public Sprite(BufferedImage image) {
         this.image = image;
