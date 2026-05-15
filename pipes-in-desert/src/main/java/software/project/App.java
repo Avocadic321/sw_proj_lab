@@ -2,8 +2,6 @@ package software.project;
 
 import software.project.core.GameModel;
 import software.project.core.GameConfig;
-import software.project.menus.IMenu;
-import software.project.menus.MainMenu;
 import software.project.parser.CommandParser;
 
 import java.io.*;
