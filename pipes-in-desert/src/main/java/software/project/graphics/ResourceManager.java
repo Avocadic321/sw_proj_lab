@@ -27,7 +27,7 @@ public class ResourceManager {
     public void loadSprites() {
         spriteManager.loadSprite("menu_background", "/ui/menu_background.png");
         spriteManager.loadSprite("menu_panel", "/ui/menu_panel.png");
-        spriteManager.loadSprite("menu_title", "/ui/menu_title.png");
+        spriteManager.loadSprite("menu_title", "/ui/menu_title_two.png");
     }
 
     private void loadButtons() {

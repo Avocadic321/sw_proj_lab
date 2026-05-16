@@ -30,13 +30,13 @@ public class MainMenuLayer extends Layer {
     private static final float MENU_SCALE_FACTOR = 0.65f;
 
     // Title scale factor (independent from menu panel)
-    private static final float TITLE_SCALE_FACTOR = 0.25f;
+    private static final float TITLE_SCALE_FACTOR = 0.4f;
 
     // Vertical offset for the whole menu (in virtual screen pixels)
     private static final int MENU_VERTICAL_OFFSET = 50;
 
     // Title vertical offset from the top of the screen (virtual pixels)
-    private static final int TITLE_VERTICAL_OFFSET = 80;
+    private static final int TITLE_VERTICAL_OFFSET = 50;
 
     // Sprite sheet rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
     // Desired order: PLAY, OPTIONS, CREDITS, QUIT
