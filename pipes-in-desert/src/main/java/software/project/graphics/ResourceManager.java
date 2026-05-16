@@ -26,11 +26,12 @@ public class ResourceManager {
 
     public void loadSprites() {
         spriteManager.loadSprite("menu_background", "/ui/menu_background.png");
+        spriteManager.loadSprite("menu_panel", "/ui/menu_panel.png");
+        spriteManager.loadSprite("menu_title", "/ui/menu_title.png");
     }
 
     private void loadButtons() {
-        SpriteManager sm = SpriteManager.getInstance();
-        sm.loadSpriteSheet(
+        spriteManager.loadSpriteSheet(
             "buttons",
             "/ui/button_atlas.png",
             MenuButton.BASE_WIDTH,

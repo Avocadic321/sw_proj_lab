@@ -22,12 +22,21 @@ public class MainMenuLayer extends Layer {
     // Layout percentages (relative to menu panel height)
     private static final double TOP_MARGIN_PERCENT = 0.23;
     private static final double BOTTOM_MARGIN_PERCENT = 0.07;
-    private static final double INNER_PADDING_PERCENT = 0.02;
+    private static final double INNER_PADDING_PERCENT = 0.03;
     private static final double EFFECTIVE_TOP = TOP_MARGIN_PERCENT + INNER_PADDING_PERCENT;
     private static final double EFFECTIVE_BOTTOM = BOTTOM_MARGIN_PERCENT + INNER_PADDING_PERCENT;
 
     // Global menu scale factor (1.0 = fit exactly; lower = smaller)
-    private static final float MENU_SCALE_FACTOR = 0.72f;
+    private static final float MENU_SCALE_FACTOR = 0.65f;
+
+    // Title scale factor (independent from menu panel)
+    private static final float TITLE_SCALE_FACTOR = 0.25f;
+
+    // Vertical offset for the whole menu (in virtual screen pixels)
+    private static final int MENU_VERTICAL_OFFSET = 50;
+
+    // Title vertical offset from the top of the screen (virtual pixels)
+    private static final int TITLE_VERTICAL_OFFSET = 80;
 
     // Sprite sheet rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
     // Desired order: PLAY, OPTIONS, CREDITS, QUIT
@@ -37,29 +46,43 @@ public class MainMenuLayer extends Layer {
     private final List<MenuButton> buttons = new ArrayList<>();
 
     private Sprite menuPanelSprite;
+    private Sprite menuBackgroundSprite;
+    private Sprite menuTitleSprite;
+
     private int originalPanelWidth, originalPanelHeight;
     private int panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight;
+    private int titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight;
 
     public MainMenuLayer(GameApplication app) {
         this.app = app;
-        loadBackground();
+        loadSprites();
         createButtons();
     }
 
-    private void loadBackground() {
-        menuPanelSprite = SpriteManager.getInstance().getSprite("menu_background");
+    private void loadSprites() {
+        menuBackgroundSprite = SpriteManager.getInstance().getSprite("menu_background");
+        if (menuBackgroundSprite == null) {
+            System.out.println("[WARNING] Menu background missing");
+        }
+
+        menuPanelSprite = SpriteManager.getInstance().getSprite("menu_panel");
         if (menuPanelSprite == null) {
-            System.err.println("[WARN] Menu panel sprite missing. Using fallback.");
+            System.err.println("[WARNING] Menu panel sprite missing. Using fallback.");
             originalPanelWidth = FALLBACK_MENU_WIDTH;
             originalPanelHeight = FALLBACK_MENU_HEIGHT;
         } else {
             originalPanelWidth = menuPanelSprite.getWidth();
             originalPanelHeight = menuPanelSprite.getHeight();
         }
-        recomputeLayout(); // initial layout using current screen dimensions
+
+        menuTitleSprite = SpriteManager.getInstance().getSprite("menu_title");
+        if (menuTitleSprite == null) {
+            System.out.println("[WARNING] Menu title sprite missing");
+        }
+
+        recomputeLayout();
     }
 
-    /** Recalculates panel size and position, and updates button global scale. */
     private void recomputeLayout() {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
@@ -73,27 +96,33 @@ public class MainMenuLayer extends Layer {
         panelDrawWidth = (int) (originalPanelWidth * finalScale);
         panelDrawHeight = (int) (originalPanelHeight * finalScale);
         panelDrawX = (virtualW - panelDrawWidth) / 2;
-        panelDrawY = (virtualH - panelDrawHeight) / 2;
+        panelDrawY = (virtualH - panelDrawHeight) / 2 + MENU_VERTICAL_OFFSET;
 
-        // Apply the same scale to all buttons (global static scale)
+        // Title dimensions – use its own scale factor
+        if (menuTitleSprite != null) {
+            titleDrawWidth = (int) (menuTitleSprite.getWidth() * TITLE_SCALE_FACTOR);
+            titleDrawHeight = (int) (menuTitleSprite.getHeight() * TITLE_SCALE_FACTOR);
+            titleDrawX = (virtualW - titleDrawWidth) / 2;
+            titleDrawY = TITLE_VERTICAL_OFFSET;
+        }
+
         MenuButton.setGlobalScale((float) finalScale);
     }
 
     private void createButtons() {
         buttons.clear();
-        recomputeLayout(); // ensure layout is up‑to‑date
+        recomputeLayout();
 
         int[] yPositions = computeButtonPositions();
         int centerX = panelDrawX + panelDrawWidth / 2;
 
         for (int i = 0; i < BUTTON_COUNT; i++) {
-            MenuButton btn = new MenuButton(BUTTON_ROW_INDICES[i], centerX, yPositions[i]);
-            btn.setAction(getActionForIndex(i));
-            buttons.add(btn);
+            MenuButton button = new MenuButton(BUTTON_ROW_INDICES[i], centerX, yPositions[i]);
+            button.setAction(getActionForIndex(i));
+            buttons.add(button);
         }
     }
 
-    /** Calculates Y positions for all buttons inside the scaled panel. */
     private int[] computeButtonPositions() {
         int scaledButtonHeight = MenuButton.getScaledHeight();
         int usableHeight = (int) (panelDrawHeight * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
@@ -101,7 +130,7 @@ public class MainMenuLayer extends Layer {
         int gapBetweenButtons;
 
         if (totalButtonsHeight > usableHeight) {
-            gapBetweenButtons = 0; // not enough space – no gaps
+            gapBetweenButtons = 0;
         } else {
             int remaining = usableHeight - totalButtonsHeight;
             gapBetweenButtons = remaining / (BUTTON_COUNT - 1);
@@ -115,7 +144,6 @@ public class MainMenuLayer extends Layer {
         return yPositions;
     }
 
-    /** Returns the action for each button based on its position in menu order. */
     private Runnable getActionForIndex(int index) {
         return switch (index) {
             case 0 -> () -> {
@@ -129,61 +157,69 @@ public class MainMenuLayer extends Layer {
         };
     }
 
-    // ------------------------------------------------------------------------
-    // Layer overrides
-    // ------------------------------------------------------------------------
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
-        // When the screen size changes (window resize or fullscreen toggle),
-        // rebuild the buttons so they reposition correctly.
         createButtons();
     }
 
     @Override
     public void update(float deltaTime) {
-        for (MenuButton btn : buttons) btn.update();
+        for (MenuButton button : buttons) button.update();
     }
 
     @Override
     public void render(Graphics2D g) {
-        // Full‑screen background (dark blue)
-        g.setColor(new Color(20, 30, 50));
-        g.fillRect(0, 0,
-            ScreenManager.getInstance().getVirtualWidth(),
-            ScreenManager.getInstance().getVirtualHeight());
+        int virtualW = ScreenManager.getInstance().getVirtualWidth();
+        int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        // Draw the menu panel (scaled and centred)
+        // Full‑screen background
+        if (menuBackgroundSprite != null) {
+            menuBackgroundSprite.draw(g, 0, 0, virtualW, virtualH);
+        } else {
+            g.setColor(new Color(20, 30, 50));
+            g.fillRect(0, 0, virtualW, virtualH);
+        }
+
+        // Title (above the menu panel)
+        if (menuTitleSprite != null) {
+            menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
+        }
+
+        // Menu panel
         if (menuPanelSprite != null) {
             menuPanelSprite.draw(g, panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight);
         } else {
-            // Fallback rounded rectangle
             g.setColor(new Color(40, 50, 70));
             g.fillRoundRect(panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight, 20, 20);
         }
 
-        // Draw all buttons (they already use the global scale internally)
-        for (MenuButton btn : buttons) btn.draw(g);
+        // Buttons
+        for (MenuButton button : buttons) {
+            button.draw(g);
+        }
     }
 
-    // ------------------------------------------------------------------------
-    // Input handling – mouse events are already transformed to virtual coordinates
-    // by GamePanel, so we forward them directly to each button.
-    // ------------------------------------------------------------------------
     @Override
     public boolean mouseMoved(MouseEvent e) {
-        for (MenuButton btn : buttons) btn.mouseMoved(e);
+        for (MenuButton button : buttons) {
+            button.mouseMoved(e);
+        }
         return true;
     }
 
     @Override
     public boolean mousePressed(MouseEvent e) {
-        for (MenuButton btn : buttons) btn.mousePressed(e);
+        for (MenuButton button : buttons) {
+            button.mousePressed(e);
+        }
         return true;
     }
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        for (MenuButton btn : buttons) btn.mouseReleased(e);
+        for (MenuButton button : buttons) {
+            button.mouseReleased(e);
+        }
         return true;
     }
 }
