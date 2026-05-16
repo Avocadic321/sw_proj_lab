@@ -37,4 +37,12 @@ public class SpriteSheet {
         }
         return sprites.get(index);
     }
+
+    public int getCols() {
+        return cols;
+    }
+
+    public int getTotalSprites() {
+        return sprites.size();
+    }
 }
