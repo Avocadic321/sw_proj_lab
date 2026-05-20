@@ -1,5 +1,6 @@
 package software.project.ui.components;
 
+import software.project.audio.AudioPlayer;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
@@ -78,7 +79,10 @@ public class MenuButton {
     }
 
     public void mousePressed(MouseEvent e) {
-        if (getBounds().contains(e.getX(), e.getY())) mousePressed = true;
+        if (getBounds().contains(e.getX(), e.getY())) {
+            mousePressed = true;
+            AudioPlayer.getInstance().playEffect("button_pressed");
+        }
     }
 
     public void mouseReleased(MouseEvent e) {
