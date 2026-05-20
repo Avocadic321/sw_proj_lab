@@ -147,7 +147,7 @@ public class MainMenuLayer extends Layer {
 
     private Runnable getActionForIndex(int index) {
         return switch (index) {
-            case 0 -> () -> System.out.println("PLAY clicked");
+            case 0 -> () -> app.replaceLayer(new PlayingLayer());
             case 1 -> () -> System.out.println("OPTIONS clicked");
             case 2 -> () -> System.out.println("CREDITS clicked");
             case 3 -> () -> System.exit(0);
