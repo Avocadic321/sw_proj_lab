@@ -31,14 +31,13 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         initLayers();
 
         // Start the game loop
-        startGameLoop();
+        startMainLoop();
     }
 
     private void initLayers() {
-        pushLayer(new MainMenuLayer(this));   // pass this reference for layer navigation
+        pushLayer(new MainMenuLayer(this));
     }
 
-    // --- Layer stack management ---
     public void pushLayer(Layer layer) {
         if (!layerStack.isEmpty()) {
             layerStack.getLast().onExit();
@@ -71,7 +70,6 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         while (!layerStack.isEmpty()) popLayer();
     }
 
-    // --- Resolution listener ---
     @Override
     public void onResolutionChanged(int newVirtualWidth, int newVirtualHeight) {
         if (!layerStack.isEmpty()) {
@@ -79,33 +77,49 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         }
     }
 
-    // --- Game loop ---
-    private void startGameLoop() {
-        gameThread = new Thread(this::gameLoop);
+    private void startMainLoop() {
+        gameThread = new Thread(this::runMainLoop);
         gameThread.start();
     }
 
-    private void gameLoop() {
-        double timePerUpdate = 1_000_000_000.0 / TARGET_UPS;
-        double timePerFrame  = 1_000_000_000.0 / TARGET_FPS;
-        long lastTime = System.nanoTime();
-        double deltaU = 0;
-        double deltaF = 0;
+    private void runMainLoop() {
+        final float DT = 1f / TARGET_UPS;
+        final long NANO_PER_UPDATE = (long)(DT * 1_000_000_000);
+        final long NANO_PER_FRAME = TARGET_FPS > 0 ? 1_000_000_000 / TARGET_FPS : 0;
+
+        long lastUpdateTime = System.nanoTime();
+        long lastRenderTime = System.nanoTime();
+        long accumulator = 0;
 
         while (running) {
             long now = System.nanoTime();
-            deltaU += (now - lastTime) / timePerUpdate;
-            deltaF += (now - lastTime) / timePerFrame;
-            lastTime = now;
+            long elapsed = Math.min(now - lastUpdateTime, NANO_PER_UPDATE * 5);
+            lastUpdateTime = now;
+            accumulator += elapsed;
 
-            if (deltaU >= 1) {
-                float deltaTime = (float)(timePerUpdate / 1_000_000_000.0);
-                update(deltaTime);
-                deltaU -= 1;
+            int updates = 0;
+            while (accumulator >= NANO_PER_UPDATE && updates < 5) {
+                update(DT);
+                accumulator -= NANO_PER_UPDATE;
+                updates++;
             }
-            if (deltaF >= 1) {
+
+            long nowRender = System.nanoTime();
+            if (TARGET_FPS == 0 || (nowRender - lastRenderTime) >= NANO_PER_FRAME) {
                 ScreenManager.getInstance().getPanel().repaint();
-                deltaF -= 1;
+                lastRenderTime = nowRender;
+            } else {
+                // Yield CPU when neither update nor render is due
+                long sleepNs = NANO_PER_FRAME - (nowRender - lastRenderTime);
+                if (sleepNs > 0) {
+                    long sleepMs = sleepNs / 1_000_000;
+                    int sleepNsRem = (int)(sleepNs % 1_000_000);
+                    try {
+                        Thread.sleep(sleepMs, sleepNsRem);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
         }
     }
@@ -116,14 +130,12 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         }
     }
 
-    // --- Rendering (called from GamePanel) ---
     public void render(Graphics2D g) {
         for (Layer layer : layerStack) {
             layer.render(g);
         }
     }
 
-    // --- Input forwarding (called from GamePanel after transformation) ---
     public void keyPressed(KeyEvent e) {
         if (!layerStack.isEmpty()) layerStack.getLast().keyPressed(e);
     }
@@ -148,7 +160,6 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         if (!layerStack.isEmpty()) layerStack.getLast().mouseDragged(e);
     }
 
-    // --- Shutdown ---
     public void stop() {
         running = false;
         if (gameThread != null) {
