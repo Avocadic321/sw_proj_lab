@@ -20,23 +20,18 @@ public class ResourceManager {
     public void loadAllResources() {
         System.out.println("[INFO] Loading all resources");
         loadSprites();
-        loadButtons();
+        loadSpriteSheets();
         System.out.println("[INFO] Resources loaded");
     }
 
-    public void loadSprites() {
+    private void loadSprites() {
         spriteManager.loadSprite("menu_background", "/ui/menu_background.png");
         spriteManager.loadSprite("menu_panel", "/ui/menu_panel.png");
         spriteManager.loadSprite("menu_title", "/ui/menu_title_two.png");
     }
 
-    private void loadButtons() {
-        spriteManager.loadSpriteSheet(
-            "buttons",
-            "/ui/button_atlas.png",
-            MenuButton.BASE_WIDTH,
-            MenuButton.BASE_HEIGHT
-        );
+    private void loadSpriteSheets() {
+        spriteManager.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720);
+        spriteManager.loadSpriteSheet("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT);
     }
-
 }

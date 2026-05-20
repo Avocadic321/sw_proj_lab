@@ -17,34 +17,22 @@ public class MainMenuLayer extends Layer {
 
     private static final int BUTTON_COUNT = 4;
     private static final int ANIMATION_FRAME_DELAY_MS = 33;
-
-    // Toggle between animated and static background
     private static final boolean ANIMATED = true;
 
-    // Fallback dimensions (used only if menu panel sprite is missing)
     private static final int FALLBACK_MENU_WIDTH = 282;
     private static final int FALLBACK_MENU_HEIGHT = 406;
 
-    // Layout percentages (relative to menu panel height)
     private static final double TOP_MARGIN_PERCENT = 0.23;
     private static final double BOTTOM_MARGIN_PERCENT = 0.07;
     private static final double INNER_PADDING_PERCENT = 0.03;
     private static final double EFFECTIVE_TOP = TOP_MARGIN_PERCENT + INNER_PADDING_PERCENT;
     private static final double EFFECTIVE_BOTTOM = BOTTOM_MARGIN_PERCENT + INNER_PADDING_PERCENT;
 
-    // Global menu scale factor (1.0 = fit exactly; lower = smaller)
     private static final float MENU_SCALE_FACTOR = 0.65f;
-
-    // Title scale factor (independent from menu panel)
     private static final float TITLE_SCALE_FACTOR = 0.4f;
-
-    // Vertical offset for the whole menu (in virtual screen pixels)
     private static final int MENU_VERTICAL_OFFSET = 50;
-
-    // Title vertical offset from the top of the screen (virtual pixels)
     private static final int TITLE_VERTICAL_OFFSET = 50;
 
-    // Sprite sheet rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
     private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
 
     private final GameApplication app;
@@ -70,9 +58,6 @@ public class MainMenuLayer extends Layer {
 
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
-        if (ANIMATED) {
-            sm.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.png", 640, 360);
-        }
 
         menuBackgroundSprite = sm.getSprite("menu_background");
         menuPanelSprite = sm.getSprite("menu_panel");
@@ -85,18 +70,19 @@ public class MainMenuLayer extends Layer {
             originalPanelWidth = menuPanelSprite.getWidth();
             originalPanelHeight = menuPanelSprite.getHeight();
         }
+
         recomputeLayout();
     }
 
     private void loadBackgroundAnimation() {
         SpriteManager sm = SpriteManager.getInstance();
         SpriteSheet animationSheet = sm.getSpriteSheet("menu_animation");
-        backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
 
-        if (backgroundAnimation.isValid()) {
-            backgroundAnimation.start();
-        } else {
-            backgroundAnimation = null;
+        if (animationSheet != null && animationSheet.isValid()) {
+            backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
+            if (backgroundAnimation.isValid()) {
+                backgroundAnimation.start();
+            }
         }
     }
 
@@ -190,7 +176,6 @@ public class MainMenuLayer extends Layer {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        // Draw background
         if (ANIMATED && backgroundAnimation != null && backgroundAnimation.getCurrentFrame() != null) {
             backgroundAnimation.getCurrentFrame().draw(g, 0, 0, virtualW, virtualH);
         } else if (menuBackgroundSprite != null) {
@@ -200,12 +185,10 @@ public class MainMenuLayer extends Layer {
             g.fillRect(0, 0, virtualW, virtualH);
         }
 
-        // Draw title
         if (menuTitleSprite != null) {
             menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
         }
 
-        // Draw menu panel
         if (menuPanelSprite != null) {
             menuPanelSprite.draw(g, panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight);
         } else {
@@ -213,7 +196,6 @@ public class MainMenuLayer extends Layer {
             g.fillRoundRect(panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight, 20, 20);
         }
 
-        // Draw buttons
         for (MenuButton button : buttons) {
             button.draw(g);
         }
