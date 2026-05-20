@@ -19,7 +19,7 @@ public class MainMenuLayer extends Layer {
     private static final int ANIMATION_FRAME_DELAY_MS = 33;
 
     // Toggle between animated and static background
-    private static final boolean ANIMATED = true;  // Set to false for static background
+    private static final boolean ANIMATED = true;
 
     // Fallback dimensions (used only if menu panel sprite is missing)
     private static final int FALLBACK_MENU_WIDTH = 282;
@@ -45,7 +45,6 @@ public class MainMenuLayer extends Layer {
     private static final int TITLE_VERTICAL_OFFSET = 50;
 
     // Sprite sheet rows: 0=PLAY, 1=OPTIONS, 2=QUIT, 3=CREDITS
-    // Desired order: PLAY, OPTIONS, CREDITS, QUIT
     private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
 
     private final GameApplication app;
@@ -71,69 +70,32 @@ public class MainMenuLayer extends Layer {
 
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
-
-        // Load the animation sprite sheet only if ANIMATED is true
         if (ANIMATED) {
             sm.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.png", 640, 360);
         }
 
-        // Load static background (used as fallback or main background)
-        menuBackgroundSprite = SpriteManager.getInstance().getSprite("menu_background");
-        if (menuBackgroundSprite == null && !ANIMATED) {
-            System.err.println("[WARNING] Menu background sprite missing and ANIMATED is false");
-        } else if (menuBackgroundSprite == null && ANIMATED) {
-            System.out.println("[INFO] No static menu background - using animated background only");
-        }
+        menuBackgroundSprite = sm.getSprite("menu_background");
+        menuPanelSprite = sm.getSprite("menu_panel");
+        menuTitleSprite = sm.getSprite("menu_title");
 
-        menuPanelSprite = SpriteManager.getInstance().getSprite("menu_panel");
         if (menuPanelSprite == null) {
-            System.err.println("[WARNING] Menu panel sprite missing. Using fallback.");
             originalPanelWidth = FALLBACK_MENU_WIDTH;
             originalPanelHeight = FALLBACK_MENU_HEIGHT;
         } else {
             originalPanelWidth = menuPanelSprite.getWidth();
             originalPanelHeight = menuPanelSprite.getHeight();
         }
-
-        menuTitleSprite = SpriteManager.getInstance().getSprite("menu_title");
-        if (menuTitleSprite == null) {
-            System.out.println("[WARNING] Menu title sprite missing");
-        }
-
         recomputeLayout();
     }
 
     private void loadBackgroundAnimation() {
         SpriteManager sm = SpriteManager.getInstance();
         SpriteSheet animationSheet = sm.getSpriteSheet("menu_animation");
-
-        if (animationSheet == null) {
-            System.err.println("[ERROR] Failed to load menu animation sprite sheet");
-            return;
-        }
-
-        // Use the new constructor that accepts a SpriteSheet directly
-        // This automatically loads all frames in row-major order
         backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
 
-        // Alternative approaches (commented out for reference):
-
-        // If you only wanted specific rows/columns:
-        // backgroundAnimation = new Animation(animationSheet, 0, 0, 3, 6, ANIMATION_FRAME_DELAY_MS, true);
-
-        // If you wanted specific frame indices:
-        // int[][] frameIndices = {{0,0}, {1,0}, {2,0}, {3,0}, {0,1}, ...};
-        // backgroundAnimation = new Animation(animationSheet, frameIndices, ANIMATION_FRAME_DELAY_MS, true);
-
-        // Using the builder pattern with method chaining:
-        // backgroundAnimation = new Animation(ANIMATION_FRAME_DELAY_MS, true)
-        //     .addAllFramesFromSheet(animationSheet);
-
-        if (backgroundAnimation.getFrameCount() > 0) {
+        if (backgroundAnimation.isValid()) {
             backgroundAnimation.start();
-            System.out.println("[INFO] Loaded " + backgroundAnimation.getFrameCount() + " animation frames");
         } else {
-            System.err.println("[ERROR] No animation frames loaded");
             backgroundAnimation = null;
         }
     }
@@ -142,7 +104,6 @@ public class MainMenuLayer extends Layer {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        // Scale to fit the panel inside virtual screen (preserving aspect ratio)
         double fitScaleX = (double) virtualW / originalPanelWidth;
         double fitScaleY = (double) virtualH / originalPanelHeight;
         double fitScale = Math.min(fitScaleX, fitScaleY);
@@ -153,7 +114,6 @@ public class MainMenuLayer extends Layer {
         panelDrawX = (virtualW - panelDrawWidth) / 2;
         panelDrawY = (virtualH - panelDrawHeight) / 2 + MENU_VERTICAL_OFFSET;
 
-        // Title dimensions – use its own scale factor
         if (menuTitleSprite != null) {
             titleDrawWidth = (int) (menuTitleSprite.getWidth() * TITLE_SCALE_FACTOR);
             titleDrawHeight = (int) (menuTitleSprite.getHeight() * TITLE_SCALE_FACTOR);
@@ -201,10 +161,7 @@ public class MainMenuLayer extends Layer {
 
     private Runnable getActionForIndex(int index) {
         return switch (index) {
-            case 0 -> () -> {
-                System.out.println("PLAY clicked – replace with PlayingLayer");
-                // app.replaceLayer(new PlayingLayer(app));
-            };
+            case 0 -> () -> System.out.println("PLAY clicked");
             case 1 -> () -> System.out.println("OPTIONS clicked");
             case 2 -> () -> System.out.println("CREDITS clicked");
             case 3 -> () -> System.exit(0);
@@ -219,7 +176,6 @@ public class MainMenuLayer extends Layer {
 
     @Override
     public void update(float deltaTime) {
-        // Update the background animation only if ANIMATED is true
         if (ANIMATED && backgroundAnimation != null) {
             backgroundAnimation.update();
         }
@@ -234,25 +190,22 @@ public class MainMenuLayer extends Layer {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
+        // Draw background
         if (ANIMATED && backgroundAnimation != null && backgroundAnimation.getCurrentFrame() != null) {
-            // Draw animated background
-            Sprite currentFrame = backgroundAnimation.getCurrentFrame();
-            currentFrame.draw(g, 0, 0, virtualW, virtualH);
+            backgroundAnimation.getCurrentFrame().draw(g, 0, 0, virtualW, virtualH);
         } else if (menuBackgroundSprite != null) {
-            // Draw static background
             menuBackgroundSprite.draw(g, 0, 0, virtualW, virtualH);
         } else {
-            // Final fallback - solid color
             g.setColor(new Color(20, 30, 50));
             g.fillRect(0, 0, virtualW, virtualH);
         }
 
-        // Title (above the menu panel)
+        // Draw title
         if (menuTitleSprite != null) {
             menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
         }
 
-        // Menu panel
+        // Draw menu panel
         if (menuPanelSprite != null) {
             menuPanelSprite.draw(g, panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight);
         } else {
@@ -260,7 +213,7 @@ public class MainMenuLayer extends Layer {
             g.fillRoundRect(panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight, 20, 20);
         }
 
-        // Buttons
+        // Draw buttons
         for (MenuButton button : buttons) {
             button.draw(g);
         }
