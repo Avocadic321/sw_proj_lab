@@ -38,8 +38,47 @@ public class SpriteSheet {
         return sprites.get(index);
     }
 
+    public Sprite getSprite(int index) {
+        if (index < 0 || index >= sprites.size()) {
+            return null;
+        }
+        return sprites.get(index);
+    }
+
+    public List<Sprite> getRow(int row) {
+        List<Sprite> rowSprites = new ArrayList<>();
+        if (row < 0 || row >= rows) return rowSprites;
+
+        for (int col = 0; col < cols; col++) {
+            rowSprites.add(getSprite(col, row));
+        }
+        return rowSprites;
+    }
+
+    public List<Sprite> getColumn(int col) {
+        List<Sprite> colSprites = new ArrayList<>();
+        if (col < 0 || col >= cols) return colSprites;
+
+        for (int row = 0; row < rows; row++) {
+            colSprites.add(getSprite(col, row));
+        }
+        return colSprites;
+    }
+
     public int getCols() {
         return cols;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public int getFrameWidth() {
+        return frameWidth;
+    }
+
+    public int getFrameHeight() {
+        return frameHeight;
     }
 
     public int getTotalSprites() {
