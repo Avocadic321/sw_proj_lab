@@ -125,8 +125,12 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     }
 
     private void update(float deltaTime) {
-        if (!layerStack.isEmpty()) {
-            layerStack.getLast().update(deltaTime);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            layer.update(deltaTime);
+            if (layer.blocksUpdate()) {
+                break;  // stop updating layers below
+            }
         }
     }
 
@@ -137,27 +141,51 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     }
 
     public void keyPressed(KeyEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().keyPressed(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.keyPressed(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void keyReleased(KeyEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().keyReleased(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.keyReleased(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void mousePressed(MouseEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().mousePressed(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.mousePressed(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().mouseReleased(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.mouseReleased(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void mouseMoved(MouseEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().mouseMoved(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.mouseMoved(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (!layerStack.isEmpty()) layerStack.getLast().mouseDragged(e);
+        for (int i = layerStack.size() - 1; i >= 0; i--) {
+            Layer layer = layerStack.get(i);
+            if (layer.mouseDragged(e)) break;
+            if (layer.blocksInput()) break;
+        }
     }
 
     public void stop() {
