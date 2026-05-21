@@ -5,8 +5,7 @@ import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
 public class MenuButton {
@@ -16,6 +15,7 @@ public class MenuButton {
 
     // Global scale factor for all buttons (set once, e.g., from MainMenuLayer)
     private static float globalScale = 1.0f;
+    private static final boolean DEBUG = false;
 
     public static void setGlobalScale(float scale) {
         globalScale = scale;
@@ -29,11 +29,14 @@ public class MenuButton {
         return (int) (BASE_HEIGHT * globalScale);
     }
 
-    // Instance fields
-    private int x, y;               // centre position (in virtual coordinates)
-    private Sprite normal, hover, pressed;
+    private int x;
+    private int y;               // centre position (in virtual coordinates)
+    private Sprite normal;
+    private Sprite hover;
+    private Sprite pressed;
     private Sprite currentSprite;
-    private boolean mouseOver, mousePressed;
+    private boolean mouseOver;
+    private boolean mousePressed;
     private Runnable action;
 
     public MenuButton(int rowIndex, int x, int y) {
@@ -42,7 +45,6 @@ public class MenuButton {
 
         SpriteSheet sheet = SpriteManager.getInstance().getSpriteSheet("buttons");
         if (sheet == null) {
-            System.err.println("[ERROR] Button sheet not loaded");
             return;
         }
 
@@ -72,6 +74,21 @@ public class MenuButton {
             int h = getScaledHeight();
             currentSprite.draw(g, x - w/2, y, w, h);
         }
+        if (DEBUG) {
+            drawBounds(g);
+        }
+    }
+
+    private void drawBounds(Graphics2D g) {
+        final float STROKE_WIDTH = 2.0f;
+        final Color STROKE_COLOR = Color.RED;
+
+        Rectangle bounds = getBounds();
+        g.setColor(STROKE_COLOR);
+        Stroke originalStroke = g.getStroke();
+        g.setStroke(new BasicStroke(STROKE_WIDTH));
+        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        g.setStroke(originalStroke);
     }
 
     public void mouseMoved(MouseEvent e) {
