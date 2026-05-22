@@ -66,7 +66,8 @@ public class Animation {
     }
 
     public void update() {
-        if (!isValid() || !playing) return;
+        if (!isValid() || !playing)
+            return;
 
         long now = System.currentTimeMillis();
         if (now - lastUpdate >= frameDelayMs) {
@@ -84,8 +85,10 @@ public class Animation {
     }
 
     public Sprite getCurrentFrame() {
-        if (!isValid()) return null;
-        if (currentFrame >= frames.size()) return null;
+        if (!isValid())
+            return null;
+        if (currentFrame >= frames.size())
+            return null;
         return frames.get(currentFrame);
     }
 

@@ -12,15 +12,17 @@ public class BitmapFont {
     private final SpriteSheet sheet;
     private final int charWidth;
     private final int charHeight;
-    private final int firstChar;          // ASCII value of the first character in the sheet
+    private final int firstChar; // ASCII value of the first character in the sheet
     private final int columns;
     private final Map<Character, Sprite> charCache = new HashMap<>();
 
     /**
-     * @param sheet      SpriteSheet containing all character sprites in row‑major order.
+     * @param sheet      SpriteSheet containing all character sprites in row‑major
+     *                   order.
      * @param charWidth  width of one character in pixels (original sheet size).
      * @param charHeight height of one character in pixels.
-     * @param firstChar  ASCII code of the first character in the sheet (e.g., 32 for space).
+     * @param firstChar  ASCII code of the first character in the sheet (e.g., 32
+     *                   for space).
      */
     public BitmapFont(SpriteSheet sheet, int charWidth, int charHeight, int firstChar) {
         this.sheet = sheet;
@@ -33,7 +35,8 @@ public class BitmapFont {
     private Sprite getCharSprite(char c) {
         return charCache.computeIfAbsent(c, ch -> {
             int index = ch - firstChar;
-            if (index < 0 || index >= sheet.getTotalSprites()) return null;
+            if (index < 0 || index >= sheet.getTotalSprites())
+                return null;
             int col = index % columns;
             int row = index / columns;
             return sheet.getSprite(col, row);

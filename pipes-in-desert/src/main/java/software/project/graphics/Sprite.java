@@ -22,7 +22,15 @@ public class Sprite {
         g.drawImage(image, x, y, targetWidth, targetHeight, null);
     }
 
-    public BufferedImage getImage() { return image; }
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

@@ -1,11 +1,16 @@
 package software.project.audio;
 
-import javax.sound.sampled.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class AudioPlayer {
     private static AudioPlayer instance;
@@ -16,31 +21,37 @@ public class AudioPlayer {
     private boolean songMute = false;
     private boolean effectMute = false;
 
-    private AudioPlayer() {}
+    private AudioPlayer() {
+    }
 
     public static AudioPlayer getInstance() {
-        if (instance == null) instance = new AudioPlayer();
+        if (instance == null)
+            instance = new AudioPlayer();
         return instance;
     }
 
     /**
      * Load a background music file (WAV) from the classpath.
-     * @param key unique identifier for this song
+     * 
+     * @param key  unique identifier for this song
      * @param path resource path, e.g. "/audio/menu.wav"
      */
     public void loadSong(String key, String path) {
         Clip clip = loadClip(path);
-        if (clip != null) songs.put(key, clip);
+        if (clip != null)
+            songs.put(key, clip);
     }
 
     /**
      * Load a sound effect file (WAV) from the classpath.
-     * @param key unique identifier for this effect
+     * 
+     * @param key  unique identifier for this effect
      * @param path resource path, e.g. "/audio/jump.wav"
      */
     public void loadEffect(String key, String path) {
         Clip clip = loadClip(path);
-        if (clip != null) effects.put(key, clip);
+        if (clip != null)
+            effects.put(key, clip);
     }
 
     private Clip loadClip(String path) {
@@ -62,7 +73,8 @@ public class AudioPlayer {
 
     // --- Music playback ---
     public void playSong(String key) {
-        if (songMute) return;
+        if (songMute)
+            return;
         stopCurrentSong();
         Clip clip = songs.get(key);
         if (clip != null) {
@@ -76,13 +88,15 @@ public class AudioPlayer {
     public void stopCurrentSong() {
         if (currentSongKey != null) {
             Clip clip = songs.get(currentSongKey);
-            if (clip != null && clip.isRunning()) clip.stop();
+            if (clip != null && clip.isRunning())
+                clip.stop();
             currentSongKey = null;
         }
     }
 
     public void playEffect(String key) {
-        if (effectMute) return;
+        if (effectMute)
+            return;
         Clip clip = effects.get(key);
         if (clip != null) {
             // Stop if currently playing (so we can rewind)
@@ -99,12 +113,15 @@ public class AudioPlayer {
     public void setVolume(float volume) {
         this.volume = Math.clamp(volume, 0.0f, 1.0f);
         // Update currently playing song and all effects (if they are open)
-        if (currentSongKey != null) updateVolume(songs.get(currentSongKey));
-        for (Clip clip : effects.values()) updateVolume(clip);
+        if (currentSongKey != null)
+            updateVolume(songs.get(currentSongKey));
+        for (Clip clip : effects.values())
+            updateVolume(clip);
     }
 
     private void updateVolume(Clip clip) {
-        if (clip == null) return;
+        if (clip == null)
+            return;
         FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
         float min = gainControl.getMinimum();
         float max = gainControl.getMaximum();
@@ -117,8 +134,10 @@ public class AudioPlayer {
         if (currentSongKey != null) {
             Clip clip = songs.get(currentSongKey);
             if (clip != null) {
-                if (songMute && clip.isRunning()) clip.stop();
-                else if (!songMute && !clip.isRunning()) clip.start();
+                if (songMute && clip.isRunning())
+                    clip.stop();
+                else if (!songMute && !clip.isRunning())
+                    clip.start();
             }
         }
     }
@@ -127,7 +146,15 @@ public class AudioPlayer {
         effectMute = !effectMute;
     }
 
-    public boolean isSongMute() { return songMute; }
-    public boolean isEffectMute() { return effectMute; }
-    public float getVolume() { return volume; }
+    public boolean isSongMute() {
+        return songMute;
+    }
+
+    public boolean isEffectMute() {
+        return effectMute;
+    }
+
+    public float getVolume() {
+        return volume;
+    }
 }

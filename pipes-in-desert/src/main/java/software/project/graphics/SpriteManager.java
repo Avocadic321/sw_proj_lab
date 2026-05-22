@@ -1,11 +1,12 @@
 package software.project.graphics;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 public class SpriteManager {
     private static SpriteManager instance;
@@ -14,7 +15,8 @@ public class SpriteManager {
 
     private boolean showWarnings = true;
 
-    private SpriteManager() {}
+    private SpriteManager() {
+    }
 
     public static SpriteManager getInstance() {
         if (instance == null) {
@@ -25,7 +27,8 @@ public class SpriteManager {
 
     /**
      * Loads an image from the classpath (resources folder).
-     * @param key unique identifier for the sprite
+     * 
+     * @param key  unique identifier for the sprite
      * @param path path inside resources, e.g. "/sprites/pipe.png"
      */
     public void loadSprite(String key, String path) {
@@ -64,7 +67,8 @@ public class SpriteManager {
                 }
                 return;
             }
-            System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x" + sheetImage.getHeight());
+            System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x"
+                    + sheetImage.getHeight());
             SpriteSheet sheet = new SpriteSheet(sheetImage, frameWidth, frameHeight);
             spriteSheets.put(key, sheet);
         } catch (IOException e) {

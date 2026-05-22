@@ -31,15 +31,15 @@ public class SpriteSheet {
 
         if (cols == 0 || rows == 0) {
             System.err.println("[ERROR] Cannot create SpriteSheet: invalid dimensions. Image=" +
-                image.getWidth() + "x" + image.getHeight() +
-                ", Frame=" + frameWidth + "x" + frameHeight);
+                    image.getWidth() + "x" + image.getHeight() +
+                    ", Frame=" + frameWidth + "x" + frameHeight);
             this.valid = false;
             return;
         }
 
         loadSprites();
         System.out.println("[INFO] Created SpriteSheet with " + cols + "x" + rows +
-            " frames (" + sprites.size() + " total)");
+                " frames (" + sprites.size() + " total)");
     }
 
     private void loadSprites() {
@@ -49,7 +49,8 @@ public class SpriteSheet {
                     BufferedImage sub = image.getSubimage(col * frameWidth, row * frameHeight, frameWidth, frameHeight);
                     sprites.add(new Sprite(sub));
                 } catch (Exception e) {
-                    System.err.println("[ERROR] Failed to extract sprite at col=" + col + ", row=" + row + ": " + e.getMessage());
+                    System.err.println(
+                            "[ERROR] Failed to extract sprite at col=" + col + ", row=" + row + ": " + e.getMessage());
                     sprites.add(null);
                 }
             }
@@ -69,7 +70,7 @@ public class SpriteSheet {
         int index = row * cols + col;
         if (index < 0 || index >= sprites.size()) {
             System.err.println("[WARNING] Sprite index out of bounds: col=" + col +
-                ", row=" + row + " (index=" + index + ", size=" + sprites.size() + ")");
+                    ", row=" + row + " (index=" + index + ", size=" + sprites.size() + ")");
             return null;
         }
 
@@ -84,7 +85,7 @@ public class SpriteSheet {
 
         if (index < 0 || index >= sprites.size()) {
             System.err.println("[WARNING] Sprite index out of bounds: index=" + index +
-                ", size=" + sprites.size());
+                    ", size=" + sprites.size());
             return null;
         }
 
@@ -93,7 +94,8 @@ public class SpriteSheet {
 
     public List<Sprite> getRow(int row) {
         List<Sprite> rowSprites = new ArrayList<>();
-        if (!isValid()) return rowSprites;
+        if (!isValid())
+            return rowSprites;
 
         if (row < 0 || row >= rows) {
             System.err.println("[WARNING] Row out of bounds: row=" + row);
@@ -108,7 +110,8 @@ public class SpriteSheet {
 
     public List<Sprite> getColumn(int col) {
         List<Sprite> colSprites = new ArrayList<>();
-        if (!isValid()) return colSprites;
+        if (!isValid())
+            return colSprites;
 
         if (col < 0 || col >= cols) {
             System.err.println("[WARNING] Column out of bounds: col=" + col);
@@ -121,9 +124,23 @@ public class SpriteSheet {
         return colSprites;
     }
 
-    public int getCols() { return cols; }
-    public int getRows() { return rows; }
-    public int getTotalSprites() { return sprites.size(); }
-    public int getFrameWidth() { return frameWidth; }
-    public int getFrameHeight() { return frameHeight; }
+    public int getCols() {
+        return cols;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public int getTotalSprites() {
+        return sprites.size();
+    }
+
+    public int getFrameWidth() {
+        return frameWidth;
+    }
+
+    public int getFrameHeight() {
+        return frameHeight;
+    }
 }

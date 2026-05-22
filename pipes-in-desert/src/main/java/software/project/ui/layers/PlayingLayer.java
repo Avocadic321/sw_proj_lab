@@ -1,10 +1,10 @@
 package software.project.ui.layers;
 
+import java.awt.Graphics2D;
+
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.ui.renderer.MapRenderer;
-
-import java.awt.*;
 
 public class PlayingLayer extends Layer {
     private final GameModel model;

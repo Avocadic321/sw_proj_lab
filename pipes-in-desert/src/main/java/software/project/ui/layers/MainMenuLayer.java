@@ -1,5 +1,11 @@
 package software.project.ui.layers;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+
 import software.project.graphics.Animation;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
@@ -7,11 +13,6 @@ import software.project.graphics.SpriteSheet;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
-
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainMenuLayer extends Layer {
 
@@ -33,7 +34,7 @@ public class MainMenuLayer extends Layer {
     private static final int MENU_VERTICAL_OFFSET = 50;
     private static final int TITLE_VERTICAL_OFFSET = 50;
 
-    private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
+    private static final int[] BUTTON_ROW_INDICES = { 0, 1, 3, 2 };
 
     private final GameApplication app;
     private final List<MenuButton> buttons = new ArrayList<>();
@@ -151,7 +152,8 @@ public class MainMenuLayer extends Layer {
             case 1 -> () -> System.out.println("OPTIONS clicked");
             case 2 -> () -> System.out.println("CREDITS clicked");
             case 3 -> () -> System.exit(0);
-            default -> () -> {};
+            default -> () -> {
+            };
         };
     }
 

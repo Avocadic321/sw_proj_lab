@@ -1,11 +1,13 @@
 package software.project.ui.renderer;
 
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+
 import software.project.core.GameModel;
 import software.project.map.Element;
 import software.project.map.GameMap;
 import software.project.ui.ScreenManager;
-
-import java.awt.*;
 
 public class MapRenderer {
     private static final int LEFT_BORDER = 40;
@@ -24,7 +26,7 @@ public class MapRenderer {
     private int offsetY;
 
     public void draw(Graphics2D g, GameModel model) {
-        GameMap map =  model.getGameMap();
+        GameMap map = model.getGameMap();
         if (gridWidth == 0) {
             computeMapBounds(map);
         }
@@ -43,10 +45,14 @@ public class MapRenderer {
             hasElements = true;
             int x = e.getX();
             int y = e.getY();
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
+            if (x < minX)
+                minX = x;
+            if (x > maxX)
+                maxX = x;
+            if (y < minY)
+                minY = y;
+            if (y > maxY)
+                maxY = y;
         }
 
         if (!hasElements || maxX < minX || maxY < minY) {
@@ -99,7 +105,7 @@ public class MapRenderer {
 
     }
 
-    /* ========== Helper Methods for Geometry and Screen ==========*/
+    /* ========== Helper Methods for Geometry and Screen ========== */
     private int getTileX(int gridX) {
         return offsetX + gridX * tileSize;
     }
@@ -114,6 +120,7 @@ public class MapRenderer {
 
     /**
      * Converts screen coordinates (from mouse event) to grid cell coordinates.
+     * 
      * @return Point with gridX, gridY or null if outside the map area.
      */
     public Point screenToGrid(int screenX, int screenY) {

@@ -20,22 +20,48 @@ public abstract class Layer {
     public final boolean blocksInput() {
         return blocksInput;
     }
+
     public final boolean blocksUpdate() {
         return blocksUpdate;
     }
 
-    public void onEnter() {}
-    public void onExit() {}
-    public void update(float deltaTime) {}
-    public void render(Graphics2D g) {}
+    public void onEnter() {
+    }
+
+    public void onExit() {
+    }
+
+    public void update(float deltaTime) {
+    }
+
+    public void render(Graphics2D g) {
+    }
 
     /** Called when the window is resized (virtual resolution changed). */
-    public void onResolutionChanged(int newWidth, int newHeight) {}
+    public void onResolutionChanged(int newWidth, int newHeight) {
+    }
 
-    public boolean keyPressed(KeyEvent e) { return false; }
-    public boolean keyReleased(KeyEvent e) { return false; }
-    public boolean mousePressed(MouseEvent e) { return false; }
-    public boolean mouseReleased(MouseEvent e) { return false; }
-    public boolean mouseMoved(MouseEvent e) { return false; }
-    public boolean mouseDragged(MouseEvent e) { return false; }
+    public boolean keyPressed(KeyEvent e) {
+        return false;
+    }
+
+    public boolean keyReleased(KeyEvent e) {
+        return false;
+    }
+
+    public boolean mousePressed(MouseEvent e) {
+        return false;
+    }
+
+    public boolean mouseReleased(MouseEvent e) {
+        return false;
+    }
+
+    public boolean mouseMoved(MouseEvent e) {
+        return false;
+    }
+
+    public boolean mouseDragged(MouseEvent e) {
+        return false;
+    }
 }

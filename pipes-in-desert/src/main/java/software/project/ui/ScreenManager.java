@@ -1,13 +1,15 @@
 package software.project.ui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
+import javax.swing.JFrame;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class ScreenManager {
     private static ScreenManager instance;
@@ -22,7 +24,10 @@ public class ScreenManager {
     private int virtualHeight = GAME_HEIGHT;
 
     // Scaling mode (LETTERBOX = black bars, STRETCH = fill)
-    public enum ScalingMode { LETTERBOX, STRETCH }
+    public enum ScalingMode {
+        LETTERBOX, STRETCH
+    }
+
     private ScalingMode scalingMode = ScalingMode.LETTERBOX;
 
     // Listeners for resolution changes
@@ -32,10 +37,12 @@ public class ScreenManager {
         void onResolutionChanged(int newVirtualWidth, int newVirtualHeight);
     }
 
-    private ScreenManager() {}
+    private ScreenManager() {
+    }
 
     public static ScreenManager getInstance() {
-        if (instance == null) instance = new ScreenManager();
+        if (instance == null)
+            instance = new ScreenManager();
         return instance;
     }
 
@@ -102,8 +109,19 @@ public class ScreenManager {
         updateVirtualResolution();
     }
 
-    public JFrame getFrame() { return frame; }
-    public GamePanel getPanel() { return panel; }
-    public int getVirtualWidth() { return virtualWidth; }
-    public int getVirtualHeight() { return virtualHeight; }
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public GamePanel getPanel() {
+        return panel;
+    }
+
+    public int getVirtualWidth() {
+        return virtualWidth;
+    }
+
+    public int getVirtualHeight() {
+        return virtualHeight;
+    }
 }

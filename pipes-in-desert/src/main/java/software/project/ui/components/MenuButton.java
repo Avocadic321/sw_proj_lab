@@ -1,12 +1,16 @@
 package software.project.ui.components;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.awt.event.MouseEvent;
+
 import software.project.audio.AudioPlayer;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
-
-import java.awt.*;
-import java.awt.event.MouseEvent;
 
 public class MenuButton {
     // Base size (original art size)
@@ -30,7 +34,7 @@ public class MenuButton {
     }
 
     private int x;
-    private int y;               // centre position (in virtual coordinates)
+    private int y; // centre position (in virtual coordinates)
     private Sprite normal;
     private Sprite hover;
     private Sprite pressed;
@@ -49,7 +53,7 @@ public class MenuButton {
         }
 
         this.normal = sheet.getSprite(0, rowIndex);
-        this.hover  = sheet.getSprite(1, rowIndex);
+        this.hover = sheet.getSprite(1, rowIndex);
         this.pressed = sheet.getSprite(2, rowIndex);
         this.currentSprite = normal;
     }
@@ -72,7 +76,7 @@ public class MenuButton {
         if (currentSprite != null) {
             int w = getScaledWidth();
             int h = getScaledHeight();
-            currentSprite.draw(g, x - w/2, y, w, h);
+            currentSprite.draw(g, x - w / 2, y, w, h);
         }
         if (DEBUG) {
             drawBounds(g);
@@ -112,6 +116,6 @@ public class MenuButton {
     public Rectangle getBounds() {
         int w = getScaledWidth();
         int h = getScaledHeight();
-        return new Rectangle(x - w/2, y, w, h);
+        return new Rectangle(x - w / 2, y, w, h);
     }
 }
