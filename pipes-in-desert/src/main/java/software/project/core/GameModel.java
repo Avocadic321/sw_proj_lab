@@ -1,10 +1,5 @@
 package software.project.core;
 
-import software.project.models.*;
-import software.project.utils.Debug;
-import software.project.utils.GameState;
-import software.project.utils.Teams;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -13,10 +8,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import software.project.map.Cistern;
+import software.project.map.GameMap;
+import software.project.map.Pump;
+import software.project.models.Plumber;
+import software.project.models.Saboteur;
+import software.project.models.Team;
+import software.project.utils.Debug;
+import software.project.utils.GameState;
+import software.project.utils.Teams;
+
 /**
  * Coordinates gameplay flow, state, and high-level actions.
  */
-public class Game {
+public class GameModel {
     /**
      * Manages turns and timing.
      */
@@ -55,7 +60,7 @@ public class Game {
      *
      * @param config game configuration
      */
-    public Game(GameConfig config) {
+    public GameModel(GameConfig config) {
         this.gameMap = new GameMap();
         this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
@@ -101,7 +106,7 @@ public class Game {
         }
         if (gameLoopTask == null || gameLoopTask.isDone()) {
             gameLoopTask = scheduler.scheduleAtFixedRate(
-                this::tick, 0, 1, TimeUnit.SECONDS);
+                    this::tick, 0, 1, TimeUnit.SECONDS);
             Debug.log("Game loop task scheduled at 1 sec interval.");
         } else {
             Debug.log("Game loop task already running.");
@@ -200,7 +205,7 @@ public class Game {
         if (leakedAmount > 0) {
             saboteurs.addScore(leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED);
             Debug.log("Saboteur score +%d (total: %d)",
-                leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
+                    leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
         }
 
         int totalStored = 0;
@@ -413,19 +418,19 @@ public class Game {
     @Override
     public String toString() {
         String currentPlayer = turnManager.getCurrentPlayer() == null
-            ? "NONE"
-            : turnManager.getCurrentPlayer().getId();
+                ? "NONE"
+                : turnManager.getCurrentPlayer().getId();
         String activeTeam = turnManager.getActiveTeam() == null
-            ? "NONE"
-            : turnManager.getActiveTeam().name();
+                ? "NONE"
+                : turnManager.getActiveTeam().name();
 
         return String.format(
-            "[STATE] GAME GAME state=%s currentPlayer=%s activeTeam=%s plumbersScore=%d saboteursScore=%d mapElements=%d",
-            state,
-            currentPlayer,
-            activeTeam,
-            plumbers == null ? 0 : plumbers.getScore(),
-            saboteurs == null ? 0 : saboteurs.getScore(),
-            gameMap.getElements().size());
+                "[STATE] GAME GAME state=%s currentPlayer=%s activeTeam=%s plumbersScore=%d saboteursScore=%d mapElements=%d",
+                state,
+                currentPlayer,
+                activeTeam,
+                plumbers == null ? 0 : plumbers.getScore(),
+                saboteurs == null ? 0 : saboteurs.getScore(),
+                gameMap.getElements().size());
     }
 }

@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
-import software.project.models.Pipe;
+import software.project.core.GameModel;
+import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;
@@ -13,13 +13,13 @@ import software.project.utils.GameState;
 public class SabotagePipeCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] SABOTAGE_PIPE GAME_NOT_RUNNING");
             return;
         }
@@ -30,13 +30,13 @@ public class SabotagePipeCommand implements ICommand {
         }
 
         String pipeId = args[0].trim();
-        Pipe pipe = game.getGameMap().getElement(pipeId, Pipe.class);
+        Pipe pipe = gameModel.getGameMap().getElement(pipeId, Pipe.class);
         if (pipe == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE PIPE_NOT_FOUND " + pipeId);
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] SABOTAGE_PIPE NO_CURRENT_PLAYER");
             return;

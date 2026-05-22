@@ -1,7 +1,8 @@
 package software.project.models;
 
-import software.project.interfaces.ICarriable;
-import software.project.interfaces.IRepairable;
+import software.project.map.interfaces.ICarriable;
+import software.project.map.interfaces.IRepairable;
+import software.project.map.*;
 
 import java.util.ArrayList;
 import java.util.List;

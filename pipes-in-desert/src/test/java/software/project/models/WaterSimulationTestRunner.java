@@ -1,10 +1,7 @@
 package software.project.models;
 
-import org.junit.jupiter.api.Test;
 import software.project.core.WaterSimulator;
-import software.project.models.*;
-import java.util.ArrayList;
-import java.util.List;
+import software.project.map.*;
 
 public class WaterSimulationTestRunner {
 

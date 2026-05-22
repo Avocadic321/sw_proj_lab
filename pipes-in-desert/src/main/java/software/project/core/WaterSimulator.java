@@ -1,9 +1,9 @@
 package software.project.core;
 
-import software.project.models.Element;
-import software.project.models.GameMap;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
+import software.project.map.Element;
+import software.project.map.GameMap;
+import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.utils.Debug;
 
 import java.util.ArrayList;

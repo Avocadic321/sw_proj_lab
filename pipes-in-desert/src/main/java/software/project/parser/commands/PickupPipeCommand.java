@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
-import software.project.models.Cistern;
+import software.project.core.GameModel;
+import software.project.map.Cistern;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
@@ -13,12 +13,12 @@ import software.project.utils.GameState;
  */
 public class PickupPipeCommand implements ICommand {
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] PICKUP_PIPE GAME_NOT_INITIALIZED");
             return;
         }
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] PICKUP_PIPE GAME_NOT_RUNNING");
             return;
         }
@@ -32,7 +32,7 @@ public class PickupPipeCommand implements ICommand {
 
         if (args.length == 2) {
             // PICKUP_PIPE <playerId> <cisternId>
-            player = findPlayer(game, args[0]);
+            player = findPlayer(gameModel, args[0]);
             cisternId = args[1].trim();
             if (player == null) {
                 System.out.println("[ERROR] PICKUP_PIPE PLAYER_NOT_FOUND " + args[0]);
@@ -40,7 +40,7 @@ public class PickupPipeCommand implements ICommand {
             }
         } else {
             // PICKUP_PIPE <cisternId>
-            player = game.getTurnManager().getCurrentPlayer();
+            player = gameModel.getTurnManager().getCurrentPlayer();
             cisternId = args[0].trim();
         }
 
@@ -54,7 +54,7 @@ public class PickupPipeCommand implements ICommand {
             return;
         }
 
-        Cistern cistern = game.getGameMap().getElement(cisternId, Cistern.class);
+        Cistern cistern = gameModel.getGameMap().getElement(cisternId, Cistern.class);
         if (cistern == null) {
             System.out.println("[ERROR] PICKUP_PIPE CISTERN_NOT_FOUND " + cisternId);
             return;
@@ -68,11 +68,11 @@ public class PickupPipeCommand implements ICommand {
         }
     }
 
-    private Player findPlayer(Game game, String playerId) {
-        for (Player p : game.getPlumbersTeam().getPlayers()) {
+    private Player findPlayer(GameModel gameModel, String playerId) {
+        for (Player p : gameModel.getPlumbersTeam().getPlayers()) {
             if (p.getId().equalsIgnoreCase(playerId)) return p;
         }
-        for (Player p : game.getSaboteursTeam().getPlayers()) {
+        for (Player p : gameModel.getSaboteursTeam().getPlayers()) {
             if (p.getId().equalsIgnoreCase(playerId)) return p;
         }
         return null;

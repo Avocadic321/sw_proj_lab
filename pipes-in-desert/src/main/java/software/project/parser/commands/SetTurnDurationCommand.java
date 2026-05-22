@@ -1,7 +1,7 @@
 package software.project.parser.commands;
 
 import software.project.App;
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.core.GameConfig;
 import software.project.parser.ICommand;
 
@@ -16,8 +16,8 @@ public class SetTurnDurationCommand implements ICommand {
     }
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game != null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel != null) {
             System.out.println("[ERROR] SET_TURN_DURATION GAME_ALREADY_STARTED");
             return;
         }

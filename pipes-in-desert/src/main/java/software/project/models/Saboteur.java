@@ -1,5 +1,8 @@
 package software.project.models;
 
+import software.project.map.Element;
+import software.project.map.Pipe;
+
 /**
  * A player whose objective is to disrupt the water transport system.
  * <p>

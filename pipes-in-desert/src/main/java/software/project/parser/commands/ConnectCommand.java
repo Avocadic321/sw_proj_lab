@@ -1,9 +1,9 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
-import software.project.models.ActiveElement;
-import software.project.models.Pipe;
-import software.project.models.PipeEnd;
+import software.project.core.GameModel;
+import software.project.map.ActiveElement;
+import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
@@ -15,13 +15,13 @@ import software.project.utils.GameState;
 public class ConnectCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] CONNECT GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] CONNECT GAME_NOT_RUNNING");
             return;
         }
@@ -35,7 +35,7 @@ public class ConnectCommand implements ICommand {
         String endStr = args[1].trim();
         String elementId = args[2].trim();
 
-        Pipe pipe = game.getGameMap().getElement(pipeId, Pipe.class);
+        Pipe pipe = gameModel.getGameMap().getElement(pipeId, Pipe.class);
         if (pipe == null) {
             System.out.println("[ERROR] CONNECT PIPE_NOT_FOUND " + pipeId);
             return;
@@ -49,7 +49,7 @@ public class ConnectCommand implements ICommand {
             return;
         }
 
-        ActiveElement target = game.getGameMap().getElement(elementId, ActiveElement.class);
+        ActiveElement target = gameModel.getGameMap().getElement(elementId, ActiveElement.class);
         if (target == null) {
             System.out.println("[ERROR] CONNECT TARGET_NOT_FOUND " + elementId);
             return;
@@ -61,7 +61,7 @@ public class ConnectCommand implements ICommand {
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] CONNECT NO_CURRENT_PLAYER");
             return;

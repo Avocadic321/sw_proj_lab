@@ -1,4 +1,7 @@
-package software.project.interfaces;
+package software.project.map.interfaces;
+
+import software.project.map.Pipe;
+import software.project.map.Pump;
 
 /**
  * Defines the behavior of game elements that can be repaired by a plumber.
@@ -12,8 +15,8 @@ package software.project.interfaces;
  * reactivating a failed pump.
  * </p>
  *
- * @see software.project.models.Pipe
- * @see software.project.models.Pump
+ * @see Pipe
+ * @see Pump
  * @see software.project.models.Plumber
  * @see IBreakable
  */

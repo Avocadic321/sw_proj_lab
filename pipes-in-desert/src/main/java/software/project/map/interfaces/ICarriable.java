@@ -1,4 +1,4 @@
-package software.project.interfaces;
+package software.project.map.interfaces;
 
 /**
  * Marks elements that a plumber can pick up and carry.

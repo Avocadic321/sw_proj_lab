@@ -1,9 +1,7 @@
 package software.project;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.core.GameConfig;
-import software.project.menus.IMenu;
-import software.project.menus.MainMenu;
 import software.project.parser.CommandParser;
 
 import java.io.*;
@@ -21,9 +19,8 @@ import java.util.Scanner;
  * @since 2026-03-30
  */
 public class App {
-    private Game game;
+    private GameModel gameModel;
     private final CommandParser parser;
-    private Scanner scanner;
     private final GameConfig gameConfig;
 
     public App() {
@@ -31,8 +28,8 @@ public class App {
         this.gameConfig = new GameConfig();
     }
 
-    public void setGame(Game game) {
-        this.game = game;
+    public void setGame(GameModel gameModel) {
+        this.gameModel = gameModel;
     }
 
     public GameConfig getGameConfig() {
@@ -43,21 +40,8 @@ public class App {
         return parser;
     }
 
-    public Game getGame() {
-        return game;
-    }
-
-    public Scanner getScanner() {
-        return scanner;
-    }
-
-    public void runInteractive() {
-        scanner = new Scanner(System.in);
-
-        IMenu currentMenu = new MainMenu(this);
-        while (currentMenu != null) {
-            currentMenu = currentMenu.run();
-        }
+    public GameModel getGame() {
+        return gameModel;
     }
 
     public void runTest(String inputFile, String outputFile) {

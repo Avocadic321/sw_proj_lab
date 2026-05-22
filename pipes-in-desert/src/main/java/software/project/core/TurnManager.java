@@ -1,5 +1,10 @@
 package software.project.core;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
+
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
@@ -7,17 +12,14 @@ import software.project.utils.Debug;
 import software.project.utils.Events;
 import software.project.utils.Teams;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Manages the turn-based flow of a game session.
  *
  * <p>
- * Controls turn order, tracks the currently active player, and coordinates turn transitions. The timer enforces time
- * limits per player turn. When a turn ends (either by player action or timer expiration), the manager advances to the
+ * Controls turn order, tracks the currently active player, and coordinates turn
+ * transitions. The timer enforces time
+ * limits per player turn. When a turn ends (either by player action or timer
+ * expiration), the manager advances to the
  * next player.
  * </p>
  *
@@ -58,8 +60,10 @@ public class TurnManager {
         // interleave: PLUMBER0, SABOTEUR0, PLUMBER1, SABOTEUR1, ...
         int max = Math.max(plList.size(), saList.size());
         for (int i = 0; i < max; i++) {
-            if (i < plList.size()) players.add(plList.get(i));
-            if (i < saList.size()) players.add(saList.get(i));
+            if (i < plList.size())
+                players.add(plList.get(i));
+            if (i < saList.size())
+                players.add(saList.get(i));
         }
 
         if (!players.isEmpty()) {
@@ -86,15 +90,17 @@ public class TurnManager {
      * </p>
      */
     public void startTurn() {
-        if (players.isEmpty()) return;
+        if (players.isEmpty())
+            return;
         timer.start();
         isRunning = true;
         Debug.log("Turn started: %s (%s) | Time left: %ds",
-            currentPlayer.getId(), activeTeam, timer.getTimeLeft());
+                currentPlayer.getId(), activeTeam, timer.getTimeLeft());
     }
 
     public void tick() {
-        if (!isRunning || currentPlayer == null) return;
+        if (!isRunning || currentPlayer == null)
+            return;
         timer.tick();
 
         // Debug - log remaining time in mm::ss
@@ -119,7 +125,8 @@ public class TurnManager {
      * </p>
      */
     public void endTurn() {
-        if (currentPlayer == null) return;
+        if (currentPlayer == null)
+            return;
         Player finishingPlayer = currentPlayer;
         Teams finishingTeam = activeTeam;
         timer.stop();
@@ -127,11 +134,12 @@ public class TurnManager {
         turnEnded = true;
 
         Debug.log("Turn ended: %s (%s)",
-            finishingPlayer.getId(), finishingTeam);
+                finishingPlayer.getId(), finishingTeam);
     }
 
     public void startNextTurn() {
-        if (players.isEmpty()) return;
+        if (players.isEmpty())
+            return;
         advanceToNextPlayer();
         if (currentPlayer != null) {
             startTurn();
@@ -139,7 +147,8 @@ public class TurnManager {
     }
 
     private void advanceToNextPlayer() {
-        if (players.isEmpty()) return;
+        if (players.isEmpty())
+            return;
         currentIndex = (currentIndex + 1) % players.size();
         Player oldPlayer = currentPlayer;
         currentPlayer = players.get(currentIndex);
@@ -152,7 +161,8 @@ public class TurnManager {
      * Suspends the current turn without ending it.
      *
      * <p>
-     * Stops the timer but preserves the turn state for later resumption. Used when the game is paused.
+     * Stops the timer but preserves the turn state for later resumption. Used when
+     * the game is paused.
      * </p>
      */
     public void suspendTurn() {

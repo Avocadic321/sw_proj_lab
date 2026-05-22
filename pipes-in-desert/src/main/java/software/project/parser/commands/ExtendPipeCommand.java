@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
@@ -12,13 +12,13 @@ import software.project.utils.GameState;
 public class ExtendPipeCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] EXTEND_PIPE GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] EXTEND_PIPE GAME_NOT_RUNNING");
             return;
         }
@@ -28,7 +28,7 @@ public class ExtendPipeCommand implements ICommand {
             return;
         }
 
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] EXTEND_PIPE NO_CURRENT_PLAYER");
             return;

@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -10,13 +10,13 @@ import software.project.utils.GameState;
 public class RandomProduceCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] RANDOM_PRODUCE GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] RANDOM_PRODUCE GAME_NOT_RUNNING");
             return;
         }
@@ -26,6 +26,6 @@ public class RandomProduceCommand implements ICommand {
                     "[ERROR] RANDOM_PRODUCE requires cistern ID and type (PIPE or PUMP). Usage: RANDOM_PRODUCE <cisternId> <PIPE|PUMP>");
             return;
         }
-        game.produceComponentAt(args[0].trim(), args[1].trim().toUpperCase());
+        gameModel.produceComponentAt(args[0].trim(), args[1].trim().toUpperCase());
     }
 }

@@ -1,4 +1,4 @@
-package software.project.models;
+package software.project.map;
 
 /**
  * Endpoint of a pipe that can connect to an active element.

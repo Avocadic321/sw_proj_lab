@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
-import software.project.models.Cistern;
-import software.project.models.Pipe;
+import software.project.core.GameModel;
+import software.project.map.Cistern;
+import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.models.Pump;
+import software.project.map.Pump;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -15,13 +15,13 @@ import software.project.utils.GameState;
 public class PickUpCommand implements ICommand {
 
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] PICK_UP GAME_NOT_INITIALIZED");
             return;
         }
 
-        if (game.getState() != GameState.RUNNING) {
+        if (gameModel.getState() != GameState.RUNNING) {
             System.out.println("[ERROR] PICK_UP GAME_NOT_RUNNING");
             return;
         }
@@ -33,7 +33,7 @@ public class PickUpCommand implements ICommand {
         }
 
         String id = args[0].trim();
-        Player p = game.getTurnManager().getCurrentPlayer();
+        Player p = gameModel.getTurnManager().getCurrentPlayer();
         if (p == null) {
             System.out.println("[ERROR] PICK_UP NO_CURRENT_PLAYER");
             return;
@@ -47,7 +47,7 @@ public class PickUpCommand implements ICommand {
         Plumber plumber = (Plumber) p;
 
         // If target is a pipe or pump in the world
-        Pipe pipe = game.getGameMap().getElement(id, Pipe.class);
+        Pipe pipe = gameModel.getGameMap().getElement(id, Pipe.class);
         if (pipe != null) {
             try {
                 plumber.pickUpPipe(pipe);
@@ -58,7 +58,7 @@ public class PickUpCommand implements ICommand {
             return;
         }
 
-        Pump pump = game.getGameMap().getElement(id, Pump.class);
+        Pump pump = gameModel.getGameMap().getElement(id, Pump.class);
         if (pump != null) {
             try {
                 plumber.pickUpPump(pump);
@@ -70,7 +70,7 @@ public class PickUpCommand implements ICommand {
         }
 
         // If target is a cistern (pickup from produced components)
-        Cistern cistern = game.getGameMap().getElement(id, Cistern.class);
+        Cistern cistern = gameModel.getGameMap().getElement(id, Cistern.class);
         if (cistern != null) {
             if (args.length == 2) {
                 String type = args[1].trim().toUpperCase();

@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.parser.ICommand;
 import software.project.utils.GameState;
 
@@ -9,12 +9,12 @@ import software.project.utils.GameState;
  */
 public class EndGameCommand implements ICommand {
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] END_GAME GAME_NOT_INITIALIZED");
             return;
         }
-        GameState state = game.getState();
+        GameState state = gameModel.getState();
         if (state != GameState.RUNNING && state != GameState.PAUSED) {
             System.out.println("[ERROR] END_GAME GAME_NOT_ACTIVE");
             return;
@@ -24,7 +24,7 @@ public class EndGameCommand implements ICommand {
             return;
         }
 
-        game.endGame();
+        gameModel.endGame();
         System.out.println("[OK] END_GAME");
     }
 }

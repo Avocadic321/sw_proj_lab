@@ -1,6 +1,6 @@
 package software.project.parser.commands;
 
-import software.project.core.Game;
+import software.project.core.GameModel;
 import software.project.parser.ICommand;
 import software.project.models.Team;
 
@@ -9,8 +9,8 @@ import software.project.models.Team;
  */
 public class ScoreCommand implements ICommand {
     @Override
-    public void execute(Game game, String[] args) {
-        if (game == null) {
+    public void execute(GameModel gameModel, String[] args) {
+        if (gameModel == null) {
             System.out.println("[ERROR] SCORE GAME_NOT_INITIALIZED");
             return;
         }
@@ -19,8 +19,8 @@ public class ScoreCommand implements ICommand {
             return;
         }
 
-        Team plumbers = game.getPlumbersTeam();
-        Team saboteurs = game.getSaboteursTeam();
+        Team plumbers = gameModel.getPlumbersTeam();
+        Team saboteurs = gameModel.getSaboteursTeam();
 
         int plumberScore = (plumbers != null) ? plumbers.getScore() : 0;
         int saboteurScore = (saboteurs != null) ? saboteurs.getScore() : 0;
