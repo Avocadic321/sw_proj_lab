@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.map.Pipe;
-import software.project.map.interfaces.IBreakable;
 import software.project.map.interfaces.IRepairable;
 import software.project.models.Player;
 import software.project.models.Plumber;

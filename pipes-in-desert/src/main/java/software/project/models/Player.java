@@ -63,12 +63,12 @@ public class Player {
      * @return {@code true} if the move succeeded, {@code false} otherwise
      */
     public boolean moveTo(Element target) {
-//        if (!isDirectlyConnected(currentPosition, target)) {
-//            System.out.println("[ERROR] MOVE INVALID_TARGET");
-//            return false;
-//        }
         if (target instanceof Pipe && !target.canOccupy()) {
             System.out.println("[ERROR] MOVE OCCUPIED");
+            return false;
+        }
+        if(target.isLocked(this)) {
+            System.out.println("[ERROR]: TARGET LOCKED");
             return false;
         }
 
