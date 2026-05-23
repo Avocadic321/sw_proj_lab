@@ -1,6 +1,7 @@
 package software.project.graphics;
 
 import software.project.audio.AudioPlayer;
+import software.project.ui.components.MenuButton;
 
 public class ResourceManager {
     private static ResourceManager instance;

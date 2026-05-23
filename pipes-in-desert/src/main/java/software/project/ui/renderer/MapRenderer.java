@@ -1,12 +1,12 @@
 package software.project.ui.renderer;
 
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import software.project.core.GameModel;
-import software.project.map.Element;
-import software.project.map.GameMap;
+import software.project.graphics.*;
+import software.project.map.*;
 import software.project.ui.ScreenManager;
 
 public class MapRenderer {
@@ -21,51 +21,44 @@ public class MapRenderer {
     private int gridWidth;
     private int gridHeight;
     private int tileSize;
-
     private int offsetX;
     private int offsetY;
 
     public void draw(Graphics2D g, GameModel model) {
-        GameMap map = model.getGameMap();
-        if (gridWidth == 0) {
-            computeMapBounds(map);
-        }
+        var map = model.getGameMap();
+        if (gridWidth == 0) computeMapBounds(map);
         computeLayout();
 
+        drawBackground(g);
+        drawGrid(g);
+        drawPipes(g, map);
+        drawPumps(g, map);
+        drawCisterns(g, map);
+        drawSprings(g, map);
     }
 
     private void computeMapBounds(GameMap map) {
-        int minX = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxY = Integer.MIN_VALUE;
-
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
+        int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
         boolean hasElements = false;
+
         for (Element e : map.getElements()) {
             hasElements = true;
-            int x = e.getX();
-            int y = e.getY();
-            if (x < minX)
-                minX = x;
-            if (x > maxX)
-                maxX = x;
-            if (y < minY)
-                minY = y;
-            if (y > maxY)
-                maxY = y;
+            int x = e.getX(), y = e.getY();
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
         }
 
         if (!hasElements || maxX < minX || maxY < minY) {
-            // Fallback to default map size
             gridWidth = DEFAULT_GRID_WIDTH;
             gridHeight = DEFAULT_GRID_HEIGHT;
-            return;
+        } else {
+            gridWidth = maxX - minX + 1;
+            gridHeight = maxY - minY + 1;
         }
 
-        gridWidth = maxX - minX + 1;
-        gridHeight = maxY - minY + 1;
-
-        // Sanity check – if still invalid, use defaults
         if (gridWidth <= 0 || gridHeight <= 0) {
             gridWidth = DEFAULT_GRID_WIDTH;
             gridHeight = DEFAULT_GRID_HEIGHT;
@@ -73,71 +66,185 @@ public class MapRenderer {
     }
 
     private void computeLayout() {
-        ScreenManager sm = ScreenManager.getInstance();
-        int availableWidth = sm.getVirtualWidth() - LEFT_BORDER - RIGHT_BORDER;
-        int availableHeight = sm.getVirtualHeight() - TOP_BORDER - BOTTOM_BORDER;
+        var sm = ScreenManager.getInstance();
+        int availW = sm.getVirtualWidth() - LEFT_BORDER - RIGHT_BORDER;
+        int availH = sm.getVirtualHeight() - TOP_BORDER - BOTTOM_BORDER;
 
-        int tileByWidth = availableWidth / gridWidth;
-        int tileByHeight = availableHeight / gridHeight;
-        tileSize = Math.min(tileByWidth, tileByHeight);
-        if (tileSize < 8) {
-            tileSize = 8;
-        }
-        int totalMapWidth = tileSize * gridWidth;
-        int totalMapHeight = tileSize * gridHeight;
-        offsetX = LEFT_BORDER + (availableWidth - totalMapWidth) / 2;
-        offsetY = TOP_BORDER + (availableHeight - totalMapHeight) / 2;
+        tileSize = Math.min(availW / gridWidth, availH / gridHeight);
+        if (tileSize < 8) tileSize = 8;
+
+        int totalW = tileSize * gridWidth;
+        int totalH = tileSize * gridHeight;
+        offsetX = LEFT_BORDER + (availW - totalW) / 2;
+        offsetY = TOP_BORDER + (availH - totalH) / 2;
     }
 
     private void drawBackground(Graphics2D g) {
+        int w = ScreenManager.getInstance().getVirtualWidth();
+        int h = ScreenManager.getInstance().getVirtualHeight();
 
+        g.setPaint(new GradientPaint(0, 0, new Color(230, 200, 150), 0, h, new Color(160, 120, 80)));
+        g.fillRect(0, 0, w, h);
+
+        g.setColor(new Color(210, 180, 140));
+        g.fillRect(offsetX - 5, offsetY - 5, tileSize * gridWidth + 10, tileSize * gridHeight + 10);
+        g.setColor(new Color(180, 150, 110));
+        g.fillRect(offsetX, offsetY, tileSize * gridWidth, tileSize * gridHeight);
     }
 
     private void drawGrid(Graphics2D g) {
-        // if necessary
-    }
-
-    private void drawPipes() {
-
+        g.setColor(new Color(100, 100, 100, 150));
+        g.setStroke(new BasicStroke(3));
+        for (int x = 0; x <= gridWidth; x++) {
+            int sx = offsetX + x * tileSize;
+            g.drawLine(sx, offsetY, sx, offsetY + gridHeight * tileSize);
+        }
+        for (int y = 0; y <= gridHeight; y++) {
+            int sy = offsetY + y * tileSize;
+            g.drawLine(offsetX, sy, offsetX + gridWidth * tileSize, sy);
+        }
+        g.setStroke(new BasicStroke(1));
     }
 
     private void drawPipes(Graphics2D g, GameMap map) {
+        var sm = SpriteManager.getInstance();
+        var normalSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
+        var brokenSheet = sm.getSpriteSheet(SpriteSheets.PIPE_BROKEN);
 
+        if (normalSheet == null || brokenSheet == null) {
+            System.err.println("[ERROR] Pipe sprites not loaded – nothing drawn");
+            return;
+        }
+
+        for (Pipe pipe : map.getAllPipes()) {
+            // Collect connection directions
+            var dirs = new ArrayList<Point>();
+            for (var end : new PipeEnd[]{pipe.getEnd1(), pipe.getEnd2()}) {
+                if (end.connectedTo != null) {
+                    int dx = end.connectedTo.getX() - pipe.getX();
+                    int dy = end.connectedTo.getY() - pipe.getY();
+                    dirs.add(new Point(dx, dy));
+                }
+            }
+            if (dirs.isEmpty()) continue;
+
+            // Determine shape and angle
+            boolean isCorner;
+            double baseAngle;
+            if (dirs.size() == 1) {
+                isCorner = false;
+                baseAngle = directionToAngle(dirs.getFirst());
+            } else if (dirs.size() == 2) {
+                var d1 = dirs.get(0);
+                var d2 = dirs.get(1);
+                boolean opposite = (d1.x == -d2.x && d1.y == -d2.y);
+                if (opposite) {
+                    isCorner = false;
+                    baseAngle = directionToAngle(d1);
+                } else {
+                    isCorner = true;
+                    baseAngle = cornerAngle(d1, d2);
+                }
+            } else {
+                continue;
+            }
+
+            // Water level column
+            int col = 0;
+            if (!pipe.isBroken()) {
+                int percent = (pipe.getCurrentWater() * 100) / pipe.getCapacity();
+                col = waterPercentToColumn(percent);
+            }
+
+            // Select sprite
+            var sheet = pipe.isBroken() ? brokenSheet : normalSheet;
+            int row = isCorner ? 1 : 0;
+            var sprite = pipe.isBroken() ? sheet.getSprite(0, row) : sheet.getSprite(col, row);
+            if (sprite == null) continue;
+
+            // Draw centred and rotated
+            var center = getCellCenter(pipe.getX(), pipe.getY());
+            sprite.drawCentered(g, center.x, center.y, tileSize, baseAngle);
+        }
     }
 
-    /* ========== Helper Methods for Geometry and Screen ========== */
-    private int getTileX(int gridX) {
-        return offsetX + gridX * tileSize;
+    private static int waterPercentToColumn(int percent) {
+        if (percent <= 33) return 0;
+        if (percent <= 66) return 1;
+        if (percent <= 100) return 2;
+        return 3;
     }
 
-    private int getTileY(int gridY) {
-        return offsetY + gridY * tileSize;
+    private double directionToAngle(Point dir) {
+        if (dir.x == 0 && (dir.y == -1 || dir.y == 1)) return 0;
+        if ((dir.x == 1 || dir.x == -1) && dir.y == 0) return 90;
+        return 0;
     }
+
+    private double cornerAngle(Point d1, Point d2) {
+        boolean hasNorth = d1.y == -1 || d2.y == -1;
+        boolean hasSouth = d1.y == 1 || d2.y == 1;
+        boolean hasEast  = d1.x == 1 || d2.x == 1;
+        boolean hasWest  = d1.x == -1 || d2.x == -1;
+
+        if (hasNorth && hasEast) return 0;
+        if (hasEast  && hasSouth) return 90;
+        if (hasSouth && hasWest) return 180;
+        if (hasWest  && hasNorth) return 270;
+        return 0;
+    }
+
+    private void drawPumps(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite pumpSprite = sm.getSprite(Sprites.PUMP);
+
+        for (Pump pump : map.getAllPumps()) {
+            Point center = getCellCenter(pump.getX(), pump.getY());
+            pumpSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    private void drawCisterns(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet cisternSheet = sm.getSpriteSheet(SpriteSheets.CISTERN);
+
+        for (Cistern cistern : map.getAllCisterns()) {
+            int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
+            int col = waterPercentToColumn(percent);
+            Sprite sprite = cisternSheet.getSprite(col, 0);
+            if (sprite == null) continue;
+
+            Point center = getCellCenter(cistern.getX(), cistern.getY());
+            sprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    private void drawSprings(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
+
+        for (Spring spring: map.getAllSprings()) {
+            Point center = getCellCenter(spring.getX(), spring.getY());
+            spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    // ---------- Geometry helpers ----------
+    public int getTileX(int gridX) { return offsetX + gridX * tileSize; }
+    public int getTileY(int gridY) { return offsetY + gridY * tileSize; }
 
     private Point getCellCenter(int gridX, int gridY) {
         return new Point(getTileX(gridX) + tileSize / 2, getTileY(gridY) + tileSize / 2);
     }
 
-    /**
-     * Converts screen coordinates (from mouse event) to grid cell coordinates.
-     * 
-     * @return Point with gridX, gridY or null if outside the map area.
-     */
     public Point screenToGrid(int screenX, int screenY) {
-        if (screenX < offsetX || screenY < offsetY) {
-            return null;
-        }
+        if (screenX < offsetX || screenY < offsetY) return null;
         int cellX = (screenX - offsetX) / tileSize;
         int cellY = (screenY - offsetY) / tileSize;
-        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) {
-            return null;
-        }
+        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) return null;
         return new Point(cellX, cellY);
     }
 
-    /**
-     * Returns the screen rectangle (in virtual coordinates) of a given grid cell.
-     */
     public Rectangle getCellBounds(int gridX, int gridY) {
         return new Rectangle(offsetX + gridX * tileSize, offsetY + gridY * tileSize, tileSize, tileSize);
     }

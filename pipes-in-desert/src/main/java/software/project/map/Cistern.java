@@ -163,6 +163,10 @@ public class Cistern extends ActiveElement implements IConnectable {
         return super.getConnections();
     }
 
+    public int getCapacity() {
+        return capacity;
+    }
+
     @Override
     public String toString() {
         String pipeId = storedPipe == null ? "NONE" : storedPipe.getId();
