@@ -1,7 +1,6 @@
 package software.project.graphics;
 
 import software.project.audio.AudioPlayer;
-import software.project.ui.components.MenuButton;
 
 public class ResourceManager {
     private static ResourceManager instance;
@@ -29,14 +28,15 @@ public class ResourceManager {
     }
 
     private void loadSprites() {
-        spriteManager.loadSprite("menu_background", "/ui/menu_background.png");
-        spriteManager.loadSprite("menu_panel", "/ui/menu_panel.png");
-        spriteManager.loadSprite("menu_title", "/ui/menu_title_two.png");
+        for (Sprites sprite : Sprites.values()) {
+            spriteManager.loadSprite(sprite);
+        }
     }
 
     private void loadSpriteSheets() {
-        spriteManager.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720);
-        spriteManager.loadSpriteSheet("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT);
+        for (SpriteSheets sheet : SpriteSheets.values()) {
+            spriteManager.loadSpriteSheet(sheet);
+        }
     }
 
     private void loadSounds() {
