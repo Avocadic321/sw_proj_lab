@@ -211,6 +211,14 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return can;
     }
 
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public int getCurrentWater() {
+        return currentWater;
+    }
+
     @Override
     public String toString() {
         String end1State = end1 == null || end1.connectedTo == null ? "FREE" : end1.connectedTo.getId();

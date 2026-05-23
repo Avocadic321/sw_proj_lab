@@ -37,6 +37,8 @@ public class ResourceManager {
     private void loadSpriteSheets() {
         spriteManager.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720);
         spriteManager.loadSpriteSheet("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT);
+        spriteManager.loadSpriteSheet("pipe_normal", "/map/pipe_normal.png", 64, 64);
+        spriteManager.loadSpriteSheet("pipe_broken", "/map/pipe_broken.png", 64, 64);
     }
 
     private void loadSounds() {
