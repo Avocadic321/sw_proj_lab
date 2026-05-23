@@ -10,20 +10,20 @@ import software.project.map.*;
 import software.project.ui.ScreenManager;
 
 public class MapRenderer {
-    private static final int LEFT_BORDER = 40;
-    private static final int RIGHT_BORDER = 40;
-    private static final int TOP_BORDER = 40;
-    private static final int BOTTOM_BORDER = 40;
-
     private static final int DEFAULT_GRID_WIDTH = 7;
-    private static final int DEFAULT_GRID_HEIGHT = 7;
-
+    private static final int DEFAULT_GRID_HEIGHT = 5;
     private static final int WATER_LEVEL_FRAMES = 4;
+
+    // Border sizes (in tiles) - these only position the grid within the sand
+    private static final int TOP_BORDER_TILES = 2;
+    private static final int BOTTOM_BORDER_TILES = 1;
+    private static final int LEFT_BORDER_TILES = 1;
+    private static final int RIGHT_BORDER_TILES = 1;
 
     private int gridWidth;
     private int gridHeight;
     private int tileSize;
-    private int offsetX;
+    private int offsetX;   // pixel offset for the grid top-left
     private int offsetY;
 
     public void draw(Graphics2D g, GameModel model) {
@@ -31,8 +31,16 @@ public class MapRenderer {
         if (gridWidth == 0) computeMapBounds(map);
         computeLayout();
 
-        drawBackground(g);
-        drawGrid(g);
+        // 1. Draw sand on all full tiles covering the screen, perfectly centered
+        drawSandBackgroundCentered(g);
+
+        // 2. Draw the border on the outermost tiles
+        drawBorder(g);
+
+        // 3. Draw the centered grid on top of the sand
+        drawGridLines(g);
+
+        // 4. Draw game elements
         drawPipes(g, map);
         drawPumps(g, map);
         drawCisterns(g, map);
@@ -68,33 +76,140 @@ public class MapRenderer {
     }
 
     private void computeLayout() {
-        var sm = ScreenManager.getInstance();
-        int availW = sm.getVirtualWidth() - LEFT_BORDER - RIGHT_BORDER;
-        int availH = sm.getVirtualHeight() - TOP_BORDER - BOTTOM_BORDER;
+        int totalAreaWidth = gridWidth + LEFT_BORDER_TILES + RIGHT_BORDER_TILES;
+        int totalAreaHeight = gridHeight + TOP_BORDER_TILES + BOTTOM_BORDER_TILES;
 
-        tileSize = Math.min(availW / gridWidth, availH / gridHeight);
+        int vw = ScreenManager.getInstance().getVirtualWidth();
+        int vh = ScreenManager.getInstance().getVirtualHeight();
+
+        // Tile size from vertical constraint (fills height with totalAreaHeight tiles)
+        tileSize = vh / totalAreaHeight;
         if (tileSize < 8) tileSize = 8;
 
-        int totalW = tileSize * gridWidth;
-        int totalH = tileSize * gridHeight;
-        offsetX = LEFT_BORDER + (availW - totalW) / 2;
-        offsetY = TOP_BORDER + (availH - totalH) / 2;
+        // Center the total area within the screen
+        int totalW = tileSize * totalAreaWidth;
+        int totalH = tileSize * totalAreaHeight;
+        int areaX = (vw - totalW) / 2;
+        int areaY = (vh - totalH) / 2;
+
+        // Grid top-left pixel position
+        offsetX = areaX + LEFT_BORDER_TILES * tileSize;
+        offsetY = areaY + TOP_BORDER_TILES * tileSize;
     }
 
-    private void drawBackground(Graphics2D g) {
-        int w = ScreenManager.getInstance().getVirtualWidth();
-        int h = ScreenManager.getInstance().getVirtualHeight();
+    private void drawSandBackgroundCentered(Graphics2D g) {
+        int vw = ScreenManager.getInstance().getVirtualWidth();
+        int vh = ScreenManager.getInstance().getVirtualHeight();
 
-        g.setPaint(new GradientPaint(0, 0, new Color(230, 200, 150), 0, h, new Color(160, 120, 80)));
-        g.fillRect(0, 0, w, h);
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet borderSheet = sm.getSpriteSheet(SpriteSheets.MAP_BORDER);
+        Sprite sandSprite = (borderSheet != null) ? borderSheet.getSprite(1, 1) : null;
 
-        g.setColor(new Color(210, 180, 140));
-        g.fillRect(offsetX - 5, offsetY - 5, tileSize * gridWidth + 10, tileSize * gridHeight + 10);
-        g.setColor(new Color(180, 150, 110));
-        g.fillRect(offsetX, offsetY, tileSize * gridWidth, tileSize * gridHeight);
+        // Total columns/rows needed to cover the screen (round up)
+        int totalCols = (int) Math.ceil((double) vw / tileSize);
+        int totalRows = (int) Math.ceil((double) vh / tileSize);
+
+        // Calculate total width/height of the tile grid
+        int totalWidth = totalCols * tileSize;
+        int totalHeight = totalRows * tileSize;
+
+        // Calculate offset to center the tile grid evenly
+        int offsetX = (vw - totalWidth) / 2;
+        int offsetY = (vh - totalHeight) / 2;
+
+        for (int row = 0; row < totalRows; row++) {
+            for (int col = 0; col < totalCols; col++) {
+                int x = offsetX + col * tileSize;
+                int y = offsetY + row * tileSize;
+
+                // Draw sand on all tiles
+                if (sandSprite != null) {
+                    sandSprite.draw(g, x, y, tileSize, tileSize);
+                } else {
+                    g.setColor(new Color(180, 150, 110));
+                    g.fillRect(x, y, tileSize, tileSize);
+                }
+            }
+        }
     }
 
-    private void drawGrid(Graphics2D g) {
+    private void drawBorder(Graphics2D g) {
+        int vw = ScreenManager.getInstance().getVirtualWidth();
+        int vh = ScreenManager.getInstance().getVirtualHeight();
+
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet borderSheet = sm.getSpriteSheet(SpriteSheets.MAP_BORDER);
+        if (borderSheet == null) return;
+
+        // Total columns/rows needed to cover the screen (round up)
+        int totalCols = (int) Math.ceil((double) vw / tileSize);
+        int totalRows = (int) Math.ceil((double) vh / tileSize);
+
+        // Calculate total width/height of the tile grid
+        int totalWidth = totalCols * tileSize;
+        int totalHeight = totalRows * tileSize;
+
+        // Calculate offset to center the tile grid evenly
+        int offsetX = (vw - totalWidth) / 2;
+        int offsetY = (vh - totalHeight) / 2;
+
+        // Draw border only on the outermost tiles
+        for (int row = 0; row < totalRows; row++) {
+            for (int col = 0; col < totalCols; col++) {
+                // Only draw on the outermost edge
+                boolean isEdge = (row == 0 || row == totalRows - 1 || col == 0 || col == totalCols - 1);
+                if (!isEdge) continue;
+
+                int x = offsetX + col * tileSize;
+                int y = offsetY + row * tileSize;
+
+                int spriteCol = 0;
+                int spriteRow = 0;
+
+                // Determine which border sprite to use based on position
+                if (row == 0 && col == 0) {
+                    // Top-left corner
+                    spriteCol = 0;
+                    spriteRow = 0;
+                } else if (row == 0 && col == totalCols - 1) {
+                    // Top-right corner
+                    spriteCol = 2;
+                    spriteRow = 0;
+                } else if (row == totalRows - 1 && col == 0) {
+                    // Bottom-left corner
+                    spriteCol = 0;
+                    spriteRow = 2;
+                } else if (row == totalRows - 1 && col == totalCols - 1) {
+                    // Bottom-right corner
+                    spriteCol = 2;
+                    spriteRow = 2;
+                } else if (row == 0) {
+                    // Top edge (middle)
+                    spriteCol = 1;
+                    spriteRow = 0;
+                } else if (row == totalRows - 1) {
+                    // Bottom edge (middle)
+                    spriteCol = 1;
+                    spriteRow = 2;
+                } else if (col == 0) {
+                    // Left edge (middle)
+                    spriteCol = 0;
+                    spriteRow = 1;
+                } else if (col == totalCols - 1) {
+                    // Right edge (middle)
+                    spriteCol = 2;
+                    spriteRow = 1;
+                }
+
+                Sprite borderSprite = borderSheet.getSprite(spriteCol, spriteRow);
+                if (borderSprite != null) {
+                    borderSprite.draw(g, x, y, tileSize, tileSize);
+                }
+            }
+        }
+    }
+
+    private void drawGridLines(Graphics2D g) {
         g.setColor(new Color(100, 100, 100, 150));
         g.setStroke(new BasicStroke(3));
         for (int x = 0; x <= gridWidth; x++) {
@@ -108,6 +223,8 @@ public class MapRenderer {
         g.setStroke(new BasicStroke(1));
     }
 
+    // ---------- Element drawing methods (unchanged) ----------
+
     private void drawPipes(Graphics2D g, GameMap map) {
         var sm = SpriteManager.getInstance();
         var normalSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
@@ -119,7 +236,6 @@ public class MapRenderer {
         }
 
         for (Pipe pipe : map.getAllPipes()) {
-            // Collect connection directions
             var dirs = new ArrayList<Point>();
             for (var end : new PipeEnd[]{pipe.getEnd1(), pipe.getEnd2()}) {
                 if (end.connectedTo != null) {
@@ -130,7 +246,6 @@ public class MapRenderer {
             }
             if (dirs.isEmpty()) continue;
 
-            // Determine shape and angle
             boolean isCorner;
             double baseAngle;
             if (dirs.size() == 1) {
@@ -151,20 +266,17 @@ public class MapRenderer {
                 continue;
             }
 
-            // Water level column (0..WATER_LEVEL_FRAMES-1)
             int col = 0;
             if (!pipe.isBroken()) {
                 int percent = (pipe.getCurrentWater() * 100) / pipe.getCapacity();
                 col = waterPercentToColumn(percent, WATER_LEVEL_FRAMES);
             }
 
-            // Select sprite
             var sheet = pipe.isBroken() ? brokenSheet : normalSheet;
             int row = isCorner ? 1 : 0;
             var sprite = pipe.isBroken() ? sheet.getSprite(0, row) : sheet.getSprite(col, row);
             if (sprite == null) continue;
 
-            // Draw centred and rotated
             var center = getCellCenter(pipe.getX(), pipe.getY());
             sprite.drawCentered(g, center.x, center.y, tileSize, baseAngle);
         }
@@ -180,30 +292,20 @@ public class MapRenderer {
             return;
         }
 
-        final double MIN_SPEED_DEG_PER_SEC = 30.0;  // slowest spin (0% water)
-        final double MAX_SPEED_DEG_PER_SEC = 180.0; // fastest spin (100% water)
+        final double MIN_SPEED_DEG_PER_SEC = 30.0;
+        final double MAX_SPEED_DEG_PER_SEC = 180.0;
 
         for (Pump pump : map.getAllPumps()) {
-            // Water level column (0..4)
             int percent = (pump.getStoredWater() * 100) / GameConfig.PUMP_TANK_CAPACITY;
-            int col = waterPercentToColumn(percent, 5);  // 5 frames: 0,1,2,3,4
+            int col = waterPercentToColumn(percent, 5);
             Sprite baseSprite = pumpSheet.getSprite(col, 0);
-            if (baseSprite == null) {
-                continue;
-            }
+            if (baseSprite == null) continue;
 
             Point center = getCellCenter(pump.getX(), pump.getY());
-
-            // Draw pump base (centered, no rotation)
             baseSprite.drawCentered(g, center.x, center.y, tileSize, 0);
 
-            // Speed depends on water level (linear interpolation)
             double fanSpeed = MIN_SPEED_DEG_PER_SEC + (percent / 100.0) * (MAX_SPEED_DEG_PER_SEC - MIN_SPEED_DEG_PER_SEC);
-
-            // Random offset per pump (deterministic from coordinates)
             double startOffset = ((pump.getX() * 31) + (pump.getY() * 97)) % 360;
-
-            // Draw fan with variable speed
             double angle = (System.currentTimeMillis() * (fanSpeed / 1000.0) + startOffset) % 360;
             fanSprite.drawCentered(g, center.x, center.y, tileSize, angle);
         }
@@ -234,19 +336,9 @@ public class MapRenderer {
         }
     }
 
-    /**
-     * Generic method to map a percentage (0‑99) to a column index.
-     * @param percent water fullness percent, expected 0..99 (never 100)
-     * @param numFrames number of sprite frames (e.g., 4)
-     * @return column index from 0 to numFrames-1
-     */
     private static int waterPercentToColumn(int percent, int numFrames) {
-        if (percent < 0) {
-            return 0;
-        }
-        if (percent >= 100) {
-            return numFrames - 1;
-        }
+        if (percent < 0) return 0;
+        if (percent >= 100) return numFrames - 1;
         return (percent * numFrames) / 100;
     }
 

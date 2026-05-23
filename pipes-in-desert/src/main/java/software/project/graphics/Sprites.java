@@ -10,7 +10,9 @@ public enum Sprites {
     SPRING("spring", "/map/spring.png"),
 
     PLUMBER("plumber", "/entity/plumber.png"),
-    SABOTEUR("saboteur", "/entity/saboteur.png"),;
+    SABOTEUR("saboteur", "/entity/saboteur.png"),
+
+    GRASS("grass", "/map/grass.png"),;
 
     private final String key;
     private final String path;
