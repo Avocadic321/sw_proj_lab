@@ -2,8 +2,6 @@ package software.project.ui.renderer;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
-
 import software.project.core.GameModel;
 import software.project.graphics.*;
 import software.project.map.*;
@@ -17,6 +15,8 @@ public class MapRenderer {
 
     private static final int DEFAULT_GRID_WIDTH = 7;
     private static final int DEFAULT_GRID_HEIGHT = 7;
+
+    private static final int WATER_LEVEL_FRAMES = 4;
 
     private int gridWidth;
     private int gridHeight;
@@ -149,11 +149,11 @@ public class MapRenderer {
                 continue;
             }
 
-            // Water level column
+            // Water level column (0..WATER_LEVEL_FRAMES-1)
             int col = 0;
             if (!pipe.isBroken()) {
                 int percent = (pipe.getCurrentWater() * 100) / pipe.getCapacity();
-                col = waterPercentToColumn(percent);
+                col = waterPercentToColumn(percent, WATER_LEVEL_FRAMES);
             }
 
             // Select sprite
@@ -168,13 +168,52 @@ public class MapRenderer {
         }
     }
 
-    private static int waterPercentToColumn(int percent) {
-        if (percent <= 33) return 0;
-        if (percent <= 66) return 1;
-        if (percent <= 100) return 2;
-        return 3;
+    private void drawPumps(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite pumpSprite = sm.getSprite(Sprites.PUMP);
+
+        for (Pump pump : map.getAllPumps()) {
+            Point center = getCellCenter(pump.getX(), pump.getY());
+            pumpSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
     }
 
+    private void drawCisterns(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet cisternSheet = sm.getSpriteSheet(SpriteSheets.CISTERN);
+
+        for (Cistern cistern : map.getAllCisterns()) {
+            int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
+            int col = waterPercentToColumn(percent, WATER_LEVEL_FRAMES);
+            Sprite sprite = cisternSheet.getSprite(col, 0);
+            if (sprite == null) continue;
+
+            Point center = getCellCenter(cistern.getX(), cistern.getY());
+            sprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    private void drawSprings(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
+
+        for (Spring spring : map.getAllSprings()) {
+            Point center = getCellCenter(spring.getX(), spring.getY());
+            spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    /**
+     * Generic method to map a percentage (0‑99) to a column index.
+     * @param percent water fullness percent, expected 0..99 (never 100)
+     * @param numFrames number of sprite frames (e.g., 4)
+     * @return column index from 0 to numFrames-1
+     */
+    private static int waterPercentToColumn(int percent, int numFrames) {
+        return (percent * numFrames) / 100;
+    }
+
+    // ---------- Geometry helpers ----------
     private double directionToAngle(Point dir) {
         if (dir.x == 0 && (dir.y == -1 || dir.y == 1)) return 0;
         if ((dir.x == 1 || dir.x == -1) && dir.y == 0) return 90;
@@ -194,42 +233,6 @@ public class MapRenderer {
         return 0;
     }
 
-    private void drawPumps(Graphics2D g, GameMap map) {
-        SpriteManager sm = SpriteManager.getInstance();
-        Sprite pumpSprite = sm.getSprite(Sprites.PUMP);
-
-        for (Pump pump : map.getAllPumps()) {
-            Point center = getCellCenter(pump.getX(), pump.getY());
-            pumpSprite.drawCentered(g, center.x, center.y, tileSize, 0);
-        }
-    }
-
-    private void drawCisterns(Graphics2D g, GameMap map) {
-        SpriteManager sm = SpriteManager.getInstance();
-        SpriteSheet cisternSheet = sm.getSpriteSheet(SpriteSheets.CISTERN);
-
-        for (Cistern cistern : map.getAllCisterns()) {
-            int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
-            int col = waterPercentToColumn(percent);
-            Sprite sprite = cisternSheet.getSprite(col, 0);
-            if (sprite == null) continue;
-
-            Point center = getCellCenter(cistern.getX(), cistern.getY());
-            sprite.drawCentered(g, center.x, center.y, tileSize, 0);
-        }
-    }
-
-    private void drawSprings(Graphics2D g, GameMap map) {
-        SpriteManager sm = SpriteManager.getInstance();
-        Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
-
-        for (Spring spring: map.getAllSprings()) {
-            Point center = getCellCenter(spring.getX(), spring.getY());
-            spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
-        }
-    }
-
-    // ---------- Geometry helpers ----------
     public int getTileX(int gridX) { return offsetX + gridX * tileSize; }
     public int getTileY(int gridY) { return offsetY + gridY * tileSize; }
 
@@ -241,7 +244,9 @@ public class MapRenderer {
         if (screenX < offsetX || screenY < offsetY) return null;
         int cellX = (screenX - offsetX) / tileSize;
         int cellY = (screenY - offsetY) / tileSize;
-        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) return null;
+        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) {
+            return null;
+        }
         return new Point(cellX, cellY);
     }
 
