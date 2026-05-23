@@ -18,11 +18,6 @@ import java.util.List;
 public class Pump extends ActiveElement implements IBreakable, IRepairable, IConnectable, ICarriable {
 
     /**
-     * Connected pipe ends.
-     */
-    private final List<PipeEnd> connections;
-
-    /**
      * Selected input pipe end.
      */
     private PipeEnd inputPipe;

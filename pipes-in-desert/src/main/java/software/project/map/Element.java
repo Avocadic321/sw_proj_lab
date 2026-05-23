@@ -51,6 +51,17 @@ public abstract class Element {
     }
 
     /**
+     * Used for locking an element during a player movement
+     */
+    private Player playerLock;
+
+    public void lockElement(Player player) {
+        this.playerLock = player;
+    }
+    public void unlockElement() {
+        this.playerLock = null;
+    }
+    /**
      * Constructs an element with the specified identifier.
      * <p>
      * Coordinates default to zero. Initializes an empty occupant list.
@@ -149,4 +160,5 @@ public abstract class Element {
      * @return amount of leaked water
      */
     public abstract int receiveAndTransferWater();
+
 }
