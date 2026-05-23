@@ -8,9 +8,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import software.project.utils.SpriteSheetsEnum;
-import software.project.utils.SpritesEnum;
-
 public class SpriteManager {
     private static SpriteManager instance;
     private Map<String, Sprite> sprites = new HashMap<>();
@@ -34,7 +31,7 @@ public class SpriteManager {
      * @param key  unique identifier for the sprite
      * @param path path inside resources, e.g. "/sprites/pipe.png"
      */
-    public void loadSprite(SpritesEnum sprite) {
+    public void loadSprite(Sprites sprite) {
         String path = sprite.getPath();
         String key = sprite.getKey();
         try (InputStream is = getClass().getResourceAsStream(path)) {
@@ -57,7 +54,7 @@ public class SpriteManager {
         }
     }
 
-    public void loadSpriteSheet(SpriteSheetsEnum spriteSheet) {
+    public void loadSpriteSheet(SpriteSheets spriteSheet) {
         String key = spriteSheet.getKey();
         String path = spriteSheet.getPath();
         int frameWidth = spriteSheet.getFrameWidth();
@@ -88,7 +85,7 @@ public class SpriteManager {
         }
     }
 
-    public Sprite getSprite(SpritesEnum s) {
+    public Sprite getSprite(Sprites s) {
         String key = s.getKey();
         Sprite sprite = sprites.get(key);
         if (sprite == null && showWarnings) {
@@ -97,7 +94,7 @@ public class SpriteManager {
         return sprite;
     }
 
-    public Sprite getSpriteFromSheet(SpriteSheetsEnum s, int col, int row) {
+    public Sprite getSpriteFromSheet(SpriteSheets s, int col, int row) {
         String sheetKey = s.getKey();
         SpriteSheet sheet = spriteSheets.get(sheetKey);
         if (sheet == null) {
@@ -113,7 +110,7 @@ public class SpriteManager {
         return sprite;
     }
 
-    public Sprite getSpriteFromSheet(SpriteSheetsEnum s, int index) {
+    public Sprite getSpriteFromSheet(SpriteSheets s, int index) {
         String sheetKey = s.getKey();
         SpriteSheet sheet = spriteSheets.get(sheetKey);
         if (sheet == null) {
@@ -129,7 +126,7 @@ public class SpriteManager {
         return sprite;
     }
 
-    public SpriteSheet getSpriteSheet(SpriteSheetsEnum s) {
+    public SpriteSheet getSpriteSheet(SpriteSheets s) {
         String key = s.getKey();
         SpriteSheet sheet = spriteSheets.get(key);
         if (sheet == null && showWarnings) {
@@ -139,13 +136,13 @@ public class SpriteManager {
     }
 
     // Check if a sprite exists without printing warnings
-    public boolean hasSprite(SpritesEnum s) {
+    public boolean hasSprite(Sprites s) {
         String key = s.getKey();
         return sprites.containsKey(key) && sprites.get(key) != null;
     }
 
     // Check if a sprite sheet exists without printing warnings
-    public boolean hasSpriteSheet(SpriteSheetsEnum s) {
+    public boolean hasSpriteSheet(SpriteSheets s) {
         String key = s.getKey();
         return spriteSheets.containsKey(key) && spriteSheets.get(key) != null;
     }

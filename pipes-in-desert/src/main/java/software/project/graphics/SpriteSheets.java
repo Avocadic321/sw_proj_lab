@@ -1,8 +1,8 @@
-package software.project.utils;
+package software.project.graphics;
 
 import software.project.ui.components.MenuButton;
 
-public enum SpriteSheetsEnum {
+public enum SpriteSheets {
     MENU_ANIMATION("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720),
     BUTTONS("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT);
 
@@ -11,7 +11,7 @@ public enum SpriteSheetsEnum {
     private final int frameWidth;
     private final int frameHeight;
 
-    SpriteSheetsEnum(String key, String path, int frameWidth, int frameHeight) {
+    SpriteSheets(String key, String path, int frameWidth, int frameHeight) {
         this.key = key;
         this.path = path;
         this.frameWidth = frameWidth;

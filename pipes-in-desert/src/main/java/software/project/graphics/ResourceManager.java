@@ -1,8 +1,6 @@
 package software.project.graphics;
 
 import software.project.audio.AudioPlayer;
-import software.project.utils.SpriteSheetsEnum;
-import software.project.utils.SpritesEnum;
 
 public class ResourceManager {
     private static ResourceManager instance;
@@ -30,13 +28,13 @@ public class ResourceManager {
     }
 
     private void loadSprites() {
-        for (SpritesEnum sprite : SpritesEnum.values()) {
+        for (Sprites sprite : Sprites.values()) {
             spriteManager.loadSprite(sprite);
         }
     }
 
     private void loadSpriteSheets() {
-        for (SpriteSheetsEnum sheet : SpriteSheetsEnum.values()) {
+        for (SpriteSheets sheet : SpriteSheets.values()) {
             spriteManager.loadSpriteSheet(sheet);
         }
     }
