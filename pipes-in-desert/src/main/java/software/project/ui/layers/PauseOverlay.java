@@ -11,6 +11,7 @@ import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
+import software.project.utils.SpritesEnum;
 
 public class PauseOverlay extends Layer {
     private static final int BUTTON_COUNT = 3;
@@ -77,7 +78,7 @@ public class PauseOverlay extends Layer {
 
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
-        menuPanelSprite = sm.getSprite("menu_panel");
+        menuPanelSprite = sm.getSprite(SpritesEnum.MENU_PANEL);
 
         if (menuPanelSprite == null) {
             originalPanelWidth = FALLBACK_MENU_WIDTH;

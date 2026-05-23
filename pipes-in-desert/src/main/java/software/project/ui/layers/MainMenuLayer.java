@@ -13,6 +13,8 @@ import software.project.graphics.SpriteSheet;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
+import software.project.utils.SpriteSheetsEnum;
+import software.project.utils.SpritesEnum;
 
 public class MainMenuLayer extends Layer {
 
@@ -60,9 +62,9 @@ public class MainMenuLayer extends Layer {
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
 
-        menuBackgroundSprite = sm.getSprite("menu_background");
-        menuPanelSprite = sm.getSprite("menu_panel");
-        menuTitleSprite = sm.getSprite("menu_title");
+        menuBackgroundSprite = sm.getSprite(SpritesEnum.MENU_BACKGROUND);
+        menuPanelSprite = sm.getSprite(SpritesEnum.MENU_PANEL);
+        menuTitleSprite = sm.getSprite(SpritesEnum.MENU_TITLE);
 
         if (menuPanelSprite == null) {
             originalPanelWidth = FALLBACK_MENU_WIDTH;
@@ -77,7 +79,7 @@ public class MainMenuLayer extends Layer {
 
     private void loadBackgroundAnimation() {
         SpriteManager sm = SpriteManager.getInstance();
-        SpriteSheet animationSheet = sm.getSpriteSheet("menu_animation");
+        SpriteSheet animationSheet = sm.getSpriteSheet(SpriteSheetsEnum.MENU_ANIMATION);
 
         if (animationSheet != null && animationSheet.isValid()) {
             backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
