@@ -8,7 +8,9 @@ public enum SpriteSheets {
     PIPE_NORMAL("pipe_normal", "/map/pipe_normal.png", 64, 64),
     PIPE_BROKEN("pipe_broken", "/map/pipe_broken.png", 64, 64),
     CISTERN("cistern", "/map/cistern.png", 32, 32),
-    PUMP("pump", "/map/pump_atlas.png", 64, 64);
+    PUMP("pump", "/map/pump_atlas.png", 64, 64),
+
+    MAP_BORDER("map_border", "/map/map_border.png", 32, 32);
 
     private final String key;
     private final String path;
