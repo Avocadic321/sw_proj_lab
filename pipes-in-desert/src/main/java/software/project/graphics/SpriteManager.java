@@ -25,12 +25,6 @@ public class SpriteManager {
         return instance;
     }
 
-    /**
-     * Loads an image from the classpath (resources folder).
-     * 
-     * @param key  unique identifier for the sprite
-     * @param path path inside resources, e.g. "/sprites/pipe.png"
-     */
     public void loadSprite(Sprites sprite) {
         String path = sprite.getPath();
         String key = sprite.getKey();

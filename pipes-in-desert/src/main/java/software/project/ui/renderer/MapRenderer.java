@@ -5,13 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import software.project.core.GameModel;
-import software.project.graphics.Sprite;
-import software.project.graphics.SpriteManager;
-import software.project.graphics.SpriteSheet;
-import software.project.map.Element;
-import software.project.map.GameMap;
-import software.project.map.Pipe;
-import software.project.map.PipeEnd;
+import software.project.graphics.*;
+import software.project.map.*;
 import software.project.ui.ScreenManager;
 
 public class MapRenderer {
@@ -37,6 +32,9 @@ public class MapRenderer {
         drawBackground(g);
         drawGrid(g);
         drawPipes(g, map);
+        drawPumps(g, map);
+        drawCisterns(g, map);
+        drawSprings(g, map);
     }
 
     private void computeMapBounds(GameMap map) {
@@ -110,8 +108,8 @@ public class MapRenderer {
 
     private void drawPipes(Graphics2D g, GameMap map) {
         var sm = SpriteManager.getInstance();
-        var normalSheet = sm.getSpriteSheet("pipe_normal");
-        var brokenSheet = sm.getSpriteSheet("pipe_broken");
+        var normalSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
+        var brokenSheet = sm.getSpriteSheet(SpriteSheets.PIPE_BROKEN);
 
         if (normalSheet == null || brokenSheet == null) {
             System.err.println("[ERROR] Pipe sprites not loaded – nothing drawn");
@@ -196,9 +194,44 @@ public class MapRenderer {
         return 0;
     }
 
+    private void drawPumps(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite pumpSprite = sm.getSprite(Sprites.PUMP);
+
+        for (Pump pump : map.getAllPumps()) {
+            Point center = getCellCenter(pump.getX(), pump.getY());
+            pumpSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    private void drawCisterns(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet cisternSheet = sm.getSpriteSheet(SpriteSheets.CISTERN);
+
+        for (Cistern cistern : map.getAllCisterns()) {
+            int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
+            int col = waterPercentToColumn(percent);
+            Sprite sprite = cisternSheet.getSprite(col, 0);
+            if (sprite == null) continue;
+
+            Point center = getCellCenter(cistern.getX(), cistern.getY());
+            sprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    private void drawSprings(Graphics2D g, GameMap map) {
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
+
+        for (Spring spring: map.getAllSprings()) {
+            Point center = getCellCenter(spring.getX(), spring.getY());
+            spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
     // ---------- Geometry helpers ----------
-    private int getTileX(int gridX) { return offsetX + gridX * tileSize; }
-    private int getTileY(int gridY) { return offsetY + gridY * tileSize; }
+    public int getTileX(int gridX) { return offsetX + gridX * tileSize; }
+    public int getTileY(int gridY) { return offsetY + gridY * tileSize; }
 
     private Point getCellCenter(int gridX, int gridY) {
         return new Point(getTileX(gridX) + tileSize / 2, getTileY(gridY) + tileSize / 2);
