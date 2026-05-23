@@ -6,6 +6,7 @@ public enum Sprites {
     MENU_TITLE("menu_title", "/ui/menu_title_two.png"),
 
     PUMP("pump", "/map/pump.png"),
+    PUMP_FAN("pump_fan", "/map/pump_fan.png"),
     SPRING("spring", "/map/spring.png"),
 
     PLUMBER("plumber", "/entity/plumber.png"),

@@ -2,6 +2,8 @@ package software.project.ui.renderer;
 
 import java.awt.*;
 import java.util.ArrayList;
+
+import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.graphics.*;
 import software.project.map.*;
@@ -170,11 +172,40 @@ public class MapRenderer {
 
     private void drawPumps(Graphics2D g, GameMap map) {
         SpriteManager sm = SpriteManager.getInstance();
-        Sprite pumpSprite = sm.getSprite(Sprites.PUMP);
+        SpriteSheet pumpSheet = sm.getSpriteSheet(SpriteSheets.PUMP);
+        Sprite fanSprite = sm.getSprite(Sprites.PUMP_FAN);
+
+        if (pumpSheet == null || fanSprite == null) {
+            System.err.println("[ERROR] Pump sprites not loaded");
+            return;
+        }
+
+        final double MIN_SPEED_DEG_PER_SEC = 30.0;  // slowest spin (0% water)
+        final double MAX_SPEED_DEG_PER_SEC = 180.0; // fastest spin (100% water)
 
         for (Pump pump : map.getAllPumps()) {
+            // Water level column (0..4)
+            int percent = (pump.getStoredWater() * 100) / GameConfig.PUMP_TANK_CAPACITY;
+            int col = waterPercentToColumn(percent, 5);  // 5 frames: 0,1,2,3,4
+            Sprite baseSprite = pumpSheet.getSprite(col, 0);
+            if (baseSprite == null) {
+                continue;
+            }
+
             Point center = getCellCenter(pump.getX(), pump.getY());
-            pumpSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+
+            // Draw pump base (centered, no rotation)
+            baseSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+
+            // Speed depends on water level (linear interpolation)
+            double fanSpeed = MIN_SPEED_DEG_PER_SEC + (percent / 100.0) * (MAX_SPEED_DEG_PER_SEC - MIN_SPEED_DEG_PER_SEC);
+
+            // Random offset per pump (deterministic from coordinates)
+            double startOffset = ((pump.getX() * 31) + (pump.getY() * 97)) % 360;
+
+            // Draw fan with variable speed
+            double angle = (System.currentTimeMillis() * (fanSpeed / 1000.0) + startOffset) % 360;
+            fanSprite.drawCentered(g, center.x, center.y, tileSize, angle);
         }
     }
 
@@ -210,6 +241,12 @@ public class MapRenderer {
      * @return column index from 0 to numFrames-1
      */
     private static int waterPercentToColumn(int percent, int numFrames) {
+        if (percent < 0) {
+            return 0;
+        }
+        if (percent >= 100) {
+            return numFrames - 1;
+        }
         return (percent * numFrames) / 100;
     }
 
