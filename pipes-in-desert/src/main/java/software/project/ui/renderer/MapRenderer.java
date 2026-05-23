@@ -1,8 +1,6 @@
 package software.project.ui.renderer;
 
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 
 import software.project.core.GameModel;
 import software.project.map.Element;
@@ -32,6 +30,8 @@ public class MapRenderer {
         }
         computeLayout();
 
+        drawBackground(g);
+        drawGrid(g);
     }
 
     private void computeMapBounds(GameMap map) {
@@ -90,15 +90,41 @@ public class MapRenderer {
     }
 
     private void drawBackground(Graphics2D g) {
+        int w = ScreenManager.getInstance().getVirtualWidth();
+        int h = ScreenManager.getInstance().getVirtualHeight();
 
+        // Simple gradient top (light sand) to bottom (darker sand)
+        GradientPaint gradient = new GradientPaint(0, 0, new Color(230, 200, 150),
+            0, h, new Color(160, 120, 80));
+        g.setPaint(gradient);
+        g.fillRect(0, 0, w, h);
+
+        // Map area background (slightly lighter)
+        g.setColor(new Color(210, 180, 140));
+        g.fillRect(offsetX - 5, offsetY - 5, tileSize * gridWidth + 10, tileSize * gridHeight + 10);
+        g.setColor(new Color(180, 150, 110));
+        g.fillRect(offsetX, offsetY, tileSize * gridWidth, tileSize * gridHeight);
     }
 
     private void drawGrid(Graphics2D g) {
-        // if necessary
-    }
+        // Debug grid – remove later
+        final int THICKNESS = 3;
+        g.setColor(new Color(100, 100, 100, 150)); // semi-transparent grey
+        g.setStroke(new BasicStroke(THICKNESS));
 
-    private void drawPipes() {
+        // Vertical lines
+        for (int x = 0; x <= gridWidth; x++) {
+            int sx = offsetX + x * tileSize;
+            g.drawLine(sx, offsetY, sx, offsetY + gridHeight * tileSize);
+        }
+        // Horizontal lines
+        for (int y = 0; y <= gridHeight; y++) {
+            int sy = offsetY + y * tileSize;
+            g.drawLine(offsetX, sy, offsetX + gridWidth * tileSize, sy);
+        }
 
+        // Reset stroke to default
+        g.setStroke(new BasicStroke(1));
     }
 
     private void drawPipes(Graphics2D g, GameMap map) {
