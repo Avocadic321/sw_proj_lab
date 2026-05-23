@@ -11,6 +11,7 @@ import software.project.audio.AudioPlayer;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
 
 public class MenuButton {
     // Base size (original art size)
@@ -47,7 +48,7 @@ public class MenuButton {
         this.x = x;
         this.y = y;
 
-        SpriteSheet sheet = SpriteManager.getInstance().getSpriteSheet("buttons");
+        SpriteSheet sheet = SpriteManager.getInstance().getSpriteSheet(SpriteSheets.BUTTONS);
         if (sheet == null) {
             return;
         }

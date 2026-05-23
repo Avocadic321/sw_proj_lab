@@ -29,16 +29,15 @@ public class ResourceManager {
     }
 
     private void loadSprites() {
-        spriteManager.loadSprite("menu_background", "/ui/menu_background.png");
-        spriteManager.loadSprite("menu_panel", "/ui/menu_panel.png");
-        spriteManager.loadSprite("menu_title", "/ui/menu_title_two.png");
+        for (Sprites sprite : Sprites.values()) {
+            spriteManager.loadSprite(sprite);
+        }
     }
 
     private void loadSpriteSheets() {
-        spriteManager.loadSpriteSheet("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720);
-        spriteManager.loadSpriteSheet("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT);
-        spriteManager.loadSpriteSheet("pipe_normal", "/map/pipe_normal.png", 64, 64);
-        spriteManager.loadSpriteSheet("pipe_broken", "/map/pipe_broken.png", 64, 64);
+        for (SpriteSheets sheet : SpriteSheets.values()) {
+            spriteManager.loadSpriteSheet(sheet);
+        }
     }
 
     private void loadSounds() {

@@ -10,6 +10,8 @@ import software.project.graphics.Animation;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
+import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
@@ -60,9 +62,9 @@ public class MainMenuLayer extends Layer {
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
 
-        menuBackgroundSprite = sm.getSprite("menu_background");
-        menuPanelSprite = sm.getSprite("menu_panel");
-        menuTitleSprite = sm.getSprite("menu_title");
+        menuBackgroundSprite = sm.getSprite(Sprites.MENU_BACKGROUND);
+        menuPanelSprite = sm.getSprite(Sprites.MENU_PANEL);
+        menuTitleSprite = sm.getSprite(Sprites.MENU_TITLE);
 
         if (menuPanelSprite == null) {
             originalPanelWidth = FALLBACK_MENU_WIDTH;
@@ -77,7 +79,7 @@ public class MainMenuLayer extends Layer {
 
     private void loadBackgroundAnimation() {
         SpriteManager sm = SpriteManager.getInstance();
-        SpriteSheet animationSheet = sm.getSpriteSheet("menu_animation");
+        SpriteSheet animationSheet = sm.getSpriteSheet(SpriteSheets.MENU_ANIMATION);
 
         if (animationSheet != null && animationSheet.isValid()) {
             backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
@@ -148,7 +150,7 @@ public class MainMenuLayer extends Layer {
 
     private Runnable getActionForIndex(int index) {
         return switch (index) {
-            case 0 -> () -> app.replaceLayer(new PlayingLayer());
+            case 0 -> () -> app.replaceLayer(new PlayingLayer(app));
             case 1 -> () -> System.out.println("OPTIONS clicked");
             case 2 -> () -> System.out.println("CREDITS clicked");
             case 3 -> () -> System.exit(0);
