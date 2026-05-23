@@ -31,7 +31,9 @@ public class SpriteManager {
      * @param key  unique identifier for the sprite
      * @param path path inside resources, e.g. "/sprites/pipe.png"
      */
-    public void loadSprite(String key, String path) {
+    public void loadSprite(Sprites sprite) {
+        String path = sprite.getPath();
+        String key = sprite.getKey();
         try (InputStream is = getClass().getResourceAsStream(path)) {
             if (is == null) {
                 if (showWarnings) {
@@ -52,7 +54,11 @@ public class SpriteManager {
         }
     }
 
-    public void loadSpriteSheet(String key, String path, int frameWidth, int frameHeight) {
+    public void loadSpriteSheet(SpriteSheets spriteSheet) {
+        String key = spriteSheet.getKey();
+        String path = spriteSheet.getPath();
+        int frameWidth = spriteSheet.getFrameWidth();
+        int frameHeight = spriteSheet.getFrameHeight();
         try (InputStream is = getClass().getResourceAsStream(path)) {
             if (is == null) {
                 if (showWarnings) {
@@ -79,7 +85,8 @@ public class SpriteManager {
         }
     }
 
-    public Sprite getSprite(String key) {
+    public Sprite getSprite(Sprites s) {
+        String key = s.getKey();
         Sprite sprite = sprites.get(key);
         if (sprite == null && showWarnings) {
             System.err.println("[WARNING] Sprite not found for key: " + key);
@@ -87,7 +94,8 @@ public class SpriteManager {
         return sprite;
     }
 
-    public Sprite getSpriteFromSheet(String sheetKey, int col, int row) {
+    public Sprite getSpriteFromSheet(SpriteSheets s, int col, int row) {
+        String sheetKey = s.getKey();
         SpriteSheet sheet = spriteSheets.get(sheetKey);
         if (sheet == null) {
             if (showWarnings) {
@@ -102,7 +110,8 @@ public class SpriteManager {
         return sprite;
     }
 
-    public Sprite getSpriteFromSheet(String sheetKey, int index) {
+    public Sprite getSpriteFromSheet(SpriteSheets s, int index) {
+        String sheetKey = s.getKey();
         SpriteSheet sheet = spriteSheets.get(sheetKey);
         if (sheet == null) {
             if (showWarnings) {
@@ -117,7 +126,8 @@ public class SpriteManager {
         return sprite;
     }
 
-    public SpriteSheet getSpriteSheet(String key) {
+    public SpriteSheet getSpriteSheet(SpriteSheets s) {
+        String key = s.getKey();
         SpriteSheet sheet = spriteSheets.get(key);
         if (sheet == null && showWarnings) {
             System.err.println("[WARNING] SpriteSheet not found for key: " + key);
@@ -126,12 +136,14 @@ public class SpriteManager {
     }
 
     // Check if a sprite exists without printing warnings
-    public boolean hasSprite(String key) {
+    public boolean hasSprite(Sprites s) {
+        String key = s.getKey();
         return sprites.containsKey(key) && sprites.get(key) != null;
     }
 
     // Check if a sprite sheet exists without printing warnings
-    public boolean hasSpriteSheet(String key) {
+    public boolean hasSpriteSheet(SpriteSheets s) {
+        String key = s.getKey();
         return spriteSheets.containsKey(key) && spriteSheets.get(key) != null;
     }
 }
