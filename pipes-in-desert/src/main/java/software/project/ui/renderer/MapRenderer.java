@@ -1,13 +1,20 @@
 package software.project.ui.renderer;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import software.project.core.GameModel;
 import software.project.graphics.*;
 import software.project.map.*;
+import software.project.models.Player;
+import software.project.models.Plumber;
+import software.project.models.Team;
 import software.project.ui.ScreenManager;
+import software.project.ui.components.MenuButton;
+import software.project.utils.Debug;
+
 
 public class MapRenderer {
     private static final int LEFT_BORDER = 40;
@@ -24,7 +31,25 @@ public class MapRenderer {
     private int offsetX;
     private int offsetY;
 
-    public void draw(Graphics2D g, GameModel model) {
+    private GameModel model;
+
+    private record ClickableElement(Element element, Rectangle bounds) {}
+
+    private final List<ClickableElement> clickableElements = new ArrayList<>();
+
+    private float arrowTick = 0f;
+    private boolean animating = false;
+    private Player animatingPlayer = null;
+    private List<Element> animationPath = new ArrayList<>();
+    private int animationStep = 0;
+    private float stepTimer = 0f;
+    private static final float STEP_DURATION = 0.15f;
+
+    public MapRenderer(GameModel model) {
+        this.model = model;
+    }
+
+    public void draw(Graphics2D g) {
         var map = model.getGameMap();
         if (gridWidth == 0) computeMapBounds(map);
         computeLayout();
@@ -35,6 +60,9 @@ public class MapRenderer {
         drawPumps(g, map);
         drawCisterns(g, map);
         drawSprings(g, map);
+        drawPlayers(g);
+        drawCurrentPlayer(g);
+        rebuildClickTargets(map);
     }
 
     private void computeMapBounds(GameMap map) {
@@ -117,7 +145,6 @@ public class MapRenderer {
         }
 
         for (Pipe pipe : map.getAllPipes()) {
-            // Collect connection directions
             var dirs = new ArrayList<Point>();
             for (var end : new PipeEnd[]{pipe.getEnd1(), pipe.getEnd2()}) {
                 if (end.connectedTo != null) {
@@ -128,7 +155,6 @@ public class MapRenderer {
             }
             if (dirs.isEmpty()) continue;
 
-            // Determine shape and angle
             boolean isCorner;
             double baseAngle;
             if (dirs.size() == 1) {
@@ -149,20 +175,17 @@ public class MapRenderer {
                 continue;
             }
 
-            // Water level column
             int col = 0;
             if (!pipe.isBroken()) {
                 int percent = (pipe.getCurrentWater() * 100) / pipe.getCapacity();
                 col = waterPercentToColumn(percent);
             }
 
-            // Select sprite
             var sheet = pipe.isBroken() ? brokenSheet : normalSheet;
             int row = isCorner ? 1 : 0;
             var sprite = pipe.isBroken() ? sheet.getSprite(0, row) : sheet.getSprite(col, row);
             if (sprite == null) continue;
 
-            // Draw centred and rotated
             var center = getCellCenter(pipe.getX(), pipe.getY());
             sprite.drawCentered(g, center.x, center.y, tileSize, baseAngle);
         }
@@ -223,13 +246,133 @@ public class MapRenderer {
         SpriteManager sm = SpriteManager.getInstance();
         Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
 
-        for (Spring spring: map.getAllSprings()) {
+        for (Spring spring : map.getAllSprings()) {
             Point center = getCellCenter(spring.getX(), spring.getY());
             spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
         }
     }
 
-    // ---------- Geometry helpers ----------
+    public void update(float deltaTime) {
+        arrowTick += deltaTime;
+
+        if (animating) {
+            stepTimer += deltaTime;
+            if (stepTimer >= STEP_DURATION) {
+                stepTimer -= STEP_DURATION;
+                animationStep++;
+
+                if (animationStep >= animationPath.size() - 1) {
+                    animatingPlayer.moveTo(animationPath.getLast());
+                    animating = false;
+                    animatingPlayer = null;
+                    animationPath.forEach(Element::unlockElement);
+                    animationPath.clear();
+                }
+            }
+        }
+    }
+
+    private void drawCurrentPlayer(Graphics2D g) {
+        Player current = animating ? animatingPlayer : model.getTurnManager().getCurrentPlayer();
+        if (current == null) return;
+
+        SpriteManager sm = SpriteManager.getInstance();
+        boolean isSaboteur = model.getSaboteursTeam().getPlayers().contains(current);
+        Sprite sprite = isSaboteur ? sm.getSprite(Sprites.SABOTEUR) : sm.getSprite(Sprites.PLUMBER);
+
+        Point drawCenter;
+
+        if (animating && animationStep + 1 < animationPath.size()) {
+            Element from = animationPath.get(animationStep);
+            Element to = animationPath.get(animationStep + 1);
+            float t = stepTimer / STEP_DURATION;
+
+            Point fromCenter = getCellCenter(from.getX(), from.getY());
+            Point toCenter = getCellCenter(to.getX(), to.getY());
+
+            int lerpX = (int) (fromCenter.x + (toCenter.x - fromCenter.x) * t);
+            int lerpY = (int) (fromCenter.y + (toCenter.y - fromCenter.y) * t);
+            drawCenter = new Point(lerpX, lerpY);
+        } else {
+            Element position = current.getCurrentPosition();
+            if (position == null) return;
+            drawCenter = getCellCenter(position.getX(), position.getY());
+        }
+
+        if (sprite != null) {
+            sprite.drawCentered(g, drawCenter.x, drawCenter.y, tileSize, 0);
+        }
+
+        int bounceOffset = (int) (Math.sin(arrowTick * 6.0) * 6 + 6);
+        int tipX = drawCenter.x;
+        int tipY = drawCenter.y - tileSize / 2 - 6 - bounceOffset;
+        int arrowW = tileSize / 4;
+        int arrowH = tileSize / 4;
+
+        int[] xPoints = { tipX, tipX + arrowW, tipX - arrowW };
+        int[] yPoints = { tipY, tipY - arrowH, tipY - arrowH };
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(255, 220, 0));
+        g.fillPolygon(xPoints, yPoints, 3);
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(1.5f));
+        g.drawPolygon(xPoints, yPoints, 3);
+    }
+
+    private void drawPlayers(Graphics2D g) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite spriteSaboteur = sm.getSprite(Sprites.SABOTEUR);
+        Sprite spritePlumber = sm.getSprite(Sprites.PLUMBER);
+        Player current = animating ? animatingPlayer : model.getTurnManager().getCurrentPlayer();
+        Team saboteurs = model.getSaboteursTeam();
+
+        for (Player player : saboteurs.getPlayers()) {
+            if (animating && player.equals(current)) continue;
+            Element position = player.getCurrentPosition();
+            if (position == null) continue;
+            Point center = getCellCenter(position.getX(), position.getY());
+            spriteSaboteur.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+
+        Team plumbers = model.getPlumbersTeam();
+        for (Player player : plumbers.getPlayers()) {
+            if (animating && player.equals(current)) continue;
+            Element position = player.getCurrentPosition();
+            if (position == null) continue;
+            Point center = getCellCenter(position.getX(), position.getY());
+            spritePlumber.drawCentered(g, center.x, center.y, tileSize, 0);
+        }
+    }
+
+    public boolean mousePressed(MouseEvent e) {
+        if (animating) return true;
+
+        Player player = model.getTurnManager().getCurrentPlayer();
+        for (ClickableElement ce : clickableElements) {
+            if (ce.bounds().contains(e.getX(), e.getY())) {
+                List<Element> path = model.getGameMap().buildPathToDestination(
+                        player.getCurrentPosition(), ce.element());
+
+                if (path.size() <= 1) return true;
+
+                for (Element el : path) {
+                    el.lockElement(player);
+                }
+
+                animatingPlayer = player;
+                animationPath = path;
+                animationStep = 0;
+                stepTimer = 0f;
+                animating = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getTileX(int gridX) { return offsetX + gridX * tileSize; }
     public int getTileY(int gridY) { return offsetY + gridY * tileSize; }
 
@@ -247,5 +390,13 @@ public class MapRenderer {
 
     public Rectangle getCellBounds(int gridX, int gridY) {
         return new Rectangle(offsetX + gridX * tileSize, offsetY + gridY * tileSize, tileSize, tileSize);
+    }
+
+    private void rebuildClickTargets(GameMap map) {
+        clickableElements.clear();
+        for (Element e : map.getElements()) {
+            Rectangle bounds = getCellBounds(e.getX(), e.getY());
+            clickableElements.add(new ClickableElement(e, bounds));
+        }
     }
 }

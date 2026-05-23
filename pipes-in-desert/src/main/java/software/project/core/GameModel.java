@@ -79,8 +79,16 @@ public class GameModel {
         saboteurs = new Team(Teams.SABOTEURS);
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
-            plumbers.addPlayer(new Plumber(gameMap.getSpawnPoint()));
-            saboteurs.addPlayer(new Saboteur(gameMap.getSpawnPoint()));
+            // Random Spawn point
+          int randomSpawnPoint =  random.nextInt(gameMap.getAllPipes().size());
+          while(!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy()){
+              randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
+          }
+            plumbers.addPlayer(new Plumber(gameMap.getAllPipes().get(randomSpawnPoint)));
+            do {
+                randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
+            } while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy());
+            saboteurs.addPlayer(new Saboteur(gameMap.getAllPipes().get(randomSpawnPoint)));
         }
 
         turnManager.setTeams(plumbers, saboteurs);
