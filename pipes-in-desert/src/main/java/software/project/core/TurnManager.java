@@ -9,7 +9,6 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
 import software.project.utils.Debug;
-import software.project.utils.Events;
 import software.project.models.Teams;
 
 /**
@@ -44,13 +43,6 @@ public class TurnManager {
         playerSupport = new PropertyChangeSupport(this);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        playerSupport.addPropertyChangeListener(pcl);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        playerSupport.removePropertyChangeListener(pcl);
-    }
 
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
@@ -154,7 +146,6 @@ public class TurnManager {
         currentPlayer = players.get(currentIndex);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
-        playerSupport.firePropertyChange(Events.ON_PLAYER_TURN_CHANGE, oldPlayer, this.currentPlayer);
     }
 
     /**
