@@ -192,7 +192,7 @@ public class GameModel {
         turnManager.tick();
 
         // 2. Simulate the Water Flow
-        int leakedAmount = waterSimulator.tick();
+        int leakedAmount = waterSimulator.tickFlow();
 
         // 3. Add the scores
         calculateScore(leakedAmount);

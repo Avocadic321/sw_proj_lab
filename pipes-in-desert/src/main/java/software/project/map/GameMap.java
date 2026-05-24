@@ -19,6 +19,14 @@ public class GameMap {
     public GameMap() {
         buildMap();
     }
+    public GameMap(int choice) {
+        switch(choice) {
+            case 1 -> buildMap1();
+            case 2 -> buildMap2();
+            case 3 -> buildMap3();
+            default -> buildMap();
+        }
+    }
 
     public boolean addElement(Element element) {
         if (element != null) {
@@ -126,6 +134,99 @@ public class GameMap {
         return false;
     }
 
+    /**
+     * S1 → P1 → PipeX ← P2 ← S2
+     */
+    private void buildMap3() {
+        IdGenerator.reset();
+        elements.clear();
+
+        Spring spring1 = new Spring(0, 0);
+        Spring spring2 = new Spring(6, 0);
+        Cistern cistern1 = new Cistern(0, 4);
+        Cistern cistern2 = new Cistern(6, 4);
+        Pump pump1 = new Pump(2, 0);
+        Pump pump2 = new Pump(4, 0);
+
+        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
+        Pipe pipe2 = new Pipe(5, 0); // spring2 → pump2
+        Pipe pipeX = new Pipe(3, 0); // contested pipe between pump1 and pump2
+        Pipe pipe3 = new Pipe(1, 2); // pump1 → cistern1 (unused, pump points to pipeX)
+        Pipe pipe4 = new Pipe(5, 2); // pump2 → cistern2 (unused, pump points to pipeX)
+
+        pipe1.connectBothEnds(spring1, pump1);
+        pipe2.connectBothEnds(spring2, pump2);
+        pipeX.connectBothEnds(pump1, pump2);
+        pipe3.connectBothEnds(pump1, cistern1);
+        pipe4.connectBothEnds(pump2, cistern2);
+
+        // both pumps output into pipeX — conflict
+        pump1.setDirection(pipe1.getEnd2(), pipeX.getEnd1());
+        pump2.setDirection(pipe2.getEnd2(), pipeX.getEnd2());
+
+        addElements(List.of(
+                spring1, spring2, cistern1, cistern2,
+                pump1, pump2, pipeX, pipe1, pipe2, pipe3, pipe4
+        ));
+        spawnPoint = pump1;
+    }
+
+    /**
+     *S1 → P1 → FE
+     * S2 → P2 → FE
+     */
+    private void buildMap2() {
+        IdGenerator.reset();
+        elements.clear();
+
+        Spring spring1 = new Spring(0, 0);
+        Spring spring2 = new Spring(0, 4);
+        Pump pump1 = new Pump(2, 0);
+        Pump pump2 = new Pump(2, 4);
+
+        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
+        Pipe pipe2 = new Pipe(1, 4); // spring2 → pump2
+        Pipe pipe3 = new Pipe(3, 0); // pump1 → free end
+        Pipe pipe4 = new Pipe(3, 4); // pump2 → free end
+
+        pipe1.connectBothEnds(spring1, pump1);
+        pipe2.connectBothEnds(spring2, pump2);
+        pipe3.connectBothEnds(pump1, null);
+        pipe4.connectBothEnds(pump2, null);
+
+        pump1.setDirection(pipe1.getEnd2(), pipe3.getEnd1());
+        pump2.setDirection(pipe2.getEnd2(), pipe4.getEnd1());
+
+        addElements(List.of(
+                spring1, spring2,
+                pump1, pump2,
+                pipe1, pipe2, pipe3, pipe4
+        ));
+        spawnPoint = pump1;
+    }
+    /**
+     * S1 → P1 → C1
+     */
+    private void buildMap1() {
+        IdGenerator.reset();
+        elements.clear();
+
+        Spring spring1 = new Spring(0, 0);
+        Cistern cistern1 = new Cistern(4, 0);
+        Pump pump1 = new Pump(2, 0);
+
+        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
+        Pipe pipe2 = new Pipe(3, 0); // pump1 → cistern1
+
+        pipe1.connectBothEnds(spring1, pump1);
+        pipe2.connectBothEnds(pump1, cistern1);
+
+        pump1.setDirection(pipe1.getEnd2(), pipe2.getEnd1());
+
+        addElements(List.of(spring1, cistern1, pump1, pipe1, pipe2));
+        spawnPoint = pump1;
+    }
+
     /*           S1        S2
      *           ||
      *           B1
@@ -184,6 +285,7 @@ public class GameMap {
 
         pump1.setDirection(pipe1.getEnd2(), pipe4.getEnd1());
         pump2.setDirection(pipe4.getEnd2(), pipe5.getEnd2());
+        pump3.setDirection(pipe3.getEnd2(),pipe9.getEnd1());
         // Register all elements
         addElements(List.of(
             spring1, spring2,

@@ -98,6 +98,46 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         return true;
     }
 
+    @Override
+    public int moveWater() {
+        return currentFlowingWater; // forward what's stored
+    }
+
+    private int pendingFlowingWater;
+    private int currentFlowingWater;
+    public int getCurrentFlowingWater() {
+        return currentFlowingWater;
+    }
+
+    public void setCurrentFlowingWater(int currentFlowingWater) {
+        this.currentFlowingWater = currentFlowingWater;
+    }
+    @Override
+    public void receiveWater(int water) {
+        pendingFlowingWater += water;
+    }
+
+    @Override
+    public int commit() {
+        ElementWaterState state = Helper.waterToBePumpedOut(
+                pendingFlowingWater, GameConfig.PUMP_MAX_FLOW_PER_TICK,
+                storedWater, GameConfig.PUMP_TANK_CAPACITY,
+                this::breakElement
+        );
+        storedWater = state.currentlyStoredWater();
+        int waterAmount = state.pumpedWater();
+
+        if (isBroken || outputPipe == null || outputPipe.isFree()) {
+            int lost = waterAmount + storedWater;
+            storedWater = 0;
+            pendingFlowingWater = 0;
+            return lost;
+        }
+
+        currentFlowingWater = waterAmount;
+        pendingFlowingWater = 0;
+        return 0;
+    }
     /**
      * Transfers water through the pump.
      * <p>

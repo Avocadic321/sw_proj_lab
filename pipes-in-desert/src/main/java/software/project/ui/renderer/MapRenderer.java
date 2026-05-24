@@ -253,7 +253,7 @@ public class MapRenderer {
             // Water level column
             int col = 0;
             if (!pipe.isBroken()) {
-                int percent = (pipe.getCurrentWater() * 100) / pipe.getCapacity();
+                int percent = (pipe.getCurrentFlowingWater() * 100);
                 col = waterPercentToColumn(percent, WATER_LEVEL_FRAMES);
             }
 
@@ -285,7 +285,7 @@ public class MapRenderer {
         final double MAX_SPEED_DEG_PER_SEC = 180.0;
 
         for (Pump pump : map.getAllPumps()) {
-            int percent = (pump.getStoredWater() * 100) / GameConfig.PUMP_TANK_CAPACITY;
+            int percent = (pump.getCurrentFlowingWater() * 100) / GameConfig.PUMP_TANK_CAPACITY;
             int col = waterPercentToColumn(percent, 5);
             Sprite baseSprite = pumpSheet.getSprite(col, 0);
             if (baseSprite == null) continue;

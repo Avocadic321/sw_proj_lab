@@ -21,9 +21,82 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      */
     private final PipeEnd end2;
 
+    public static class DirectionEnd {
+        private PipeEnd end;
+        private boolean isInput;
+
+        public DirectionEnd(PipeEnd end, boolean isInput) {
+            this.end = end;
+            this.isInput = isInput;
+        }
+
+        public PipeEnd getEnd() {
+            return end;
+        }
+
+        public void setEnd(PipeEnd end) {
+            this.end = end;
+        }
+
+        public boolean isInput() {
+            return isInput;
+        }
+
+        public void setInput(boolean input) {
+            isInput = input;
+        }
+    }
     /**
      * Maximum water capacity.
      */
+
+    private  DirectionEnd directionEnd1;
+    private DirectionEnd directionEnd2;
+
+    public DirectionEnd getDirectionEnd1() {
+        return directionEnd1;
+    }
+    public boolean isMeetingAtSamePipe() {
+        return directionEnd2.isInput && directionEnd1.isInput;
+    }
+
+    public DirectionEnd resolveInputEnd() {
+        if(directionEnd1.isInput()) {
+            return directionEnd1;
+        } else if(directionEnd2.isInput()) {
+            return directionEnd2;
+        }
+        return null;
+    }
+    public DirectionEnd resolveOutputEnd() {
+        if(!directionEnd1.isInput()) {
+            return directionEnd1;
+        } else if(!directionEnd2.isInput()) {
+            return directionEnd2;
+        }
+        return null;
+    }
+
+    public DirectionEnd resolveEnd(PipeEnd end) {
+        if(end == directionEnd1.getEnd()) {
+            return directionEnd1;
+        } else if(end == directionEnd2.getEnd()) {
+            return directionEnd2;
+        }
+        return null;
+    }
+    public void setDirectionEnd1(DirectionEnd directionEnd1) {
+        this.directionEnd1 = directionEnd1;
+    }
+
+    public DirectionEnd getDirectionEnd2() {
+        return directionEnd2;
+    }
+
+    public void setDirectionEnd2(DirectionEnd directionEnd2) {
+        this.directionEnd2 = directionEnd2;
+    }
+
     private final int capacity;
     /**
      * Current water amount.
@@ -34,6 +107,61 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
      * Whether the pipe is broken.
      */
     private boolean isBroken;
+
+    // check if the output of next pump is me then something is wrong
+    private boolean isConflict;
+
+    public boolean isConflict() {
+        return isConflict;
+    }
+
+    public void setConflict(boolean conflict) {
+        isConflict = conflict;
+    }
+
+    private int pendingFlowingWater;
+    private int currentFlowingWater;
+
+    public int getCurrentFlowingWater() {
+        return currentFlowingWater;
+    }
+
+    public void setCurrentFlowingWater(int currentFlowingWater) {
+        this.currentFlowingWater = currentFlowingWater;
+    }
+
+    @Override
+    public int moveWater() {
+    return currentFlowingWater;
+    }
+
+    @Override
+    public void receiveWater(int water) {
+        pendingFlowingWater += water;
+    }
+
+    @Override
+    public int commit() {
+        int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
+        ElementWaterState state = Helper.waterToBePumpedOut(
+                pendingFlowingWater, maxTransfer, currentWater, capacity, this::breakElement
+        );
+        currentWater = state.currentlyStoredWater();
+        int waterAmount = state.pumpedWater();
+
+        if (isBroken || end1.isFree() || end2.isFree()) {
+            int lost = waterAmount + currentWater;
+            currentWater = 0;
+            pendingFlowingWater = 0;
+            currentFlowingWater = waterAmount;
+            return lost;
+        }
+
+        currentFlowingWater = waterAmount;
+        pendingFlowingWater = 0;
+         return 0;
+    }
+
 
     public Pipe() {
         this(null, -1, -1, GameConfig.PIPE_DEFAULT_CAPACITY);
@@ -62,6 +190,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         this.end2 = new PipeEnd();
         this.end1.pipe = this;
         this.end2.pipe = this;
+        this.directionEnd1 = new DirectionEnd(this.end1, false);
+        this.directionEnd2 = new DirectionEnd(this.end2, false);
     }
 
     public PipeEnd getEnd1() {
@@ -133,6 +263,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
     @Override
     public void breakElement() {
         this.isBroken = true;
+        currentFlowingWater = 0;
     }
 
     /**

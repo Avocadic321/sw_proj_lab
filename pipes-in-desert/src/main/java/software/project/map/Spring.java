@@ -121,6 +121,24 @@ public class Spring extends ActiveElement implements IConnectable {
         }
         return 0; // cannot lose since it is the source
     }
+    @Override
+    public int moveWater() {
+        List<PipeEnd> ends = getConnections();
+        if (ends.isEmpty()) return 0;
+        int produced = generateWater() / ends.size();
+        Debug.log("[SPRING] %s AMOUNT GENERATED %d", this.getId(), produced);
+        return produced;
+    }
+
+    @Override
+    public void receiveWater(int water) {
+        // spring doesn't receive
+    }
+
+    @Override
+    public int commit() {
+        return 0;
+    }
 
     /**
      * Adds a pipe to the attached list without changing connection state.
