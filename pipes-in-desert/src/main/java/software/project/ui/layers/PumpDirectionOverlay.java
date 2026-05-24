@@ -6,6 +6,7 @@ import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.map.Directions;
+import software.project.map.Pump;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Banner;
@@ -17,12 +18,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 
 import static software.project.graphics.Sprites.SIMPLE_PANEL;
 
 public class PumpDirectionOverlay extends Layer {
 
     private static final float OVERLAY_SCALE = 2.5f;
+    private static final boolean DRAGGABLE = true;   // set to false to disable dragging
 
     private static final int BASE_BUTTON_SIZE = 24;
     private static final int BASE_GAP = 5;
@@ -49,6 +52,7 @@ public class PumpDirectionOverlay extends Layer {
     private Banner titleBanner;
 
     private final Map<Directions, GameButton> directionButtons = new EnumMap<>(Directions.class);
+    private final Set<Directions> availableDirections;
 
     private GameButton confirmButton;
     private GameButton cancelButton;
@@ -58,10 +62,20 @@ public class PumpDirectionOverlay extends Layer {
     private boolean isInputPage = true;
 
     private final GameApplication app;
+    private final Pump pump;
 
-    public PumpDirectionOverlay(GameApplication app) {
+    // Dragging state
+    private boolean dragging = false;
+    private int dragStartX, dragStartY;
+    private int dragOffsetX = 0;
+    private int dragOffsetY = 0;
+
+    public PumpDirectionOverlay(GameApplication app, Pump pump) {
         super(true, false);
         this.app = app;
+        this.pump = pump;
+        this.availableDirections = pump.getAvailableDirections();
+
         SpriteManager sm = SpriteManager.getInstance();
 
         this.buttonSize = (int)(BASE_BUTTON_SIZE * OVERLAY_SCALE);
@@ -91,20 +105,20 @@ public class PumpDirectionOverlay extends Layer {
     // ---------- Sprite row mappings ----------
     private int inwardRow(Directions dir) {
         switch (dir) {
-            case NORTH: return 2; // down arrow
-            case EAST:  return 3; // left arrow
-            case SOUTH: return 0; // up arrow
-            case WEST:  return 1; // right arrow
+            case NORTH: return 2;
+            case EAST:  return 3;
+            case SOUTH: return 0;
+            case WEST:  return 1;
             default: throw new IllegalArgumentException();
         }
     }
 
     private int outwardRow(Directions dir) {
         switch (dir) {
-            case NORTH: return 0; // up arrow
-            case EAST:  return 1; // right arrow
-            case SOUTH: return 2; // down arrow
-            case WEST:  return 3; // left arrow
+            case NORTH: return 0;
+            case EAST:  return 1;
+            case SOUTH: return 2;
+            case WEST:  return 3;
             default: throw new IllegalArgumentException();
         }
     }
@@ -112,7 +126,7 @@ public class PumpDirectionOverlay extends Layer {
     // ---------- Pages ----------
     private void createInputPage() {
         directionButtons.clear();
-        for (Directions dir : Directions.values()) {
+        for (Directions dir : availableDirections) {
             GameButton btn = new GameButton(arrowSheet, inwardRow(dir), 0, 0, buttonSize, buttonSize);
             btn.setAction(() -> selectInput(dir));
             directionButtons.put(dir, btn);
@@ -130,7 +144,7 @@ public class PumpDirectionOverlay extends Layer {
     private void createOutputPage() {
         directionButtons.clear();
 
-        for (Directions dir : Directions.values()) {
+        for (Directions dir : availableDirections) {
             boolean isInputSide = (dir == selectedInput);
             int row = isInputSide ? inwardRow(dir) : outwardRow(dir);
             GameButton btn = new GameButton(arrowSheet, row, 0, 0, buttonSize, buttonSize);
@@ -170,8 +184,9 @@ public class PumpDirectionOverlay extends Layer {
 
         confirmButton.setAction(() -> {
             if (selectedInput != null && selectedOutput != null) {
+                pump.setDirection(selectedInput, selectedOutput);
                 System.out.println("Confirm: " + selectedInput + " -> " + selectedOutput);
-                app.popLayer();  // Close the overlay after confirm
+                app.popLayer();
             }
         });
 
@@ -193,18 +208,20 @@ public class PumpDirectionOverlay extends Layer {
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
-        int centreX = screenW / 2;
-        int centreY = screenH / 2;
+        int centreX = screenW / 2 + dragOffsetX;
+        int centreY = screenH / 2 + dragOffsetY;
 
-        GameButton north = directionButtons.get(Directions.NORTH);
-        GameButton east  = directionButtons.get(Directions.EAST);
-        GameButton south = directionButtons.get(Directions.SOUTH);
-        GameButton west  = directionButtons.get(Directions.WEST);
-
-        north.setCenter(centreX, centreY - distanceFromCenter);
-        east.setCenter(centreX + distanceFromCenter, centreY);
-        south.setCenter(centreX, centreY + distanceFromCenter);
-        west.setCenter(centreX - distanceFromCenter, centreY);
+        // Position direction buttons
+        for (Map.Entry<Directions, GameButton> entry : directionButtons.entrySet()) {
+            Directions dir = entry.getKey();
+            GameButton btn = entry.getValue();
+            switch (dir) {
+                case NORTH -> btn.setCenter(centreX, centreY - distanceFromCenter);
+                case EAST  -> btn.setCenter(centreX + distanceFromCenter, centreY);
+                case SOUTH -> btn.setCenter(centreX, centreY + distanceFromCenter);
+                case WEST  -> btn.setCenter(centreX - distanceFromCenter, centreY);
+            }
+        }
 
         int contentWidth = 2 * distanceFromCenter + buttonSize + 2 * panelPadding;
         int contentHeight = 2 * distanceFromCenter + buttonSize + 2 * panelPadding;
@@ -226,10 +243,81 @@ public class PumpDirectionOverlay extends Layer {
         confirmButton.setPosition(startX + buttonSize + bottomButtonsSpacing, bottomY);
     }
 
+    // ---------- Dragging logic ----------
+    @Override
+    public boolean mousePressed(MouseEvent e) {
+        // Check if the click is on any direction button
+        for (GameButton btn : directionButtons.values()) {
+            if (btn.getBounds().contains(e.getX(), e.getY())) {
+                btn.mousePressed(e);
+                return true;
+            }
+        }
+        // Check confirm/cancel buttons
+        if (confirmButton.getBounds().contains(e.getX(), e.getY())) {
+            confirmButton.mousePressed(e);
+            return true;
+        }
+        if (cancelButton.getBounds().contains(e.getX(), e.getY())) {
+            cancelButton.mousePressed(e);
+            return true;
+        }
+        // If no button was clicked and dragging is enabled, start dragging on background panel
+        if (DRAGGABLE && backgroundPanel.getBounds().contains(e.getX(), e.getY())) {
+            dragging = true;
+            dragStartX = e.getX();
+            dragStartY = e.getY();
+            return true;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean mouseDragged(MouseEvent e) {
+        if (dragging && DRAGGABLE) {
+            int dx = e.getX() - dragStartX;
+            int dy = e.getY() - dragStartY;
+            if (dx != 0 || dy != 0) {
+                dragOffsetX += dx;
+                dragOffsetY += dy;
+                dragStartX = e.getX();
+                dragStartY = e.getY();
+                recomputeLayout();
+            }
+            return true;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleased(MouseEvent e) {
+        if (dragging) {
+            dragging = false;
+            return true;
+        }
+        // Normal button release handling
+        for (GameButton btn : directionButtons.values()) btn.mouseReleased(e);
+        confirmButton.mouseReleased(e);
+        cancelButton.mouseReleased(e);
+        return true;
+    }
+
+    @Override
+    public boolean mouseMoved(MouseEvent e) {
+        if (!dragging) {
+            for (GameButton btn : directionButtons.values()) btn.mouseMoved(e);
+            confirmButton.mouseMoved(e);
+            cancelButton.mouseMoved(e);
+        }
+        return true;
+    }
+
     // ---------- Layer overrides ----------
     @Override
     public void onEnter() {
         resetToInputPage();
+        dragOffsetX = 0;
+        dragOffsetY = 0;
     }
 
     @Override
@@ -247,36 +335,12 @@ public class PumpDirectionOverlay extends Layer {
     @Override
     public void render(Graphics2D g) {
         backgroundPanel.draw(g);
-        pumpSprite.drawCentered(g, ScreenManager.getInstance().getVirtualWidth()/2,
-                                ScreenManager.getInstance().getVirtualHeight()/2, pumpSize, 0);
+        pumpSprite.drawCentered(g, ScreenManager.getInstance().getVirtualWidth()/2 + dragOffsetX,
+                                ScreenManager.getInstance().getVirtualHeight()/2 + dragOffsetY, pumpSize, 0);
         for (GameButton btn : directionButtons.values()) btn.draw(g);
         titleBanner.draw(g);
         confirmButton.draw(g);
         cancelButton.draw(g);
-    }
-
-    @Override
-    public boolean mousePressed(MouseEvent e) {
-        for (GameButton btn : directionButtons.values()) btn.mousePressed(e);
-        confirmButton.mousePressed(e);
-        cancelButton.mousePressed(e);
-        return true;
-    }
-
-    @Override
-    public boolean mouseReleased(MouseEvent e) {
-        for (GameButton btn : directionButtons.values()) btn.mouseReleased(e);
-        confirmButton.mouseReleased(e);
-        cancelButton.mouseReleased(e);
-        return true;
-    }
-
-    @Override
-    public boolean mouseMoved(MouseEvent e) {
-        for (GameButton btn : directionButtons.values()) btn.mouseMoved(e);
-        confirmButton.mouseMoved(e);
-        cancelButton.mouseMoved(e);
-        return true;
     }
 
     @Override

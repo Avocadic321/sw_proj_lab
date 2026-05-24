@@ -4,6 +4,7 @@ import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.core.GameState;
+import software.project.map.Pump;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
@@ -99,7 +100,8 @@ public class PlayingLayer extends Layer {
 //            }
 //        }
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            app.pushLayer(new PumpDirectionOverlay(app));
+            Pump pump = (Pump) model.getGameMap().getElement("PUMP2");
+            app.pushLayer(new PumpDirectionOverlay(app, pump));
             return true;
         }
         return false;
