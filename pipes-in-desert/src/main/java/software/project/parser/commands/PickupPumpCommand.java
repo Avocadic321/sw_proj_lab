@@ -61,7 +61,7 @@ public class PickupPumpCommand implements ICommand {
         }
 
         try {
-            plumber.pickUpPump(cistern,0);
+            plumber.pickUpPump(cistern);
             System.out.println("[OK] PICKUP_PUMP " + player.getId() + " " + cistern.getId());
         } catch (Exception e) {
             System.out.println("[ERROR] PICKUP_PUMP " + e.getMessage());

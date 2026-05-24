@@ -50,7 +50,7 @@ public class PickUpCommand implements ICommand {
         Pipe pipe = gameModel.getGameMap().getElement(id, Pipe.class);
         if (pipe != null) {
             try {
-                plumber.pickUpPipe(pipe,0);
+                plumber.pickUpPipe(pipe);
                 System.out.println("[OK] PICK_UP PIPE " + id);
             } catch (Exception e) {
                 System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -61,7 +61,7 @@ public class PickUpCommand implements ICommand {
         Pump pump = gameModel.getGameMap().getElement(id, Pump.class);
         if (pump != null) {
             try {
-                plumber.pickUpPump(pump,0);
+                plumber.pickUpPump(pump);
                 System.out.println("[OK] PICK_UP PUMP " + id);
             } catch (Exception e) {
                 System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -76,13 +76,13 @@ public class PickUpCommand implements ICommand {
                 String type = args[1].trim().toUpperCase();
                 try {
                     if (type.equals("PIPE")) {
-                        plumber.pickUpPipe(cistern,0);
+                        plumber.pickUpPipe(cistern);
                         System.out.println("[OK] PICK_UP PIPE_FROM " + id);
                         return;
                     }
 
                     if (type.equals("PUMP")) {
-                        plumber.pickUpPump(cistern,0);
+                        plumber.pickUpPump(cistern);
                         System.out.println("[OK] PICK_UP PUMP_FROM " + id);
                         return;
                     }
@@ -98,7 +98,7 @@ public class PickUpCommand implements ICommand {
             // choose whichever exists if unambiguous
             if (cistern.getStoredPipe() != null && cistern.getStoredPump() == null) {
                 try {
-                    plumber.pickUpPipe(cistern,0);
+                    plumber.pickUpPipe(cistern);
                     System.out.println("[OK] PICK_UP PIPE_FROM " + id);
                 } catch (Exception e) {
                     System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -108,7 +108,7 @@ public class PickUpCommand implements ICommand {
 
             if (cistern.getStoredPump() != null && cistern.getStoredPipe() == null) {
                 try {
-                    plumber.pickUpPump(cistern,0);
+                    plumber.pickUpPump(cistern);
                     System.out.println("[OK] PICK_UP PUMP_FROM " + id);
                 } catch (Exception e) {
                     System.out.println("[ERROR] PICK_UP " + e.getMessage());

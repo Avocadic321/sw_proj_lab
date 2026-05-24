@@ -45,6 +45,9 @@ public class GameConfig {
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
 
+    // Plumber
+    public static final int DEFAULT_INVENTORY_SIZE = 2;
+
     /* ===== Game Elements Constants ===== */
     // Cistern
     public static final int CISTERN_DEFAULT_CAPACITY = 500;
