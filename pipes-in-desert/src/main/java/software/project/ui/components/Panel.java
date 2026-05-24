@@ -8,12 +8,17 @@ import software.project.graphics.SpriteManager;
 import software.project.graphics.Sprites;
 import software.project.ui.ScreenManager;
 
-public class Panel {
+public class Panel extends Component {
+
     private Sprite sprite;
-    private int x, y, width, height;
-    private int originalWidth, originalHeight;
+
+    private int originalWidth;
+    private int originalHeight;
+
     private float scaleFactor;
+
     private int verticalOffset;
+
     private Color fallbackColor;
     private boolean roundRect;
 
@@ -22,6 +27,7 @@ public class Panel {
     }
 
     public Panel(float scaleFactor, int verticalOffset, Sprites spriteKey) {
+        super(0, 0, 0, 0);
         this.scaleFactor = scaleFactor;
         this.verticalOffset = verticalOffset;
         this.sprite = SpriteManager.getInstance().getSprite(spriteKey);
@@ -54,6 +60,7 @@ public class Panel {
         y = (virtualH - height) / 2 + verticalOffset;
     }
 
+    @Override
     public void draw(Graphics2D g) {
         if (sprite != null) {
             sprite.draw(g, x, y, width, height);
@@ -67,14 +74,19 @@ public class Panel {
         }
     }
 
-    public int getX() { return x; }
-    public int getY() { return y; }
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
-    public int getCenterX() { return x + width / 2; }
-    public int getCenterY() { return y + height / 2; }
+    public int getOriginalWidth() {
+        return originalWidth;
+    }
 
-    // Expose original dimensions for scale calculations
-    public int getOriginalWidth() { return originalWidth; }
-    public int getOriginalHeight() { return originalHeight; }
+    public int getOriginalHeight() {
+        return originalHeight;
+    }
+
+    public int getCenterX() {
+        return x + width / 2;
+    }
+
+    public int getCenterY() {
+        return y + height / 2;
+    }
 }
