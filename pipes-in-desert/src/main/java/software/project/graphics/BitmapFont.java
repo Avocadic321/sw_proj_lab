@@ -10,38 +10,29 @@ import java.util.Map;
  */
 public class BitmapFont {
     private final SpriteSheet sheet;
-    private final int charWidth;
-    private final int charHeight;
-    private final int firstChar; // ASCII value of the first character in the sheet
-    private final int columns;
+    private final String mapping;
     private final Map<Character, Sprite> charCache = new HashMap<>();
 
     /**
-     * @param sheet      SpriteSheet containing all character sprites in row‑major order.
-     * @param charWidth  width of one character in pixels (original sheet size).
-     * @param charHeight height of one character in pixels.
-     * @param firstChar  ASCII code of the first character in the sheet (e.g., 32 for space).
+     * Creates a bitmap font using a custom character mapping string.
+     * The mapping string defines the exact order of characters in the sprite sheet.
+     *
+     * @param sheet   SpriteSheet containing all character sprites in row‑major order.
+     * @param mapping String defining the order of characters (e.g., "abcdefghijklmnopqrstuvwxyz0123456789")
      */
-    public BitmapFont(SpriteSheet sheet, int charWidth, int charHeight, int firstChar) {
+    public BitmapFont(SpriteSheet sheet, String mapping) {
         this.sheet = sheet;
-        this.charWidth = charWidth;
-        this.charHeight = charHeight;
-        this.firstChar = firstChar;
-        this.columns = sheet.getCols();
+        this.mapping = mapping;
     }
 
     private Sprite getCharSprite(char c) {
-        return charCache.computeIfAbsent(
-            c, ch -> {
-                int index = ch - firstChar;
-                if (index < 0 || index >= sheet.getTotalSprites()) {
-                    return null;
-                }
-                int col = index % columns;
-                int row = index / columns;
-                return sheet.getSprite(col, row);
-            }
-        );
+        return charCache.computeIfAbsent(c, ch -> {
+            int index = mapping.indexOf(ch);
+            if (index < 0) return null;
+            int col = index % sheet.getCols();
+            int row = index / sheet.getCols();
+            return sheet.getSprite(col, row);
+        });
     }
 
     /**
@@ -49,8 +40,8 @@ public class BitmapFont {
      */
     public void draw(Graphics2D g, String text, int x, int y, float scale) {
         int drawX = x;
-        int drawW = (int) (charWidth * scale);
-        int drawH = (int) (charHeight * scale);
+        int drawW = (int) (sheet.getFrameWidth() * scale);
+        int drawH = (int) (sheet.getFrameHeight() * scale);
         for (char c : text.toCharArray()) {
             Sprite sp = getCharSprite(c);
             if (sp != null) {
@@ -60,11 +51,23 @@ public class BitmapFont {
         }
     }
 
+    /**
+     * Draws a single character at (x, y) with optional scaling.
+     */
+    public void drawChar(Graphics2D g, char c, int x, int y, float scale) {
+        Sprite sp = getCharSprite(c);
+        if (sp != null) {
+            int drawW = (int) (sheet.getFrameWidth() * scale);
+            int drawH = (int) (sheet.getFrameHeight() * scale);
+            sp.draw(g, x, y, drawW, drawH);
+        }
+    }
+
     public int getCharWidth() {
-        return charWidth;
+        return sheet.getFrameWidth();
     }
 
     public int getCharHeight() {
-        return charHeight;
+        return sheet.getFrameHeight();
     }
 }
