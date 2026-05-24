@@ -10,7 +10,9 @@ public enum SpriteSheets {
     CISTERN("cistern", "/map/cistern.png", 32, 32),
     PUMP("pump", "/map/pump_atlas.png", 64, 64),
 
-    MAP_BORDER("map_border", "/map/map_border.png", 32, 32);
+    MAP_BORDER("map_border", "/map/map_border.png", 32, 32),
+
+    FONT("font", "default_bm_font", 16, 16);
 
     private final String key;
     private final String path;

@@ -59,4 +59,12 @@ public class BitmapFont {
             drawX += drawW;
         }
     }
+
+    public int getCharWidth() {
+        return charWidth;
+    }
+
+    public int getCharHeight() {
+        return charHeight;
+    }
 }
