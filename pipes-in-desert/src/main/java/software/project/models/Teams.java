@@ -1,4 +1,4 @@
-package software.project.utils;
+package software.project.models;
 
 /**
  * Identifies the two opposing teams in the game.

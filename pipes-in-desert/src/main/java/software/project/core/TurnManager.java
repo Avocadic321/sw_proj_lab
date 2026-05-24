@@ -10,7 +10,7 @@ import software.project.models.Plumber;
 import software.project.models.Team;
 import software.project.utils.Debug;
 import software.project.utils.Events;
-import software.project.utils.Teams;
+import software.project.models.Teams;
 
 /**
  * Manages the turn-based flow of a game session.

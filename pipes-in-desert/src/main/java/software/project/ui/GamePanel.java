@@ -53,28 +53,6 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
         }
     }
 
-    private void drawLetterboxSand(Graphics2D g, int tileSize, Sprite sandSprite) {
-        int panelW = getWidth();
-        int panelH = getHeight();
-
-        // Calculate scaled tile size
-        int bufW = ScreenManager.GAME_WIDTH;
-        int bufH = ScreenManager.GAME_HEIGHT;
-        double scaleX = (double) panelW / bufW;
-        double scaleY = (double) panelH / bufH;
-        double scale = Math.min(scaleX, scaleY);
-        int scaledTile = (int) (tileSize * scale);
-        if (scaledTile < 1) scaledTile = 1; // Prevent zero
-
-        // Force start at the panel's origin and tile across the whole screen
-        // This guarantees coverage even for leftover pixels smaller than a tile
-        for (int y = -scaledTile; y < panelH; y += scaledTile) {
-            for (int x = -scaledTile; x < panelW; x += scaledTile) {
-                sandSprite.draw(g, x, y, scaledTile, scaledTile);
-            }
-        }
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
