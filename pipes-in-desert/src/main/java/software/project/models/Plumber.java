@@ -1,5 +1,7 @@
 package software.project.models;
 
+import software.project.audio.AudioPlayer;
+import software.project.map.interfaces.IBreakable;
 import software.project.map.interfaces.ICarriable;
 import software.project.map.interfaces.IRepairable;
 import software.project.map.*;
@@ -22,11 +24,25 @@ import java.util.List;
  * @since 1.0
  */
 public class Plumber extends Player {
-    private ICarriable carriedItem;
+    private ICarriable[] inventory;
 
     public Plumber(String id, Element startPosition) {
         super(id, startPosition);
-        this.carriedItem = null;
+        this.inventory = new ICarriable[2];
+    }
+
+    public ICarriable[] getInventory() {
+        return inventory;
+    }
+
+    @Override
+    public boolean doMainAction() {
+        if (getCurrentPosition() instanceof IBreakable breakable && getCurrentPosition() instanceof IRepairable repairable && breakable.isBroken()) {
+            this.repair(repairable);
+            return true;
+        }
+        return false;
+
     }
 
     public Plumber(Element startPosition) {
@@ -45,7 +61,9 @@ public class Plumber extends Player {
     /**
      * Places the currently carried item (pipe or pump) into the network at the plumber's current position.
      */
-    public void extendPipeSystem() {
+    public void extendPipeSystem(int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (carriedItem == null || currentPosition == null) {
             throw new IllegalStateException("No item being carried or current position is null");
         }
@@ -61,12 +79,12 @@ public class Plumber extends Player {
             }
 
             freeEnd.connectsTo(active);
-            carriedItem = null;
+            inventory[item] = null;
             return;
         }
 
         if (carriedItem instanceof Pump pump && currentPosition instanceof Pipe pipe) {
-            insertPumpIntoPipe(pump, pipe);
+            insertPumpIntoPipe(pump, pipe,item);
         }
     }
 
@@ -75,16 +93,19 @@ public class Plumber extends Player {
      *
      * @param cistern the cistern to pick the pump from
      */
-    public void pickUpPump(Cistern cistern) {
+    public void pickUpPump(Cistern cistern,int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (cistern == null || currentPosition != cistern) {
             throw new IllegalArgumentException("Cistern is null or not at the current position");
         }
+
 
         if (carriedItem != null) {
             throw new IllegalStateException("Already carrying an item");
         }
 
-        carriedItem = cistern.pickUpPump();
+        inventory[item] = cistern.pickUpPump();
     }
 
     /**
@@ -92,7 +113,9 @@ public class Plumber extends Player {
      *
      * @param pump the pump to pick up
      */
-    public void pickUpPump(Pump pump) {
+    public void pickUpPump(Pump pump, int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (pump == null || currentPosition != pump) {
             throw new IllegalArgumentException("Pump is null or not at the current position");
         }
@@ -108,7 +131,7 @@ public class Plumber extends Player {
             }
         }
 
-        carriedItem = pump;
+        inventory[item] = pump;
     }
 
     /**
@@ -116,7 +139,9 @@ public class Plumber extends Player {
      *
      * @param cistern the cistern to pick the pipe from
      */
-    public void pickUpPipe(Cistern cistern) {
+    public void pickUpPipe(Cistern cistern, int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (cistern == null || currentPosition != cistern) {
             throw new IllegalArgumentException("Cistern is null or not at the current position");
         }
@@ -125,7 +150,7 @@ public class Plumber extends Player {
             throw new IllegalStateException("Already carrying an item");
         }
 
-        carriedItem = cistern.pickUpPipe();
+        inventory[item] = cistern.pickUpPipe();
     }
 
     /**
@@ -133,7 +158,9 @@ public class Plumber extends Player {
      *
      * @param pipe the pipe to pick up
      */
-    public void pickUpPipe(Pipe pipe) {
+    public void pickUpPipe(Pipe pipe, int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (pipe == null || currentPosition != pipe) {
             throw new IllegalArgumentException("Pipe is null or not at the current position");
         }
@@ -153,7 +180,7 @@ public class Plumber extends Player {
             end2.disconnect();
         }
 
-        carriedItem = pipe;
+        inventory[item] = pipe;
     }
 
     /**
@@ -202,25 +229,11 @@ public class Plumber extends Player {
      *
      * @return the carried item, or null if nothing is being carried
      */
-    public ICarriable getCarriedItem() {
-        return carriedItem;
+    public ICarriable getCarriedItem(int item) {
+        if(item < 0 || item >= inventory.length) return null;
+        return inventory[item];
     }
 
-    /**
-     * Sets the item currently being carried by the plumber.
-     *
-     * @param item the item to carry
-     */
-    public void setCarriedItem(ICarriable item) {
-        carriedItem = item;
-    }
-
-    /**
-     * Clears the currently carried item, setting it to null.
-     */
-    public void clearCarriedItem() {
-        carriedItem = null;
-    }
 
     /**
      * Inserts a carried pump into the middle of an existing pipe.
@@ -232,7 +245,9 @@ public class Plumber extends Player {
      * @param pump the pump to insert (must be carried)
      * @param pipe the pipe to insert the pump into
      */
-    public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
+    public void insertPumpIntoPipe(Pump pump, Pipe pipe, int item) {
+        if(item < 0 || item >= inventory.length) return;
+        ICarriable carriedItem = inventory[item];
         if (carriedItem != pump) {
             throw new IllegalStateException("Pump is not being carried");
         }
@@ -248,7 +263,7 @@ public class Plumber extends Player {
         pump.connect(pipe1.getEnd2());
         pump.connect(pipe2.getEnd1());
 
-        carriedItem = null;
+        inventory[item] = null;
 
         currentPosition.removeOccupant(this);
         pump.addOccupant(this);
@@ -308,10 +323,13 @@ public class Plumber extends Player {
         String positionId = currentPosition == null ? "NONE" : currentPosition.getId();
         String carried = "NONE";
 
+        for(int i = 0; i < inventory.length; i++) {
+          ICarriable carriedItem = inventory[i];
         if (carriedItem instanceof Element element) {
             carried = element.getId();
         } else if (carriedItem != null) {
             carried = carriedItem.getClass().getSimpleName().toUpperCase();
+        }
         }
 
         return String.format("[STATE] PLUMBER %s position=%s carriedItem=%s", id, positionId, carried);
