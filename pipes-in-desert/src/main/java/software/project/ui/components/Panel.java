@@ -1,26 +1,26 @@
 package software.project.ui.components;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.Sprites;
 import software.project.ui.ScreenManager;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+
 public class Panel extends Component {
 
-    private Sprite sprite;
+    private final Sprite sprite;
 
-    private int originalWidth;
-    private int originalHeight;
+    private final int originalWidth;
+    private final int originalHeight;
 
-    private float scaleFactor;
+    private final float scaleFactor;
 
-    private int verticalOffset;
+    private final int verticalOffset;
 
-    private Color fallbackColor;
-    private boolean roundRect;
+    private final Color fallbackColor;
+    private final boolean roundRect;
 
     public Panel(float scaleFactor, int verticalOffset) {
         this(scaleFactor, verticalOffset, Sprites.MENU_PANEL);

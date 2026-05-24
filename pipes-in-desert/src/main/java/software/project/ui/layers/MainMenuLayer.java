@@ -1,9 +1,5 @@
 package software.project.ui.layers;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
-
 import software.project.graphics.Animation;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
@@ -13,6 +9,10 @@ import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Menu;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
 
 public class MainMenuLayer extends Layer {
 
@@ -28,10 +28,10 @@ public class MainMenuLayer extends Layer {
     private static final int MENU_VERTICAL_OFFSET = 50;
     private static final int TITLE_VERTICAL_OFFSET = 50;
 
-    private static final int[] BUTTON_ROW_INDICES = { 0, 1, 3, 2 };
+    private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
 
     private final GameApplication app;
-    private Menu menu;
+    private final Menu menu;
 
     private Animation backgroundAnimation;
     private Sprite menuTitleSprite;
@@ -45,7 +45,15 @@ public class MainMenuLayer extends Layer {
             loadBackgroundAnimation();
         }
         // Create the menu with the appropriate constants and actions
-        menu = new Menu(MENU_SCALE_FACTOR, MENU_VERTICAL_OFFSET, BUTTON_ROW_INDICES, TOP_MARGIN_PERCENT, BOTTOM_MARGIN_PERCENT, INNER_PADDING_PERCENT);
+        menu = new Menu(
+            MENU_SCALE_FACTOR,
+            MENU_VERTICAL_OFFSET,
+            BUTTON_ROW_INDICES,
+            TOP_MARGIN_PERCENT,
+            BOTTOM_MARGIN_PERCENT,
+            INNER_PADDING_PERCENT
+        );
+
         menu.setAction(0, () -> app.replaceLayer(new PlayingLayer(app)));
         menu.setAction(1, () -> System.out.println("OPTIONS clicked"));
         menu.setAction(2, () -> System.out.println("CREDITS clicked"));
@@ -109,7 +117,9 @@ public class MainMenuLayer extends Layer {
         if (ANIMATED && backgroundAnimation != null && backgroundAnimation.getCurrentFrame() != null) {
             backgroundAnimation.getCurrentFrame().draw(g, 0, 0, virtualW, virtualH);
         } else if (SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND) != null) {
-            SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND).draw(g, 0, 0, virtualW, virtualH);
+            SpriteManager.getInstance()
+                         .getSprite(Sprites.MENU_BACKGROUND)
+                         .draw(g, 0, 0, virtualW, virtualH);
         } else {
             g.setColor(new Color(20, 30, 50));
             g.fillRect(0, 0, virtualW, virtualH);

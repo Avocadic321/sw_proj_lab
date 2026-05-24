@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Renders text using a sprite sheet of characters.
- * The sheet is a grid of fixed‑size cells, each containing one character.
+ * Renders text using a sprite sheet of characters. The sheet is a grid of fixed‑size cells, each
+ * containing one character.
  */
 public class BitmapFont {
     private final SpriteSheet sheet;
@@ -17,12 +17,10 @@ public class BitmapFont {
     private final Map<Character, Sprite> charCache = new HashMap<>();
 
     /**
-     * @param sheet      SpriteSheet containing all character sprites in row‑major
-     *                   order.
+     * @param sheet      SpriteSheet containing all character sprites in row‑major order.
      * @param charWidth  width of one character in pixels (original sheet size).
      * @param charHeight height of one character in pixels.
-     * @param firstChar  ASCII code of the first character in the sheet (e.g., 32
-     *                   for space).
+     * @param firstChar  ASCII code of the first character in the sheet (e.g., 32 for space).
      */
     public BitmapFont(SpriteSheet sheet, int charWidth, int charHeight, int firstChar) {
         this.sheet = sheet;
@@ -33,19 +31,21 @@ public class BitmapFont {
     }
 
     private Sprite getCharSprite(char c) {
-        return charCache.computeIfAbsent(c, ch -> {
-            int index = ch - firstChar;
-            if (index < 0 || index >= sheet.getTotalSprites())
-                return null;
-            int col = index % columns;
-            int row = index / columns;
-            return sheet.getSprite(col, row);
-        });
+        return charCache.computeIfAbsent(
+            c, ch -> {
+                int index = ch - firstChar;
+                if (index < 0 || index >= sheet.getTotalSprites()) {
+                    return null;
+                }
+                int col = index % columns;
+                int row = index / columns;
+                return sheet.getSprite(col, row);
+            }
+        );
     }
 
     /**
-     * Draws a string at (x, y) with optional scaling.
-     * Each character is drawn individually.
+     * Draws a string at (x, y) with optional scaling. Each character is drawn individually.
      */
     public void draw(Graphics2D g, String text, int x, int y, float scale) {
         int drawX = x;

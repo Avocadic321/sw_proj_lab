@@ -1,29 +1,39 @@
 package software.project.ui.components;
 
+import software.project.ui.ScreenManager;
+
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import software.project.ui.ScreenManager;
-
 public class Menu {
-    private Panel panel;
-    private List<MenuButton> buttons = new ArrayList<>();
+    private final Panel panel;
+    private final List<MenuButton> buttons = new ArrayList<>();
 
-    private Runnable[] actions;
+    private final Runnable[] actions;
 
-    private int[] rowIndices;
-    private int buttonCount;
-    private float scaleFactor;
-    private int verticalOffset;
-    private double topMarginPercent, bottomMarginPercent, innerPaddingPercent;
-    private double effectiveTop, effectiveBottom;
+    private final int[] rowIndices;
+    private final int buttonCount;
+    private final float scaleFactor;
+    private final int verticalOffset;
+    private final double topMarginPercent;
+    private final double bottomMarginPercent;
+    private final double innerPaddingPercent;
+    private final double effectiveTop;
+    private final double effectiveBottom;
     private int[] yPositions;
 
     private int buttonWidth, buttonHeight;
 
-    public Menu(float scaleFactor, int verticalOffset, int[] rowIndices, double topMarginPercent, double bottomMarginPercent, double innerPaddingPercent) {
+    public Menu(
+        float scaleFactor,
+        int verticalOffset,
+        int[] rowIndices,
+        double topMarginPercent,
+        double bottomMarginPercent,
+        double innerPaddingPercent
+    ) {
         this.scaleFactor = scaleFactor;
         this.verticalOffset = verticalOffset;
         this.rowIndices = rowIndices;

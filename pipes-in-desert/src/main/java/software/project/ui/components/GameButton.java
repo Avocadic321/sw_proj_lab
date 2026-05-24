@@ -1,19 +1,19 @@
 package software.project.ui.components;
 
+import software.project.graphics.Sprite;
+import software.project.graphics.SpriteSheet;
+
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
-import software.project.graphics.Sprite;
-import software.project.graphics.SpriteSheet;
-
 public class GameButton extends Component {
 
-    private Sprite currentSprite;
+    private final Sprite normal;
+    private final Sprite hover;
+    private final Sprite pressed;
 
-    private Sprite normal;
-    private Sprite hover;
-    private Sprite pressed;
+    private Sprite currentSprite;
 
     private boolean mouseOver;
     private boolean mousePressed;
@@ -28,7 +28,15 @@ public class GameButton extends Component {
         this.currentSprite = normal;
     }
 
-    public GameButton(Sprite normal, Sprite hover, Sprite pressed, int x, int y, int width, int height) {
+    public GameButton(
+        Sprite normal,
+        Sprite hover,
+        Sprite pressed,
+        int x,
+        int y,
+        int width,
+        int height
+    ) {
         super(x, y, width, height);
         this.normal = normal;
         this.hover = hover;

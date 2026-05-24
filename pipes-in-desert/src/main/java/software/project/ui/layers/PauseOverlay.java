@@ -1,15 +1,15 @@
 package software.project.ui.layers;
 
+import software.project.ui.ScreenManager;
+import software.project.ui.components.Menu;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
-import software.project.ui.ScreenManager;
-import software.project.ui.components.Menu;
-
 public class PauseOverlay extends Layer {
-    private static final int[] BUTTON_ROW_INDICES = { 0, 1, 2 };
+    private static final int[] BUTTON_ROW_INDICES = {0, 1, 2};
 
     private static final float MENU_SCALE_FACTOR = 0.6f;
     private static final int MENU_VERTICAL_OFFSET = 30;
@@ -17,11 +17,14 @@ public class PauseOverlay extends Layer {
     private static final double BOTTOM_MARGIN_PERCENT = 0.10;
     private static final double INNER_PADDING_PERCENT = 0.05;
 
-    private Menu menu;
+    private final Menu menu;
 
-    private Runnable resumeAction = () -> {};
-    private Runnable optionsAction = () -> {};
-    private Runnable quitAction = () -> {};
+    private Runnable resumeAction = () -> {
+    };
+    private Runnable optionsAction = () -> {
+    };
+    private Runnable quitAction = () -> {
+    };
 
     public PauseOverlay() {
         super(true, true);

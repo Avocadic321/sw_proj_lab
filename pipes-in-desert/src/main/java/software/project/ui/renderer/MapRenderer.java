@@ -1,17 +1,32 @@
 package software.project.ui.renderer;
 
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
-
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
-import software.project.graphics.*;
-import software.project.map.*;
+import software.project.graphics.Sprite;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
+import software.project.graphics.Sprites;
+import software.project.map.Cistern;
+import software.project.map.Element;
+import software.project.map.GameMap;
+import software.project.map.Pipe;
+import software.project.map.PipeEnd;
+import software.project.map.Pump;
+import software.project.map.Spring;
 import software.project.models.Player;
 import software.project.models.Team;
 import software.project.ui.ScreenManager;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapRenderer {
     private static final int DEFAULT_GRID_WIDTH = 7;
@@ -26,34 +41,39 @@ public class MapRenderer {
 
     // Player scale relative to tile size (1.0 = full tile size)
     private static final float PLAYER_SCALE = 0.6f;
-
+    private static final float STEP_DURATION = 0.15f;
+    private final GameModel model;
+    private final List<ClickableElement> clickableElements = new ArrayList<>();
     private int gridWidth;
     private int gridHeight;
     private int tileSize;
     private int offsetX;
     private int offsetY;
-
-    private GameModel model;
-
-    private record ClickableElement(Element element, Rectangle bounds) {}
-
-    private final List<ClickableElement> clickableElements = new ArrayList<>();
-
     private float arrowTick = 0f;
     private boolean animating = false;
     private Player animatingPlayer = null;
     private List<Element> animationPath = new ArrayList<>();
     private int animationStep = 0;
     private float stepTimer = 0f;
-    private static final float STEP_DURATION = 0.15f;
-
     public MapRenderer(GameModel model) {
         this.model = model;
     }
 
+    private static int waterPercentToColumn(int percent, int numFrames) {
+        if (percent < 0) {
+            return 0;
+        }
+        if (percent >= 100) {
+            return numFrames - 1;
+        }
+        return (percent * numFrames) / 100;
+    }
+
     public void draw(Graphics2D g) {
         var map = model.getGameMap();
-        if (gridWidth == 0) computeMapBounds(map);
+        if (gridWidth == 0) {
+            computeMapBounds(map);
+        }
         computeLayout();
 
         // 1. Draw sand on all full tiles covering the screen, perfectly centered
@@ -81,10 +101,18 @@ public class MapRenderer {
         for (Element e : map.getElements()) {
             hasElements = true;
             int x = e.getX(), y = e.getY();
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
+            if (x < minX) {
+                minX = x;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
         }
 
         if (!hasElements || maxX < minX || maxY < minY) {
@@ -110,7 +138,9 @@ public class MapRenderer {
 
         // Tile size from vertical constraint
         tileSize = vh / totalAreaHeight;
-        if (tileSize < 8) tileSize = 8;
+        if (tileSize < 8) {
+            tileSize = 8;
+        }
 
         // Center the total area within the screen
         int totalW = tileSize * totalAreaWidth;
@@ -133,11 +163,13 @@ public class MapRenderer {
         double scaleY = (double) panelH / bufH;
         double scale = Math.min(scaleX, scaleY);
         int scaledTile = (int) (tileSize * scale);
-        if (scaledTile < 1) scaledTile = 1;
+        if (scaledTile < 1) {
+            scaledTile = 1;
+        }
 
         // Letterbox offset (where the virtual buffer starts on the screen)
-        int offsetXScreen = (panelW - (int)(bufW * scale)) / 2;
-        int offsetYScreen = (panelH - (int)(bufH * scale)) / 2;
+        int offsetXScreen = (panelW - (int) (bufW * scale)) / 2;
+        int offsetYScreen = (panelH - (int) (bufH * scale)) / 2;
 
         // Calculate starting positions aligned with the virtual buffer's tiling grid
         int startX = offsetXScreen % scaledTile;
@@ -228,7 +260,9 @@ public class MapRenderer {
                     dirs.add(new Point(dx, dy));
                 }
             }
-            if (dirs.isEmpty()) continue;
+            if (dirs.isEmpty()) {
+                continue;
+            }
 
             boolean isCorner;
             double baseAngle;
@@ -260,7 +294,9 @@ public class MapRenderer {
             var sheet = pipe.isBroken() ? brokenSheet : normalSheet;
             int row = isCorner ? 1 : 0;
             var sprite = pipe.isBroken() ? sheet.getSprite(0, row) : sheet.getSprite(col, row);
-            if (sprite == null) continue;
+            if (sprite == null) {
+                continue;
+            }
 
             var center = getCellCenter(pipe.getX(), pipe.getY());
             sprite.drawCentered(g, center.x, center.y, tileSize, baseAngle);
@@ -288,7 +324,9 @@ public class MapRenderer {
             int percent = (pump.getStoredWater() * 100) / GameConfig.PUMP_TANK_CAPACITY;
             int col = waterPercentToColumn(percent, 5);
             Sprite baseSprite = pumpSheet.getSprite(col, 0);
-            if (baseSprite == null) continue;
+            if (baseSprite == null) {
+                continue;
+            }
 
             Point center = getCellCenter(pump.getX(), pump.getY());
             baseSprite.drawCentered(g, center.x, center.y, tileSize, 0);
@@ -310,7 +348,9 @@ public class MapRenderer {
             int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
             int col = waterPercentToColumn(percent, WATER_LEVEL_FRAMES);
             Sprite sprite = cisternSheet.getSprite(col, 0);
-            if (sprite == null) continue;
+            if (sprite == null) {
+                continue;
+            }
 
             Point center = getCellCenter(cistern.getX(), cistern.getY());
             sprite.drawCentered(g, center.x, center.y, tileSize, 0);
@@ -360,7 +400,9 @@ public class MapRenderer {
 
     private void drawCurrentPlayer(Graphics2D g) {
         Player current = animating ? animatingPlayer : model.getTurnManager().getCurrentPlayer();
-        if (current == null) return;
+        if (current == null) {
+            return;
+        }
 
         SpriteManager sm = SpriteManager.getInstance();
         boolean isSaboteur = model.getSaboteursTeam().getPlayers().contains(current);
@@ -381,12 +423,14 @@ public class MapRenderer {
             drawCenter = new Point(lerpX, lerpY);
         } else {
             Element position = current.getCurrentPosition();
-            if (position == null) return;
+            if (position == null) {
+                return;
+            }
             drawCenter = getCellCenter(position.getX(), position.getY());
         }
 
         // Scale the player sprite
-        int playerDrawSize = (int)(tileSize * PLAYER_SCALE);
+        int playerDrawSize = (int) (tileSize * PLAYER_SCALE);
 
         if (sprite != null) {
             sprite.drawCentered(g, drawCenter.x, drawCenter.y, playerDrawSize, 0);
@@ -399,8 +443,8 @@ public class MapRenderer {
         int arrowW = playerDrawSize / 4;
         int arrowH = playerDrawSize / 4;
 
-        int[] xPoints = { tipX, tipX + arrowW, tipX - arrowW };
-        int[] yPoints = { tipY, tipY - arrowH, tipY - arrowH };
+        int[] xPoints = {tipX, tipX + arrowW, tipX - arrowW};
+        int[] yPoints = {tipY, tipY - arrowH, tipY - arrowH};
 
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(new Color(255, 220, 0));
@@ -420,28 +464,38 @@ public class MapRenderer {
         Team saboteurs = model.getSaboteursTeam();
 
         // Scale the player sprite
-        int playerDrawSize = (int)(tileSize * PLAYER_SCALE);
+        int playerDrawSize = (int) (tileSize * PLAYER_SCALE);
 
         for (Player player : saboteurs.getPlayers()) {
-            if (animating && player.equals(current)) continue;
+            if (animating && player.equals(current)) {
+                continue;
+            }
             Element position = player.getCurrentPosition();
-            if (position == null) continue;
+            if (position == null) {
+                continue;
+            }
             Point center = getCellCenter(position.getX(), position.getY());
             spriteSaboteur.drawCentered(g, center.x, center.y, playerDrawSize, 0);
         }
 
         Team plumbers = model.getPlumbersTeam();
         for (Player player : plumbers.getPlayers()) {
-            if (animating && player.equals(current)) continue;
+            if (animating && player.equals(current)) {
+                continue;
+            }
             Element position = player.getCurrentPosition();
-            if (position == null) continue;
+            if (position == null) {
+                continue;
+            }
             Point center = getCellCenter(position.getX(), position.getY());
             spritePlumber.drawCentered(g, center.x, center.y, playerDrawSize, 0);
         }
     }
 
     public boolean mousePressed(MouseEvent e) {
-        if (animating) return true;
+        if (animating) {
+            return true;
+        }
 
         Player player = model.getTurnManager().getCurrentPlayer();
         for (ClickableElement ce : clickableElements) {
@@ -449,7 +503,9 @@ public class MapRenderer {
                 List<Element> path = model.getGameMap().buildPathToDestination(
                     player.getCurrentPosition(), ce.element());
 
-                if (path.size() <= 1) return true;
+                if (path.size() <= 1) {
+                    return true;
+                }
 
                 for (Element el : path) {
                     el.lockElement(player);
@@ -466,41 +522,54 @@ public class MapRenderer {
         return false;
     }
 
-    private static int waterPercentToColumn(int percent, int numFrames) {
-        if (percent < 0) return 0;
-        if (percent >= 100) return numFrames - 1;
-        return (percent * numFrames) / 100;
-    }
-
     // ---------- Geometry helpers ----------
     private double directionToAngle(Point dir) {
-        if (dir.x == 0 && (dir.y == -1 || dir.y == 1)) return 0;
-        if ((dir.x == 1 || dir.x == -1) && dir.y == 0) return 90;
+        if (dir.x == 0 && (dir.y == -1 || dir.y == 1)) {
+            return 0;
+        }
+        if ((dir.x == 1 || dir.x == -1) && dir.y == 0) {
+            return 90;
+        }
         return 0;
     }
 
     private double cornerAngle(Point d1, Point d2) {
         boolean hasNorth = d1.y == -1 || d2.y == -1;
         boolean hasSouth = d1.y == 1 || d2.y == 1;
-        boolean hasEast  = d1.x == 1 || d2.x == 1;
-        boolean hasWest  = d1.x == -1 || d2.x == -1;
+        boolean hasEast = d1.x == 1 || d2.x == 1;
+        boolean hasWest = d1.x == -1 || d2.x == -1;
 
-        if (hasNorth && hasEast) return 0;
-        if (hasEast  && hasSouth) return 90;
-        if (hasSouth && hasWest) return 180;
-        if (hasWest  && hasNorth) return 270;
+        if (hasNorth && hasEast) {
+            return 0;
+        }
+        if (hasEast && hasSouth) {
+            return 90;
+        }
+        if (hasSouth && hasWest) {
+            return 180;
+        }
+        if (hasWest && hasNorth) {
+            return 270;
+        }
         return 0;
     }
 
-    public int getTileX(int gridX) { return offsetX + gridX * tileSize; }
-    public int getTileY(int gridY) { return offsetY + gridY * tileSize; }
+    public int getTileX(int gridX) {
+        return offsetX + gridX * tileSize;
+    }
+
+    public int getTileY(int gridY) {
+        return offsetY + gridY * tileSize;
+    }
 
     private Point getCellCenter(int gridX, int gridY) {
         return new Point(getTileX(gridX) + tileSize / 2, getTileY(gridY) + tileSize / 2);
     }
 
     public Point screenToGrid(int screenX, int screenY) {
-        if (screenX < offsetX || screenY < offsetY) return null;
+        if (screenX < offsetX || screenY < offsetY) {
+            return null;
+        }
         int cellX = (screenX - offsetX) / tileSize;
         int cellY = (screenY - offsetY) / tileSize;
         if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) {
@@ -519,5 +588,8 @@ public class MapRenderer {
             Rectangle bounds = getCellBounds(e.getX(), e.getY());
             clickableElements.add(new ClickableElement(e, bounds));
         }
+    }
+
+    private record ClickableElement(Element element, Rectangle bounds) {
     }
 }

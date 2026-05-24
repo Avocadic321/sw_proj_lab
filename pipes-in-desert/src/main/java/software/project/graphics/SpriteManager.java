@@ -1,19 +1,18 @@
 package software.project.graphics;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
 public class SpriteManager {
     private static SpriteManager instance;
-    private Map<String, Sprite> sprites = new HashMap<>();
-    private Map<String, SpriteSheet> spriteSheets = new HashMap<>();
+    private final Map<String, Sprite> sprites = new HashMap<>();
+    private final Map<String, SpriteSheet> spriteSheets = new HashMap<>();
 
-    private boolean showWarnings = true;
+    private final boolean showWarnings = true;
 
     private SpriteManager() {
     }
@@ -68,7 +67,7 @@ public class SpriteManager {
                 return;
             }
             System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x"
-                    + sheetImage.getHeight());
+                                   + sheetImage.getHeight());
             SpriteSheet sheet = new SpriteSheet(sheetImage, frameWidth, frameHeight);
             spriteSheets.put(key, sheet);
         } catch (IOException e) {

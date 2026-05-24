@@ -1,5 +1,11 @@
 package software.project.ui.components;
 
+import software.project.audio.AudioPlayer;
+import software.project.graphics.Sprite;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -7,39 +13,17 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 
-import software.project.audio.AudioPlayer;
-import software.project.graphics.Sprite;
-import software.project.graphics.SpriteManager;
-import software.project.graphics.SpriteSheet;
-import software.project.graphics.SpriteSheets;
-
 public class MenuButton extends Component {
     public static final int BASE_WIDTH = 140;
     public static final int BASE_HEIGHT = 56;
-
-    private static float globalScale = 1.0f;
     private static final boolean DEBUG = false;
-
-    public static void setGlobalScale(float scale) {
-        globalScale = scale;
-    }
-
-    public static int getScaledWidth() {
-        return (int) (BASE_WIDTH * globalScale);
-    }
-
-    public static int getScaledHeight() {
-        return (int) (BASE_HEIGHT * globalScale);
-    }
-
+    private static float globalScale = 1.0f;
     private Sprite currentSprite;
     private Sprite normal;
     private Sprite hover;
     private Sprite pressed;
-
     private boolean mouseOver;
     private boolean mousePressed;
-
     private Runnable action;
 
     // x, y are centre position
@@ -55,6 +39,18 @@ public class MenuButton extends Component {
         this.hover = sheet.getSprite(1, rowIndex);
         this.pressed = sheet.getSprite(2, rowIndex);
         this.currentSprite = normal;
+    }
+
+    public static void setGlobalScale(float scale) {
+        globalScale = scale;
+    }
+
+    public static int getScaledWidth() {
+        return (int) (BASE_WIDTH * globalScale);
+    }
+
+    public static int getScaledHeight() {
+        return (int) (BASE_HEIGHT * globalScale);
     }
 
     public void setAction(Runnable action) {

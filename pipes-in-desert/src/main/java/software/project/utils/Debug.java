@@ -3,12 +3,11 @@ package software.project.utils;
 import java.io.PrintStream;
 
 public final class Debug {
+    public static final boolean ENABLED = false;
+    private static PrintStream output = System.out;
+
     private Debug() {
     }
-
-    public static final boolean ENABLED = false;
-
-    private static PrintStream output = System.out;
 
     public static void setOutput(PrintStream stream) {
         if (stream != null) {
