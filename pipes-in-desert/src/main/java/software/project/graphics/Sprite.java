@@ -5,9 +5,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class Sprite {
-    private BufferedImage image;
     private final int width;
     private final int height;
+    private final BufferedImage image;
 
     public Sprite(BufferedImage image) {
         this.image = image;
@@ -35,7 +35,14 @@ public class Sprite {
     }
 
     // Draw scaled and rotated, centred at (centerX, centerY)
-    public void drawCentered(Graphics2D g, int centerX, int centerY, int targetWidth, int targetHeight, double angleDegrees) {
+    public void drawCentered(
+        Graphics2D g,
+        int centerX,
+        int centerY,
+        int targetWidth,
+        int targetHeight,
+        double angleDegrees
+    ) {
         AffineTransform original = g.getTransform();
         g.translate(centerX, centerY);
         g.rotate(Math.toRadians(angleDegrees));
@@ -44,7 +51,13 @@ public class Sprite {
     }
 
     // Convenience for square scaling
-    public void drawCentered(Graphics2D g, int centerX, int centerY, int targetSize, double angleDegrees) {
+    public void drawCentered(
+        Graphics2D g,
+        int centerX,
+        int centerY,
+        int targetSize,
+        double angleDegrees
+    ) {
         drawCentered(g, centerX, centerY, targetSize, targetSize, angleDegrees);
     }
 

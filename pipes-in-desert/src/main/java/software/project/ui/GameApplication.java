@@ -1,15 +1,15 @@
 package software.project.ui;
 
+import software.project.audio.AudioPlayer;
+import software.project.graphics.ResourceManager;
+import software.project.ui.layers.Layer;
+import software.project.ui.layers.MainMenuLayer;
+
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-
-import software.project.audio.AudioPlayer;
-import software.project.graphics.ResourceManager;
-import software.project.ui.layers.Layer;
-import software.project.ui.layers.MainMenuLayer;
 
 public class GameApplication implements ScreenManager.ResolutionListener {
     private static final int TARGET_UPS = 60;
@@ -52,8 +52,9 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     }
 
     public void popLayer() {
-        if (layerStack.isEmpty())
+        if (layerStack.isEmpty()) {
             return;
+        }
         Layer top = layerStack.removeLast();
         top.onExit();
         if (!layerStack.isEmpty()) {
@@ -70,8 +71,9 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     }
 
     public void clearLayers() {
-        while (!layerStack.isEmpty())
+        while (!layerStack.isEmpty()) {
             popLayer();
+        }
     }
 
     @Override
@@ -147,60 +149,72 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     public void keyPressed(KeyEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.keyPressed(e))
+            if (layer.keyPressed(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 
     public void keyReleased(KeyEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.keyReleased(e))
+            if (layer.keyReleased(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 
     public void mousePressed(MouseEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.mousePressed(e))
+            if (layer.mousePressed(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 
     public void mouseReleased(MouseEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.mouseReleased(e))
+            if (layer.mouseReleased(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 
     public void mouseMoved(MouseEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.mouseMoved(e))
+            if (layer.mouseMoved(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 
     public void mouseDragged(MouseEvent e) {
         for (int i = layerStack.size() - 1; i >= 0; i--) {
             Layer layer = layerStack.get(i);
-            if (layer.mouseDragged(e))
+            if (layer.mouseDragged(e)) {
                 break;
-            if (layer.blocksInput())
+            }
+            if (layer.blocksInput()) {
                 break;
+            }
         }
     }
 

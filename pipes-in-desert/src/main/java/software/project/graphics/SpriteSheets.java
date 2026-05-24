@@ -3,14 +3,17 @@ package software.project.graphics;
 import software.project.ui.components.MenuButton;
 
 public enum SpriteSheets {
-    MENU_ANIMATION("menu_animation", "/ui/menu_background_atlas.jpg", 1280, 720),
-    BUTTONS("buttons", "/ui/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT),
+    MENU_ANIMATION("menu_animation", "/ui/background/menu_background_atlas.jpg", 1280, 720),
+    BUTTONS("buttons", "/ui/buttons/button_atlas.png", MenuButton.BASE_WIDTH, MenuButton.BASE_HEIGHT),
     PIPE_NORMAL("pipe_normal", "/map/pipe_normal.png", 64, 64),
     PIPE_BROKEN("pipe_broken", "/map/pipe_broken.png", 64, 64),
     CISTERN("cistern", "/map/cistern.png", 32, 32),
     PUMP("pump", "/map/pump_atlas.png", 64, 64),
 
-    MAP_BORDER("map_border", "/map/map_border.png", 32, 32);
+    MAP_BORDER("map_border", "/map/map_border.png", 32, 32),
+
+    FONT_MONO("font_mono", "/ui/fonts/bitmap/font_mono.png", 12, 12),
+    FONT_MAIN("font_main", "/ui/fonts/bitmap/font_main.png", 16, 16);
 
     private final String key;
     private final String path;

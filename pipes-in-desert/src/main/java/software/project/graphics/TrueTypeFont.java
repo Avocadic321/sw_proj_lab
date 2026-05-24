@@ -14,7 +14,7 @@ public class TrueTypeFont {
 
     /**
      * Loads a TTF file from the classpath.
-     * 
+     *
      * @param path resource path, e.g. "/fonts/Roboto.ttf"
      * @param size initial font size in pixels
      */
@@ -31,20 +31,25 @@ public class TrueTypeFont {
         }
     }
 
-    /** Changes the font size. */
+    /**
+     * Changes the font size.
+     */
     public void setSize(float size) {
-        if (font != null)
+        if (font != null) {
             font = font.deriveFont(size);
+        }
     }
 
-    /** Returns the underlying AWT Font. */
+    /**
+     * Returns the underlying AWT Font.
+     */
     public Font getFont() {
         return font;
     }
 
     /**
      * Draws text at (x, y) with the given colour.
-     * 
+     *
      * @param g      graphics context
      * @param text   string to draw
      * @param x      left x coordinate
@@ -52,8 +57,9 @@ public class TrueTypeFont {
      * @param colour colour (use g.setColor before calling if you prefer)
      */
     public void draw(Graphics2D g, String text, int x, int y, java.awt.Color colour) {
-        if (font == null)
+        if (font == null) {
             return;
+        }
         g.setFont(font);
         g.setColor(colour);
         g.drawString(text, x, y);
@@ -61,7 +67,7 @@ public class TrueTypeFont {
 
     /**
      * Draws text centred horizontally at the given y.
-     * 
+     *
      * @param g       graphics context
      * @param text    string
      * @param centerX horizontal centre
@@ -69,8 +75,9 @@ public class TrueTypeFont {
      * @param colour  colour
      */
     public void drawCentered(Graphics2D g, String text, int centerX, int y, java.awt.Color colour) {
-        if (font == null)
+        if (font == null) {
             return;
+        }
         g.setFont(font);
         int width = g.getFontMetrics().stringWidth(text);
         g.setColor(colour);

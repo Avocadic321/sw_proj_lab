@@ -1,9 +1,9 @@
 package software.project.graphics;
 
 public enum Sprites {
-    MENU_BACKGROUND("menu_background", "/ui/menu_background.png"),
-    MENU_PANEL("menu_panel", "/ui/menu_panel.png"),
-    MENU_TITLE("menu_title", "/ui/menu_title_two.png"),
+    MENU_BACKGROUND("menu_background", "/ui/background/menu_background.png"),
+    MENU_PANEL("menu_panel", "/ui/panels/menu_panel.png"),
+    MENU_TITLE("menu_title", "/ui/titles/menu_title_two.png"),
 
     PUMP("pump", "/map/pump.png"),
     PUMP_FAN("pump_fan", "/map/pump_fan.png"),
@@ -14,7 +14,10 @@ public enum Sprites {
     PLUMBER("plumber", "/entity/plumber.png"),
     SABOTEUR("saboteur", "/entity/saboteur.png"),
 
-    GRASS("grass", "/map/grass.png"),;
+    GRASS("grass", "/map/grass.png"),
+
+    PAPER_BANNER("paper_banner", "/ui/banners/paper_banner.png"),
+    TIMER_BANNER("timer_banner", "/ui/banners/timer_banner.png");
 
     private final String key;
     private final String path;

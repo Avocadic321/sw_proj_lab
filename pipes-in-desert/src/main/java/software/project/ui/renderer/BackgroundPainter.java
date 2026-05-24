@@ -1,6 +1,6 @@
 package software.project.ui.renderer;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 
 @FunctionalInterface
 public interface BackgroundPainter {

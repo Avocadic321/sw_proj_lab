@@ -1,12 +1,9 @@
 package software.project.ui.layers;
 
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-
 import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Pipe;
 import software.project.map.interfaces.IRepairable;
 import software.project.models.Player;
@@ -15,7 +12,10 @@ import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
-import software.project.core.GameState;
+
+import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 public class PlayingLayer extends Layer {
     private final GameApplication app;
@@ -72,20 +72,21 @@ public class PlayingLayer extends Layer {
             }
             return true;
         }
-        if (e.getKeyCode() == KeyEvent.VK_F){
+        if (e.getKeyCode() == KeyEvent.VK_F) {
             Player player = model.getTurnManager().getCurrentPlayer();
-            if(player instanceof Plumber plumber && player.getCurrentPosition() instanceof IRepairable repairable) {
+            if (player instanceof Plumber plumber && player.getCurrentPosition() instanceof IRepairable repairable) {
                 // TODO: only do effects if action is done
                 plumber.repair(repairable);
                 AudioPlayer.getInstance().playEffect("pipe_repair");
             }
-            if(player instanceof Saboteur saboteur && player.getCurrentPosition() instanceof Pipe pipe) {
+            if (player instanceof Saboteur saboteur && player.getCurrentPosition() instanceof Pipe pipe) {
                 saboteur.sabotagePipe(pipe);
                 AudioPlayer.getInstance().playEffect("pipe_break");
             }
         }
         return false;
     }
+
     @Override
     public boolean mousePressed(MouseEvent e) {
         renderer.mousePressed(e);

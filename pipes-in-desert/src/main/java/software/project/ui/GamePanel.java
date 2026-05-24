@@ -1,11 +1,8 @@
 package software.project.ui;
 
-import software.project.graphics.Sprite;
-import software.project.graphics.SpriteManager;
-import software.project.graphics.SpriteSheets;
-import software.project.graphics.Sprites;
 import software.project.ui.renderer.BackgroundPainter;
 
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -17,15 +14,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
-import javax.swing.JPanel;
-
 public class GamePanel extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
+    BackgroundPainter backgroundPainter;
     private BufferedImage virtualBuffer;
     private int lastBufferW = -1;
     private int lastBufferH = -1;
     private GameApplication app;
-
-    BackgroundPainter backgroundPainter;
 
     public GamePanel() {
         setFocusable(true);
@@ -71,8 +65,9 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
         Graphics2D g = virtualBuffer.createGraphics();
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, virtualBuffer.getWidth(), virtualBuffer.getHeight());
-        if (app != null)
+        if (app != null) {
             app.render(g);
+        }
         g.dispose();
     }
 
@@ -118,29 +113,34 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
             int virtualX = (int) ((screenX - offsetX) / scale);
             int virtualY = (int) ((screenY - offsetY) / scale);
             return new Point(
-                    Math.max(0, Math.min(virtualX, bufW - 1)),
-                    Math.max(0, Math.min(virtualY, bufH - 1)));
+                Math.max(0, Math.min(virtualX, bufW - 1)),
+                Math.max(0, Math.min(virtualY, bufH - 1))
+            );
         }
     }
 
     private MouseEvent transformMouseEvent(MouseEvent e) {
         Point p = transformScreenToVirtual(e.getX(), e.getY());
-        return new MouseEvent(e.getComponent(), e.getID(), e.getWhen(),
-                e.getModifiersEx(), p.x, p.y, e.getClickCount(),
-                e.isPopupTrigger(), e.getButton());
+        return new MouseEvent(
+            e.getComponent(), e.getID(), e.getWhen(),
+            e.getModifiersEx(), p.x, p.y, e.getClickCount(),
+            e.isPopupTrigger(), e.getButton()
+        );
     }
 
     // Input forwarding
     @Override
     public void keyPressed(KeyEvent e) {
-        if (app != null)
+        if (app != null) {
             app.keyPressed(e);
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (app != null)
+        if (app != null) {
             app.keyReleased(e);
+        }
     }
 
     @Override
@@ -149,26 +149,30 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (app != null)
+        if (app != null) {
             app.mousePressed(transformMouseEvent(e));
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (app != null)
+        if (app != null) {
             app.mouseReleased(transformMouseEvent(e));
+        }
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (app != null)
+        if (app != null) {
             app.mouseMoved(transformMouseEvent(e));
+        }
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (app != null)
+        if (app != null) {
             app.mouseDragged(transformMouseEvent(e));
+        }
     }
 
     @Override

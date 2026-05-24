@@ -37,7 +37,9 @@ public abstract class Layer {
     public void render(Graphics2D g) {
     }
 
-    /** Called when the window is resized (virtual resolution changed). */
+    /**
+     * Called when the window is resized (virtual resolution changed).
+     */
     public void onResolutionChanged(int newWidth, int newHeight) {
     }
 

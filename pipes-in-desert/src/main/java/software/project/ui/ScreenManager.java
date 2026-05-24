@@ -1,5 +1,6 @@
 package software.project.ui;
 
+import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -8,41 +9,28 @@ import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 public class ScreenManager {
-    private static ScreenManager instance;
-    private JFrame frame;
-    private GamePanel panel;
-
     public static final int GAME_WIDTH = 1280;
     public static final int GAME_HEIGHT = 800;
-
-    // Virtual resolution (game coordinates)
-    private int virtualWidth = GAME_WIDTH;
-    private int virtualHeight = GAME_HEIGHT;
-
-    // Scaling mode (LETTERBOX = black bars, STRETCH = fill)
-    public enum ScalingMode {
-        LETTERBOX, STRETCH
-    }
-
-    private ScalingMode scalingMode = ScalingMode.LETTERBOX;
-
+    private static ScreenManager instance;
     // Listeners for resolution changes
     private final List<ResolutionListener> listeners = new ArrayList<>();
-
-    public interface ResolutionListener {
-        void onResolutionChanged(int newVirtualWidth, int newVirtualHeight);
-    }
+    // Virtual resolution (game coordinates)
+    private final int virtualWidth = GAME_WIDTH;
+    private final int virtualHeight = GAME_HEIGHT;
+    private JFrame frame;
+    private GamePanel panel;
+    private ScalingMode scalingMode = ScalingMode.LETTERBOX;
 
     private ScreenManager() {
     }
 
     public static ScreenManager getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new ScreenManager();
+        }
         return instance;
     }
 
@@ -82,18 +70,19 @@ public class ScreenManager {
         listeners.remove(listener);
     }
 
+    public ScalingMode getScalingMode() {
+        return scalingMode;
+    }
+
     public void setScalingMode(ScalingMode mode) {
         this.scalingMode = mode;
         updateVirtualResolution();
         panel.repaint();
     }
 
-    public ScalingMode getScalingMode() {
-        return scalingMode;
-    }
-
     public void toggleFullscreen() {
-        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                                   .getDefaultScreenDevice();
         if (frame.isUndecorated()) {
             device.setFullScreenWindow(null);
             frame.dispose();
@@ -123,5 +112,14 @@ public class ScreenManager {
 
     public int getVirtualHeight() {
         return virtualHeight;
+    }
+
+    // Scaling mode (LETTERBOX = black bars, STRETCH = fill)
+    public enum ScalingMode {
+        LETTERBOX, STRETCH
+    }
+
+    public interface ResolutionListener {
+        void onResolutionChanged(int newVirtualWidth, int newVirtualHeight);
     }
 }
