@@ -7,7 +7,9 @@ public enum Sprites {
 
     PUMP("pump", "/map/pump.png"),
     PUMP_FAN("pump_fan", "/map/pump_fan.png"),
-    SPRING("spring", "/map/spring.png"),
+
+    SPRING("spring", "/map/spring3.png"),
+    SPRING_PIPE("spring_pipe", "/map/spring_pipe.png"),
 
     PLUMBER("plumber", "/entity/plumber.png"),
     SABOTEUR("saboteur", "/entity/saboteur.png"),

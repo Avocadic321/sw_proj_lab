@@ -20,7 +20,7 @@ public class MapRenderer {
 
     // Border sizes (in tiles)
     private static final int TOP_BORDER_TILES = 1;
-    private static final int BOTTOM_BORDER_TILES = 0;
+    private static final int BOTTOM_BORDER_TILES = 1;
     private static final int LEFT_BORDER_TILES = 1;
     private static final int RIGHT_BORDER_TILES = 1;
 
@@ -63,10 +63,11 @@ public class MapRenderer {
         drawGridLines(g);
 
         // 3. Draw game elements
+        drawSprings(g, map);
         drawPipes(g, map);
         drawPumps(g, map);
         drawCisterns(g, map);
-        drawSprings(g, map);
+
         drawPlayers(g);
         drawCurrentPlayer(g);
         rebuildClickTargets(map);
@@ -276,6 +277,10 @@ public class MapRenderer {
             return;
         }
 
+        // Tweak these values to center the fan blades manually (can be negative)
+        int fanOffsetX = 0;
+        int fanOffsetY = 0;
+
         final double MIN_SPEED_DEG_PER_SEC = 30.0;
         final double MAX_SPEED_DEG_PER_SEC = 180.0;
 
@@ -291,7 +296,9 @@ public class MapRenderer {
             double fanSpeed = MIN_SPEED_DEG_PER_SEC + (percent / 100.0) * (MAX_SPEED_DEG_PER_SEC - MIN_SPEED_DEG_PER_SEC);
             double startOffset = ((pump.getX() * 31) + (pump.getY() * 97)) % 360;
             double angle = (System.currentTimeMillis() * (fanSpeed / 1000.0) + startOffset) % 360;
-            fanSprite.drawCentered(g, center.x, center.y, tileSize, angle);
+
+            // Apply manual offset to center the fan
+            fanSprite.drawCentered(g, center.x + fanOffsetX, center.y + fanOffsetY, tileSize, angle);
         }
     }
 
@@ -312,11 +319,22 @@ public class MapRenderer {
 
     private void drawSprings(Graphics2D g, GameMap map) {
         SpriteManager sm = SpriteManager.getInstance();
-        Sprite spriteSprite = sm.getSprite(Sprites.SPRING);
+        Sprite springSprite = sm.getSprite(Sprites.SPRING);
+        Sprite springPipe = sm.getSprite(Sprites.SPRING_PIPE);
+
+        // 3x3 tile size
+        int drawSize = (int) (tileSize * 2.5f);
 
         for (Spring spring : map.getAllSprings()) {
             Point center = getCellCenter(spring.getX(), spring.getY());
-            spriteSprite.drawCentered(g, center.x, center.y, tileSize, 0);
+
+            // Draw the 3x3 spring sprite – this will cover the spring tile and all 8 adjacent tiles
+            springSprite.drawCentered(g, center.x, center.y, drawSize, drawSize, 0);
+
+            // Draw the pipe connection (usually 1x1) – draw centered at the spring's tile
+            if (springPipe != null) {
+                springPipe.drawCentered(g, center.x, center.y, tileSize, 0);
+            }
         }
     }
 
