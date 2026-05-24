@@ -70,13 +70,14 @@ public class MainMenuLayer extends Layer {
         SpriteSheet animationSheet = sm.getSpriteSheet(SpriteSheets.MENU_ANIMATION);
 
         if (animationSheet != null && animationSheet.isValid()) {
-            Animation anim = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
-            if (anim.isValid()) {
-                anim.start();
-                int vw = ScreenManager.getInstance().getVirtualWidth();
-                int vh = ScreenManager.getInstance().getVirtualHeight();
-                backgroundComponent = new AnimatedComponent(0, 0, vw, vh, anim);
-            }
+            int vw = ScreenManager.getInstance().getVirtualWidth();
+            int vh = ScreenManager.getInstance().getVirtualHeight();
+            backgroundComponent = new AnimatedComponent(
+                0, 0, vw, vh,
+                animationSheet,
+                ANIMATION_FRAME_DELAY_MS,
+                true // loop
+            );
         }
     }
 

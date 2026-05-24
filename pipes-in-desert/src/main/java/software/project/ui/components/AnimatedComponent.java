@@ -3,6 +3,7 @@ package software.project.ui.components;
 import java.awt.Graphics2D;
 
 import software.project.graphics.Animation;
+import software.project.graphics.SpriteSheet;
 
 public class AnimatedComponent extends Component {
     private Animation animation;
@@ -15,15 +16,33 @@ public class AnimatedComponent extends Component {
         }
     }
 
-    public void setAnimation(Animation animation) {
-        this.animation = animation;
-        if (this.animation != null && !this.animation.isPlaying()) {
-            this.animation.start();
+    public AnimatedComponent(
+        int x,
+        int y,
+        int width,
+        int height,
+        SpriteSheet sheet,
+        int frameDelayMs,
+        boolean loop
+    ) {
+        super(x, y, width, height);
+        if (sheet != null && sheet.isValid()) {
+            this.animation = new Animation(sheet, frameDelayMs, loop);
+            if (this.animation.isValid() && !this.animation.isPlaying()) {
+                this.animation.start();
+            }
         }
     }
 
     public Animation getAnimation() {
         return animation;
+    }
+
+    public void setAnimation(Animation animation) {
+        this.animation = animation;
+        if (this.animation != null && !this.animation.isPlaying()) {
+            this.animation.start();
+        }
     }
 
     @Override
