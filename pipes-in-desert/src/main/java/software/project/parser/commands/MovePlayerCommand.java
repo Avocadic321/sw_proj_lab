@@ -4,7 +4,7 @@ import software.project.core.GameModel;
 import software.project.map.Element;
 import software.project.models.Player;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Moves a player to an adjacent element on the map.

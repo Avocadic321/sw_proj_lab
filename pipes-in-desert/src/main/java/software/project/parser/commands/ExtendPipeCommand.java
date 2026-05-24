@@ -4,7 +4,7 @@ import software.project.core.GameModel;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Extends the pipe system by the current plumber player.

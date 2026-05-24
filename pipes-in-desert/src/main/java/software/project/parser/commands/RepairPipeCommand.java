@@ -5,7 +5,7 @@ import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Repairs a broken pipe at the player's current location.

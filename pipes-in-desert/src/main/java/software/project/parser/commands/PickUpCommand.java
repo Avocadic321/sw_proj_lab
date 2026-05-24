@@ -7,7 +7,7 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Picks up a component (pipe or pump) from the ground or from a cistern.

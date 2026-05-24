@@ -6,7 +6,7 @@ import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Inserts a pump that a plumber is carrying into a pipe.
