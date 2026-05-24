@@ -27,7 +27,8 @@ public class BitmapFont {
 
     private Sprite getCharSprite(char c) {
         return charCache.computeIfAbsent(c, ch -> {
-            int index = mapping.indexOf(ch);
+            char lower = Character.toLowerCase(ch);
+            int index = mapping.indexOf(lower);
             if (index < 0) return null;
             int col = index % sheet.getCols();
             int row = index / sheet.getCols();

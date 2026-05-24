@@ -6,6 +6,7 @@ import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
 import software.project.graphics.Sprite;
+import software.project.ui.ScreenManager;
 
 public class Banner extends Component {
 
@@ -13,84 +14,116 @@ public class Banner extends Component {
     private BitmapFont font;
     private String text;
     private float textScale;
+    private float spriteScale;
+
+    // For centering with offsets
+    private boolean centeredHorizontally = false;
+    private boolean centeredVertically = false;
+    private int centerOffsetX = 0;
+    private int centerOffsetY = 0;
 
     /**
-     * Creates a banner with centered text using a specific font.
-     *
-     * @param x         x position of the banner
-     * @param y         y position of the banner
-     * @param width     width of the banner
-     * @param height    height of the banner
-     * @param sprite    background sprite
-     * @param fontKey   which font to use (e.g., BitmapFonts.FONT_MONO)
-     * @param text      initial text content
-     * @param textScale scale factor for the text size
+     * Creates a banner with centered text. Initial position is (0,0).
+     * Use centering methods or setPosition to place it.
      */
-    public Banner(
-        int x,
-        int y,
-        int width,
-        int height,
-        Sprite sprite,
-        BitmapFonts fontKey,
-        String text,
-        float textScale
-    ) {
-        super(x, y, width, height);
-        this.background = new ImageComponent(x, y, width, height, sprite);
+    public Banner(Sprite sprite, float spriteScale, BitmapFonts fontKey, String text, float textScale) {
+        super(0, 0, (int)(sprite.getWidth() * spriteScale), (int)(sprite.getHeight() * spriteScale));
+        this.background = new ImageComponent(0, 0, width, height, sprite);
+        this.spriteScale = spriteScale;
         this.font = ResourceManager.getInstance().getFont(fontKey);
         this.text = text;
         this.textScale = textScale;
     }
 
+    public Banner(Sprite sprite, float spriteScale, String text, float textScale) {
+        this(sprite, spriteScale, BitmapFonts.FONT_MONO, text, textScale);
+    }
+
+    // ----- Centering methods (use these instead of manual x,y) -----
+
     /**
-     * Creates a banner with centered text using the default MONO font.
-     *
-     * @param x         x position of the banner
-     * @param y         y position of the banner
-     * @param width     width of the banner
-     * @param height    height of the banner
-     * @param sprite    background sprite
-     * @param text      initial text content
-     * @param textScale scale factor for the text size
+     * Centers the banner horizontally on the screen, with an optional offset.
+     * Call this again if screen resolution changes (e.g., in onResolutionChanged).
      */
-    public Banner(
-        int x,
-        int y,
-        int width,
-        int height,
-        Sprite sprite,
-        String text,
-        float textScale
-    ) {
-        this(x, y, width, height, sprite, BitmapFonts.FONT_MONO, text, textScale);
+    public void centerHorizontal(int offsetX) {
+        this.centeredHorizontally = true;
+        this.centerOffsetX = offsetX;
+        applyCentering();
     }
 
-    public void setText(String text) {
-        this.text = text;
+    /**
+     * Centers the banner vertically on the screen, with an optional offset.
+     */
+    public void centerVertical(int offsetY) {
+        this.centeredVertically = true;
+        this.centerOffsetY = offsetY;
+        applyCentering();
     }
 
-    public void setTextScale(float scale) {
-        this.textScale = scale;
+    /**
+     * Centers the banner both horizontally and vertically.
+     */
+    public void centerOnScreen(int offsetX, int offsetY) {
+        centerHorizontal(offsetX);
+        centerVertical(offsetY);
     }
 
-    public void setFont(BitmapFonts fontKey) {
-        this.font = ResourceManager.getInstance().getFont(fontKey);
+    /**
+     * Re‑applies the last centering settings (useful after resolution change).
+     * Call this from your layer's onResolutionChanged.
+     */
+    public void recenter() {
+        if (centeredHorizontally || centeredVertically) {
+            applyCentering();
+        }
     }
+
+    private void applyCentering() {
+        int screenW = ScreenManager.getInstance().getVirtualWidth();
+        int screenH = ScreenManager.getInstance().getVirtualHeight();
+
+        if (centeredHorizontally) {
+            x = (screenW - width) / 2 + centerOffsetX;
+        }
+        if (centeredVertically) {
+            y = (screenH - height) / 2 + centerOffsetY;
+        }
+        background.setPosition(x, y);
+    }
+
+    // ----- Manual positioning (overrides centering) -----
+    @Override
+    public void setPosition(int x, int y) {
+        // Disable centering when manually setting position
+        centeredHorizontally = false;
+        centeredVertically = false;
+        super.setPosition(x, y);
+        background.setPosition(x, y);
+    }
+
+    // ----- Text / appearance setters -----
+    public void setText(String text) { this.text = text; }
+    public void setTextScale(float scale) { this.textScale = scale; }
+    public void setFont(BitmapFonts fontKey) { this.font = ResourceManager.getInstance().getFont(fontKey); }
 
     @Override
     public void draw(Graphics2D g) {
         background.draw(g);
-
         if (font != null && text != null) {
-            int centerX = x + width / 2;
-            int centerY = y + height / 2 + (int) (font.getCharHeight() * textScale / 2);
-            font.draw(g, text, centerX, centerY, textScale);
+            int charW = font.getCharWidth();
+            int charH = font.getCharHeight();
+            int scaledCharW = (int)(charW * textScale);
+            int scaledCharH = (int)(charH * textScale);
+            int textWidth = text.length() * scaledCharW;
+            int drawX = x + (width - textWidth) / 2;
+            float verticalAdjustFactor = 0.15f; // your working fix
+            int drawY = y + (height - scaledCharH) / 2 + (int)(scaledCharH * verticalAdjustFactor);
+            font.draw(g, text, drawX, drawY, textScale);
         }
     }
 
     @Override
     public void update() {
-        // No dynamic update needed
+        // Nothing dynamic
     }
 }
