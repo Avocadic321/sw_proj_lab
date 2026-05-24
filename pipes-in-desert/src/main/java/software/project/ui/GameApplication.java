@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import software.project.audio.AudioPlayer;
 import software.project.graphics.ResourceManager;
 import software.project.ui.layers.Layer;
 import software.project.ui.layers.MainMenuLayer;
@@ -32,6 +33,7 @@ public class GameApplication implements ScreenManager.ResolutionListener {
 
         // Start the game loop
         startMainLoop();
+        AudioPlayer.getInstance().playSong("main_theme");
     }
 
     private void initLayers() {

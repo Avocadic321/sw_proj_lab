@@ -54,6 +54,9 @@ public abstract class Element {
      * Used for locking an element during a player movement
      */
     private Player playerLock;
+    public boolean isLocked(Player player) {
+        return player != playerLock;
+    }
 
     public void lockElement(Player player) {
         this.playerLock = player;
