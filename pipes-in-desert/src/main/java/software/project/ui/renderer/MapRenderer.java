@@ -351,6 +351,12 @@ public class MapRenderer {
             if (sprite == null) {
                 continue;
             }
+            if(cistern.getStoredPipe() != null) {
+                // draw the pipe
+            }
+            if(cistern.getStoredPump() != null) {
+                // draw the spinning pump
+            }
 
             Point center = getCellCenter(cistern.getX(), cistern.getY());
             sprite.drawCentered(g, center.x, center.y, tileSize, 0);

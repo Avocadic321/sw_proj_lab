@@ -35,6 +35,10 @@ public class Plumber extends Player {
         return inventory;
     }
 
+    public Plumber(Element startPosition) {
+        this("",startPosition);
+
+    }
     @Override
     public boolean doMainAction() {
         if (getCurrentPosition() instanceof IBreakable breakable && getCurrentPosition() instanceof IRepairable repairable && breakable.isBroken()) {
@@ -45,9 +49,6 @@ public class Plumber extends Player {
 
     }
 
-    public Plumber(Element startPosition) {
-        super(startPosition);
-    }
 
     /**
      * Repairs a broken or damaged element, restoring it to full functionality.
@@ -100,7 +101,7 @@ public class Plumber extends Player {
         }
 
 
-        if (inventory.add(cistern.pickUpPump())) {
+        if (!inventory.add(cistern.pickUpPump())) {
             throw new IllegalStateException("Inventory is full");
     }
     }
@@ -123,7 +124,7 @@ public class Plumber extends Player {
             }
         }
 
-        if (inventory.add(pump)) {
+        if (!inventory.add(pump)) {
             throw new IllegalStateException("Inventory is full");
         }
 
@@ -139,7 +140,7 @@ public class Plumber extends Player {
         if (cistern == null || currentPosition != cistern) {
             throw new IllegalArgumentException("Cistern is null or not at the current position");
         }
-        if (inventory.add(cistern.pickUpPipe())) {
+        if (!inventory.add(cistern.pickUpPipe())) {
             throw new IllegalStateException("Inventory is full");
         }
 
@@ -166,7 +167,7 @@ public class Plumber extends Player {
             end2.disconnect();
         }
 
-        if(inventory.add(pipe)){
+        if(!inventory.add(pipe)){
             throw new IllegalStateException("Inventory is full");
         }
     }

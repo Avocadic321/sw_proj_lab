@@ -4,8 +4,8 @@ import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.core.GameState;
-import software.project.map.Pipe;
-import software.project.map.interfaces.IRepairable;
+import software.project.map.Cistern;
+import software.project.map.Element;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
@@ -53,7 +53,44 @@ public class PlayingLayer extends Layer {
         ScreenManager.getInstance().getPanel().setBackgroundPainter(null);
     }
 
-    private void onPlay(KeyEvent e) {
+    private boolean openCisternMenu(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_Q) {
+            Player player = model.getTurnManager().getCurrentPlayer();
+            Element element = player.getCurrentPosition();
+            if (element instanceof Cistern cistern && player instanceof Plumber plumber) {
+                {
+                  CisternPickupOverlay cisternPickupOverlay =  new CisternPickupOverlay(plumber, cistern);
+                    cisternPickupOverlay.setListener(new CisternPickupOverlay.PickupListener() {
+                        @Override
+                        public void onConfirm(boolean tookPump, boolean tookPipe) {
+                            if(tookPump) {
+                                plumber.pickUpPump(cistern);
+                            }
+                            if(tookPipe) {
+                                plumber.pickUpPipe(cistern);
+                            }
+                            // on saving close overlay
+                            app.popLayer();
+                            }
+
+                        @Override
+                        public void onDiscard() {
+                            // close overlay
+                            app.popLayer();
+                        }
+                    });
+
+                  app.pushLayer(
+                            cisternPickupOverlay
+                    );
+                }
+                return true;
+            }
+        }
+            return false;
+    }
+
+    private boolean onPlay(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_F) {
             Player player = model.getTurnManager().getCurrentPlayer();
            boolean done = player.doMainAction();
@@ -63,7 +100,9 @@ public class PlayingLayer extends Layer {
             if (player instanceof Saboteur && done) {
                 AudioPlayer.getInstance().playEffect("pipe_break");
             }
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -86,6 +125,9 @@ public class PlayingLayer extends Layer {
             return true;
         }
         onPlay(e);
+        openCisternMenu(e);
+        return true;
+
 //        if(e.getKeyCode() == KeyEvent.VK_E) {
 //            Player player = model.getTurnManager().getCurrentPlayer();
 //            if(player.getCurrentPosition() instanceof Pump p) {
@@ -95,7 +137,7 @@ public class PlayingLayer extends Layer {
 //               }
 //            }
 //        }
-        return false;
+
     }
 
     @Override
