@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.ui.GameApplication;
+import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
 import software.project.utils.GameState;
 
@@ -23,6 +24,10 @@ public class PlayingLayer extends Layer {
         this.renderer = new MapRenderer();
 
         model.startGame();
+
+        ScreenManager.getInstance().getPanel().setBackgroundPainter(
+            renderer::drawLetterboxSand
+        );
     }
 
     @Override

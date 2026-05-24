@@ -1,5 +1,11 @@
 package software.project.ui;
 
+import software.project.graphics.Sprite;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheets;
+import software.project.graphics.Sprites;
+import software.project.ui.renderer.BackgroundPainter;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -19,6 +25,8 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
     private int lastBufferH = -1;
     private GameApplication app;
 
+    BackgroundPainter backgroundPainter;
+
     public GamePanel() {
         setFocusable(true);
         setBackground(new Color(20, 30, 50));
@@ -31,6 +39,10 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
         this.app = app;
     }
 
+    public void setBackgroundPainter(BackgroundPainter painter) {
+        this.backgroundPainter = painter;
+    }
+
     private void ensureBuffer() {
         int w = ScreenManager.GAME_WIDTH; // fixed
         int h = ScreenManager.GAME_HEIGHT;
@@ -41,12 +53,40 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
         }
     }
 
+    private void drawLetterboxSand(Graphics2D g, int tileSize, Sprite sandSprite) {
+        int panelW = getWidth();
+        int panelH = getHeight();
+
+        // Calculate scaled tile size
+        int bufW = ScreenManager.GAME_WIDTH;
+        int bufH = ScreenManager.GAME_HEIGHT;
+        double scaleX = (double) panelW / bufW;
+        double scaleY = (double) panelH / bufH;
+        double scale = Math.min(scaleX, scaleY);
+        int scaledTile = (int) (tileSize * scale);
+        if (scaledTile < 1) scaledTile = 1; // Prevent zero
+
+        // Force start at the panel's origin and tile across the whole screen
+        // This guarantees coverage even for leftover pixels smaller than a tile
+        for (int y = -scaledTile; y < panelH; y += scaledTile) {
+            for (int x = -scaledTile; x < panelW; x += scaledTile) {
+                sandSprite.draw(g, x, y, scaledTile, scaledTile);
+            }
+        }
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        if (backgroundPainter != null) {
+            backgroundPainter.paint(g2d);
+        }
+
         ensureBuffer();
         renderVirtual();
-        drawVirtualBuffer((Graphics2D) g);
+        drawVirtualBuffer(g2d);
     }
 
     private void renderVirtual() {

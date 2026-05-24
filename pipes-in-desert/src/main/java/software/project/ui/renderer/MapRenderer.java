@@ -34,13 +34,10 @@ public class MapRenderer {
         // 1. Draw sand on all full tiles covering the screen, perfectly centered
         drawSandBackgroundCentered(g);
 
-        // 2. Draw the border on the outermost tiles
-        drawBorder(g);
-
-        // 3. Draw the centered grid on top of the sand
+        // 2. Draw the centered grid on top of the sand
         drawGridLines(g);
 
-        // 4. Draw game elements
+        // 3. Draw game elements
         drawPipes(g, map);
         drawPumps(g, map);
         drawCisterns(g, map);
@@ -97,6 +94,41 @@ public class MapRenderer {
         offsetY = areaY + TOP_BORDER_TILES * tileSize;
     }
 
+    public void drawLetterboxSand(Graphics2D g) {
+        int panelW = ScreenManager.getInstance().getPanel().getWidth();
+        int panelH = ScreenManager.getInstance().getPanel().getHeight();
+
+        int bufW = ScreenManager.GAME_WIDTH;
+        int bufH = ScreenManager.GAME_HEIGHT;
+        double scaleX = (double) panelW / bufW;
+        double scaleY = (double) panelH / bufH;
+        double scale = Math.min(scaleX, scaleY);
+        int scaledTile = (int) (tileSize * scale);
+        if (scaledTile < 1) scaledTile = 1;
+
+        // Letterbox offset (where the virtual buffer starts on the screen)
+        int offsetXScreen = (panelW - (int)(bufW * scale)) / 2;
+        int offsetYScreen = (panelH - (int)(bufH * scale)) / 2;
+
+        // Calculate starting positions aligned with the virtual buffer's tiling grid
+        int startX = offsetXScreen % scaledTile;
+        int startY = offsetYScreen % scaledTile;
+
+        SpriteManager sm = SpriteManager.getInstance();
+        SpriteSheet borderSheet = sm.getSpriteSheet(SpriteSheets.MAP_BORDER);
+        Sprite sandSprite = (borderSheet != null) ? borderSheet.getSprite(1, 1) : null;
+        if (sandSprite == null) {
+            sandSprite = sm.getSprite(Sprites.GRASS);
+        }
+
+        // Tile across the whole screen, extending BEYOND the bottom edge to ensure no gap
+        for (int y = startY - scaledTile; y < panelH + scaledTile; y += scaledTile) {
+            for (int x = startX - scaledTile; x < panelW + scaledTile; x += scaledTile) {
+                sandSprite.draw(g, x, y, scaledTile, scaledTile);
+            }
+        }
+    }
+
     private void drawSandBackgroundCentered(Graphics2D g) {
         int vw = ScreenManager.getInstance().getVirtualWidth();
         int vh = ScreenManager.getInstance().getVirtualHeight();
@@ -128,82 +160,6 @@ public class MapRenderer {
                 } else {
                     g.setColor(new Color(180, 150, 110));
                     g.fillRect(x, y, tileSize, tileSize);
-                }
-            }
-        }
-    }
-
-    private void drawBorder(Graphics2D g) {
-        int vw = ScreenManager.getInstance().getVirtualWidth();
-        int vh = ScreenManager.getInstance().getVirtualHeight();
-
-        SpriteManager sm = SpriteManager.getInstance();
-        SpriteSheet borderSheet = sm.getSpriteSheet(SpriteSheets.MAP_BORDER);
-        if (borderSheet == null) return;
-
-        // Total columns/rows needed to cover the screen (round up)
-        int totalCols = (int) Math.ceil((double) vw / tileSize);
-        int totalRows = (int) Math.ceil((double) vh / tileSize);
-
-        // Calculate total width/height of the tile grid
-        int totalWidth = totalCols * tileSize;
-        int totalHeight = totalRows * tileSize;
-
-        // Calculate offset to center the tile grid evenly
-        int offsetX = (vw - totalWidth) / 2;
-        int offsetY = (vh - totalHeight) / 2;
-
-        // Draw border only on the outermost tiles
-        for (int row = 0; row < totalRows; row++) {
-            for (int col = 0; col < totalCols; col++) {
-                // Only draw on the outermost edge
-                boolean isEdge = (row == 0 || row == totalRows - 1 || col == 0 || col == totalCols - 1);
-                if (!isEdge) continue;
-
-                int x = offsetX + col * tileSize;
-                int y = offsetY + row * tileSize;
-
-                int spriteCol = 0;
-                int spriteRow = 0;
-
-                // Determine which border sprite to use based on position
-                if (row == 0 && col == 0) {
-                    // Top-left corner
-                    spriteCol = 0;
-                    spriteRow = 0;
-                } else if (row == 0 && col == totalCols - 1) {
-                    // Top-right corner
-                    spriteCol = 2;
-                    spriteRow = 0;
-                } else if (row == totalRows - 1 && col == 0) {
-                    // Bottom-left corner
-                    spriteCol = 0;
-                    spriteRow = 2;
-                } else if (row == totalRows - 1 && col == totalCols - 1) {
-                    // Bottom-right corner
-                    spriteCol = 2;
-                    spriteRow = 2;
-                } else if (row == 0) {
-                    // Top edge (middle)
-                    spriteCol = 1;
-                    spriteRow = 0;
-                } else if (row == totalRows - 1) {
-                    // Bottom edge (middle)
-                    spriteCol = 1;
-                    spriteRow = 2;
-                } else if (col == 0) {
-                    // Left edge (middle)
-                    spriteCol = 0;
-                    spriteRow = 1;
-                } else if (col == totalCols - 1) {
-                    // Right edge (middle)
-                    spriteCol = 2;
-                    spriteRow = 1;
-                }
-
-                Sprite borderSprite = borderSheet.getSprite(spriteCol, spriteRow);
-                if (borderSprite != null) {
-                    borderSprite.draw(g, x, y, tileSize, tileSize);
                 }
             }
         }
