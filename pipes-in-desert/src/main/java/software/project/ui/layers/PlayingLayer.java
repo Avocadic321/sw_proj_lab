@@ -4,6 +4,7 @@ import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.core.GameState;
+import software.project.map.Element;
 import software.project.map.Pump;
 import software.project.models.Player;
 import software.project.models.Plumber;
@@ -90,18 +91,14 @@ public class PlayingLayer extends Layer {
             return true;
         }
         onPlay(e);
-//        if(e.getKeyCode() == KeyEvent.VK_E) {
-//            Player player = model.getTurnManager().getCurrentPlayer();
-//            if(player.getCurrentPosition() instanceof Pump p) {
-//               var x =  this.model.getGameMap().getAllPipes().stream().filter(f -> f.getId().equals("PIPE3")).findAny();
-//               if(x.isPresent()){
-//                 p.setDirection(p.getInputPipe(),x.get().getEnd1());
-//               }
-//            }
-//        }
+
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            Pump pump = (Pump) model.getGameMap().getElement("PUMP2");
-            app.pushLayer(new PumpDirectionOverlay(app, pump));
+            Element element = model.getTurnManager().getCurrentPlayer().getCurrentPosition();
+            if (!(element instanceof Pump)) {
+                return false;
+            }
+
+            app.pushLayer(new PumpDirectionOverlay(app, (Pump) element));
             return true;
         }
         return false;
