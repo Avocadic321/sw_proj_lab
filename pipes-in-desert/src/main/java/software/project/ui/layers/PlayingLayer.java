@@ -38,6 +38,11 @@ public class PlayingLayer extends Layer {
     }
 
     @Override
+    public void onEnter() {
+        super.onEnter();
+    }
+
+    @Override
     public void render(Graphics2D g) {
         renderer.draw(g);
     }
@@ -95,6 +100,10 @@ public class PlayingLayer extends Layer {
 //               }
 //            }
 //        }
+        if (e.getKeyCode() == KeyEvent.VK_D) {
+            app.pushLayer(new PumpDirectionOverlay(app));
+            return true;
+        }
         return false;
     }
 
