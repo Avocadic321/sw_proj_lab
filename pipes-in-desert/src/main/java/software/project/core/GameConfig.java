@@ -41,7 +41,7 @@ public class GameConfig {
     private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = false;
 
     // Number of Players Constants
-    public static final int DEFAULT_PLAYERS = 4;
+    public static final int DEFAULT_PLAYERS = 2;
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
 

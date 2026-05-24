@@ -2,9 +2,16 @@ package software.project.ui.layers;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
+import software.project.map.Pipe;
+import software.project.map.interfaces.IBreakable;
+import software.project.map.interfaces.IRepairable;
+import software.project.models.Player;
+import software.project.models.Plumber;
+import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
@@ -21,7 +28,7 @@ public class PlayingLayer extends Layer {
         GameConfig config = new GameConfig();
 
         this.model = new GameModel(config);
-        this.renderer = new MapRenderer();
+        this.renderer = new MapRenderer(this.model);
 
         model.startGame();
 
@@ -32,9 +39,13 @@ public class PlayingLayer extends Layer {
 
     @Override
     public void render(Graphics2D g) {
-        renderer.draw(g, model);
+        renderer.draw(g);
     }
 
+    @Override
+    public void update(float deltaTime) {
+        renderer.update(deltaTime);
+    }
     @Override
     public boolean keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_P) {
@@ -54,6 +65,20 @@ public class PlayingLayer extends Layer {
             }
             return true;
         }
+        if (e.getKeyCode() == KeyEvent.VK_F){
+            Player player = model.getTurnManager().getCurrentPlayer();
+            if(player instanceof Plumber plumber && player.getCurrentPosition() instanceof IRepairable repairable) {
+                plumber.repair(repairable);
+            }
+            if(player instanceof Saboteur saboteur && player.getCurrentPosition() instanceof Pipe pipe) {
+                saboteur.sabotagePipe(pipe);
+            }
+        }
         return false;
+    }
+    @Override
+    public boolean mousePressed(MouseEvent e) {
+        renderer.mousePressed(e);
+        return true;
     }
 }

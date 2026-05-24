@@ -3,7 +3,14 @@ package software.project.map;
 import software.project.utils.IdGenerator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class GameMap {
     private final List<Element> elements = new ArrayList<>();
@@ -189,5 +196,76 @@ public class GameMap {
         spawnPoint = pump1;
 
     }
+    private record GraphNode(
+            Element element,
+            List<Element> neighbors
+    ) {}
 
+    private GraphNode buildNode(Element element) {
+
+        List<Element> neighbors = new ArrayList<>();
+
+        // Pipe -> connected active elements
+        if (element instanceof Pipe pipe) {
+
+            if (pipe.getEnd1().connectedTo != null) {
+                neighbors.add(pipe.getEnd1().connectedTo);
+            }
+
+            if (pipe.getEnd2().connectedTo != null) {
+                neighbors.add(pipe.getEnd2().connectedTo);
+            }
+        }
+
+        // ActiveElement -> connected pipes
+        else if (element instanceof ActiveElement active) {
+
+            for (PipeEnd end : active.getConnections()) {
+
+                if (end.pipe != null) {
+                    neighbors.add(end.pipe);
+                }
+            }
+        }
+
+        return new GraphNode(element, neighbors);
+    }
+
+    public List<Element> buildPathToDestination(Element src, Element dest) {
+        List<Element> path = new ArrayList<>();
+
+        if (src == null || dest == null) return path;
+        if (!dest.canOccupy()) return path;
+
+        Queue<Element> queue = new LinkedList<>();
+        Set<Element> visited = new HashSet<>();
+        Map<Element, Element> parent = new HashMap<>();
+
+        queue.offer(src);
+        visited.add(src);
+
+        while (!queue.isEmpty()) {
+            Element current = queue.poll();
+
+            if (current.equals(dest)) break;
+
+            GraphNode node = buildNode(current);
+            for (Element neighbor : node.neighbors()) {
+                if (visited.contains(neighbor)) continue;
+                if (!neighbor.canOccupy() && !neighbor.equals(dest)) continue;
+                visited.add(neighbor);
+                parent.put(neighbor, current);
+                queue.offer(neighbor);
+            }
+        }
+
+        if (!parent.containsKey(dest) && !src.equals(dest)) return path;
+
+        for (Element at = dest; at != null; at = parent.get(at)) {
+            path.add(at);
+        }
+        Collections.reverse(path);
+
+        return path;
+    }
 }
