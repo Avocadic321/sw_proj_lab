@@ -6,41 +6,52 @@ import java.awt.Graphics2D;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.Sprites;
+import software.project.ui.ScreenManager;
 
 public class Panel {
-    private int x, y, width, height;
     private Sprite sprite;
+    private int x, y, width, height;
+    private int originalWidth, originalHeight;
+    private float scaleFactor;
+    private int verticalOffset;
     private Color fallbackColor;
     private boolean roundRect;
 
-    public Panel(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.sprite = SpriteManager.getInstance().getSprite(Sprites.MENU_PANEL);
-        this.fallbackColor = new Color(40, 50, 70);
-        this.roundRect = true;
+    public Panel(float scaleFactor, int verticalOffset) {
+        this(scaleFactor, verticalOffset, Sprites.MENU_PANEL);
     }
 
-    public Panel(int x, int y, int width, int height, Sprite sprite) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.sprite = sprite;
+    public Panel(float scaleFactor, int verticalOffset, Sprites spriteKey) {
+        this.scaleFactor = scaleFactor;
+        this.verticalOffset = verticalOffset;
+        this.sprite = SpriteManager.getInstance().getSprite(spriteKey);
         this.fallbackColor = new Color(40, 50, 70);
         this.roundRect = true;
+
+        if (this.sprite != null) {
+            this.originalWidth = this.sprite.getWidth();
+            this.originalHeight = this.sprite.getHeight();
+        } else {
+            this.originalWidth = 282;
+            this.originalHeight = 406;
+        }
+
+        recomputeLayout();
     }
 
-    public Panel(int x, int y, int width, int height, Sprite sprite, Color fallbackColor, boolean roundRect) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.sprite = sprite;
-        this.fallbackColor = fallbackColor;
-        this.roundRect = roundRect;
+    public void recomputeLayout() {
+        int virtualW = ScreenManager.getInstance().getVirtualWidth();
+        int virtualH = ScreenManager.getInstance().getVirtualHeight();
+
+        double fitScaleX = (double) virtualW / originalWidth;
+        double fitScaleY = (double) virtualH / originalHeight;
+        double fitScale = Math.min(fitScaleX, fitScaleY);
+        double finalScale = fitScale * scaleFactor;
+
+        width = (int) (originalWidth * finalScale);
+        height = (int) (originalHeight * finalScale);
+        x = (virtualW - width) / 2;
+        y = (virtualH - height) / 2 + verticalOffset;
     }
 
     public void draw(Graphics2D g) {
@@ -56,18 +67,14 @@ public class Panel {
         }
     }
 
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
-
     public int getX() { return x; }
     public int getY() { return y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+    public int getCenterX() { return x + width / 2; }
+    public int getCenterY() { return y + height / 2; }
+
+    // Expose original dimensions for scale calculations
+    public int getOriginalWidth() { return originalWidth; }
+    public int getOriginalHeight() { return originalHeight; }
 }

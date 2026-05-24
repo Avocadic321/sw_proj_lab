@@ -15,15 +15,13 @@ import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.MenuButton;
+import software.project.ui.components.Panel;
 
 public class MainMenuLayer extends Layer {
 
     private static final int BUTTON_COUNT = 4;
     private static final int ANIMATION_FRAME_DELAY_MS = 33;
     private static final boolean ANIMATED = true;
-
-    private static final int FALLBACK_MENU_WIDTH = 282;
-    private static final int FALLBACK_MENU_HEIGHT = 406;
 
     private static final double TOP_MARGIN_PERCENT = 0.23;
     private static final double BOTTOM_MARGIN_PERCENT = 0.07;
@@ -42,12 +40,11 @@ public class MainMenuLayer extends Layer {
     private final List<MenuButton> buttons = new ArrayList<>();
 
     private Animation backgroundAnimation;
-    private Sprite menuPanelSprite;
-    private Sprite menuBackgroundSprite;
     private Sprite menuTitleSprite;
 
-    private int originalPanelWidth, originalPanelHeight;
-    private int panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight;
+    // ✅ Create the panel BEFORE any layout computation
+    private Panel panel = new Panel(MENU_SCALE_FACTOR, MENU_VERTICAL_OFFSET);
+
     private int titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight;
 
     public MainMenuLayer(GameApplication app) {
@@ -61,19 +58,7 @@ public class MainMenuLayer extends Layer {
 
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
-
-        menuBackgroundSprite = sm.getSprite(Sprites.MENU_BACKGROUND);
-        menuPanelSprite = sm.getSprite(Sprites.MENU_PANEL);
         menuTitleSprite = sm.getSprite(Sprites.MENU_TITLE);
-
-        if (menuPanelSprite == null) {
-            originalPanelWidth = FALLBACK_MENU_WIDTH;
-            originalPanelHeight = FALLBACK_MENU_HEIGHT;
-        } else {
-            originalPanelWidth = menuPanelSprite.getWidth();
-            originalPanelHeight = menuPanelSprite.getHeight();
-        }
-
         recomputeLayout();
     }
 
@@ -93,16 +78,6 @@ public class MainMenuLayer extends Layer {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        double fitScaleX = (double) virtualW / originalPanelWidth;
-        double fitScaleY = (double) virtualH / originalPanelHeight;
-        double fitScale = Math.min(fitScaleX, fitScaleY);
-        double finalScale = fitScale * MENU_SCALE_FACTOR;
-
-        panelDrawWidth = (int) (originalPanelWidth * finalScale);
-        panelDrawHeight = (int) (originalPanelHeight * finalScale);
-        panelDrawX = (virtualW - panelDrawWidth) / 2;
-        panelDrawY = (virtualH - panelDrawHeight) / 2 + MENU_VERTICAL_OFFSET;
-
         if (menuTitleSprite != null) {
             titleDrawWidth = (int) (menuTitleSprite.getWidth() * TITLE_SCALE_FACTOR);
             titleDrawHeight = (int) (menuTitleSprite.getHeight() * TITLE_SCALE_FACTOR);
@@ -110,7 +85,14 @@ public class MainMenuLayer extends Layer {
             titleDrawY = TITLE_VERTICAL_OFFSET;
         }
 
-        MenuButton.setGlobalScale((float) finalScale);
+        // ✅ Now panel is guaranteed to be non-null
+        panel.recomputeLayout();
+
+        // Use the panel's original dimensions to compute the global scale
+        MenuButton.setGlobalScale((float) (Math.min(
+            (double) virtualW / panel.getOriginalWidth(),
+            (double) virtualH / panel.getOriginalHeight())
+            * MENU_SCALE_FACTOR));
     }
 
     private void createButtons() {
@@ -118,7 +100,7 @@ public class MainMenuLayer extends Layer {
         recomputeLayout();
 
         int[] yPositions = computeButtonPositions();
-        int centerX = panelDrawX + panelDrawWidth / 2;
+        int centerX = panel.getCenterX();
 
         for (int i = 0; i < BUTTON_COUNT; i++) {
             MenuButton button = new MenuButton(BUTTON_ROW_INDICES[i], centerX, yPositions[i]);
@@ -129,7 +111,7 @@ public class MainMenuLayer extends Layer {
 
     private int[] computeButtonPositions() {
         int scaledButtonHeight = MenuButton.getScaledHeight();
-        int usableHeight = (int) (panelDrawHeight * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
+        int usableHeight = (int) (panel.getHeight() * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
         int totalButtonsHeight = BUTTON_COUNT * scaledButtonHeight;
         int gapBetweenButtons;
 
@@ -140,7 +122,7 @@ public class MainMenuLayer extends Layer {
             gapBetweenButtons = remaining / (BUTTON_COUNT - 1);
         }
 
-        int startY = panelDrawY + (int) (panelDrawHeight * EFFECTIVE_TOP);
+        int startY = panel.getY() + (int) (panel.getHeight() * EFFECTIVE_TOP);
         int[] yPositions = new int[BUTTON_COUNT];
         for (int i = 0; i < BUTTON_COUNT; i++) {
             yPositions[i] = startY + i * (scaledButtonHeight + gapBetweenButtons);
@@ -161,6 +143,7 @@ public class MainMenuLayer extends Layer {
 
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
+        panel.recomputeLayout();
         createButtons();
     }
 
@@ -182,8 +165,8 @@ public class MainMenuLayer extends Layer {
 
         if (ANIMATED && backgroundAnimation != null && backgroundAnimation.getCurrentFrame() != null) {
             backgroundAnimation.getCurrentFrame().draw(g, 0, 0, virtualW, virtualH);
-        } else if (menuBackgroundSprite != null) {
-            menuBackgroundSprite.draw(g, 0, 0, virtualW, virtualH);
+        } else if (SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND) != null) {
+            SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND).draw(g, 0, 0, virtualW, virtualH);
         } else {
             g.setColor(new Color(20, 30, 50));
             g.fillRect(0, 0, virtualW, virtualH);
@@ -193,12 +176,7 @@ public class MainMenuLayer extends Layer {
             menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
         }
 
-        if (menuPanelSprite != null) {
-            menuPanelSprite.draw(g, panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight);
-        } else {
-            g.setColor(new Color(40, 50, 70));
-            g.fillRoundRect(panelDrawX, panelDrawY, panelDrawWidth, panelDrawHeight, 20, 20);
-        }
+        panel.draw(g);
 
         for (MenuButton button : buttons) {
             button.draw(g);
