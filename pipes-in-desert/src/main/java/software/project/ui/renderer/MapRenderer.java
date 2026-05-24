@@ -19,10 +19,13 @@ public class MapRenderer {
     private static final int WATER_LEVEL_FRAMES = 4;
 
     // Border sizes (in tiles)
-    private static final int TOP_BORDER_TILES = 2;
-    private static final int BOTTOM_BORDER_TILES = 1;
+    private static final int TOP_BORDER_TILES = 1;
+    private static final int BOTTOM_BORDER_TILES = 0;
     private static final int LEFT_BORDER_TILES = 1;
     private static final int RIGHT_BORDER_TILES = 1;
+
+    // Player scale relative to tile size (1.0 = full tile size)
+    private static final float PLAYER_SCALE = 0.6f;
 
     private int gridWidth;
     private int gridHeight;
@@ -364,15 +367,19 @@ public class MapRenderer {
             drawCenter = getCellCenter(position.getX(), position.getY());
         }
 
+        // Scale the player sprite
+        int playerDrawSize = (int)(tileSize * PLAYER_SCALE);
+
         if (sprite != null) {
-            sprite.drawCentered(g, drawCenter.x, drawCenter.y, tileSize, 0);
+            sprite.drawCentered(g, drawCenter.x, drawCenter.y, playerDrawSize, 0);
         }
 
+        // Scale the arrow pointer to match the player size
         int bounceOffset = (int) (Math.sin(arrowTick * 6.0) * 6 + 6);
         int tipX = drawCenter.x;
-        int tipY = drawCenter.y - tileSize / 2 - 6 - bounceOffset;
-        int arrowW = tileSize / 4;
-        int arrowH = tileSize / 4;
+        int tipY = drawCenter.y - playerDrawSize / 2 - 6 - bounceOffset;
+        int arrowW = playerDrawSize / 4;
+        int arrowH = playerDrawSize / 4;
 
         int[] xPoints = { tipX, tipX + arrowW, tipX - arrowW };
         int[] yPoints = { tipY, tipY - arrowH, tipY - arrowH };
@@ -394,12 +401,15 @@ public class MapRenderer {
         Player current = animating ? animatingPlayer : model.getTurnManager().getCurrentPlayer();
         Team saboteurs = model.getSaboteursTeam();
 
+        // Scale the player sprite
+        int playerDrawSize = (int)(tileSize * PLAYER_SCALE);
+
         for (Player player : saboteurs.getPlayers()) {
             if (animating && player.equals(current)) continue;
             Element position = player.getCurrentPosition();
             if (position == null) continue;
             Point center = getCellCenter(position.getX(), position.getY());
-            spriteSaboteur.drawCentered(g, center.x, center.y, tileSize, 0);
+            spriteSaboteur.drawCentered(g, center.x, center.y, playerDrawSize, 0);
         }
 
         Team plumbers = model.getPlumbersTeam();
@@ -408,7 +418,7 @@ public class MapRenderer {
             Element position = player.getCurrentPosition();
             if (position == null) continue;
             Point center = getCellCenter(position.getX(), position.getY());
-            spritePlumber.drawCentered(g, center.x, center.y, tileSize, 0);
+            spritePlumber.drawCentered(g, center.x, center.y, playerDrawSize, 0);
         }
     }
 
