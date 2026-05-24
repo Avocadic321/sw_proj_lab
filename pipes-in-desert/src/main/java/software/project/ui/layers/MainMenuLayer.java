@@ -10,6 +10,7 @@ import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Menu;
 import software.project.ui.components.ImageComponent;
+import software.project.ui.components.AnimatedComponent;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -34,8 +35,7 @@ public class MainMenuLayer extends Layer {
     private final GameApplication app;
     private final Menu menu;
     private ImageComponent titleComponent;
-
-    private Animation backgroundAnimation;
+    private AnimatedComponent backgroundComponent;
 
     public MainMenuLayer(GameApplication app) {
         this.app = app;
@@ -70,9 +70,12 @@ public class MainMenuLayer extends Layer {
         SpriteSheet animationSheet = sm.getSpriteSheet(SpriteSheets.MENU_ANIMATION);
 
         if (animationSheet != null && animationSheet.isValid()) {
-            backgroundAnimation = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
-            if (backgroundAnimation.isValid()) {
-                backgroundAnimation.start();
+            Animation anim = new Animation(animationSheet, ANIMATION_FRAME_DELAY_MS, true);
+            if (anim.isValid()) {
+                anim.start();
+                int vw = ScreenManager.getInstance().getVirtualWidth();
+                int vh = ScreenManager.getInstance().getVirtualHeight();
+                backgroundComponent = new AnimatedComponent(0, 0, vw, vh, anim);
             }
         }
     }
@@ -100,12 +103,16 @@ public class MainMenuLayer extends Layer {
         SpriteManager sm = SpriteManager.getInstance();
         Sprite titleSprite = sm.getSprite(Sprites.MENU_TITLE);
         recomputeLayout(titleSprite);
+        // Update background component size on resolution change
+        if (backgroundComponent != null) {
+            backgroundComponent.setSize(newWidth, newHeight);
+        }
     }
 
     @Override
     public void update(float deltaTime) {
-        if (ANIMATED && backgroundAnimation != null) {
-            backgroundAnimation.update();
+        if (backgroundComponent != null) {
+            backgroundComponent.update();
         }
         if (menu != null) {
             menu.update();
@@ -117,8 +124,8 @@ public class MainMenuLayer extends Layer {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        if (ANIMATED && backgroundAnimation != null && backgroundAnimation.getCurrentFrame() != null) {
-            backgroundAnimation.getCurrentFrame().draw(g, 0, 0, virtualW, virtualH);
+        if (backgroundComponent != null) {
+            backgroundComponent.draw(g);
         } else if (SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND) != null) {
             SpriteManager.getInstance()
                          .getSprite(Sprites.MENU_BACKGROUND)
