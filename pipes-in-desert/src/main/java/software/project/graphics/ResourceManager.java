@@ -43,5 +43,7 @@ public class ResourceManager {
     private void loadSounds() {
         audioPlayer.loadEffect("button_pressed", "/audio/button_pressed.wav");
         audioPlayer.loadSong("main_theme","/audio/pipes_desert_theme.wav");
+        audioPlayer.loadEffect("pipe_break","/audio/pipe_break.wav");
+        audioPlayer.loadEffect("pipe_repair","/audio/pipe_repair.wav");
     }
 }
