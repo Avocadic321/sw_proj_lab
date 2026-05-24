@@ -1,12 +1,15 @@
 package software.project.ui.components;
 
+import software.project.audio.AudioPlayer;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteSheet;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 public class GameButton extends Component {
 
@@ -18,9 +21,9 @@ public class GameButton extends Component {
 
     private boolean mouseOver;
     private boolean mousePressed;
+    private boolean enabled = true;
 
     private Runnable action;
-    private boolean enabled = true;
 
     public GameButton(SpriteSheet sheet, int rowIndex, int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -30,44 +33,34 @@ public class GameButton extends Component {
         this.currentSprite = normal;
     }
 
-    public GameButton(
-        Sprite normal,
-        Sprite hover,
-        Sprite pressed,
-        int x,
-        int y,
-        int width,
-        int height
-    ) {
-        super(x, y, width, height);
-        this.normal = normal;
-        this.hover = hover;
-        this.pressed = pressed;
-        this.currentSprite = normal;
+    public void setCenter(int cx, int cy) {
+        this.x = cx - width / 2;
+        this.y = cy - height / 2;
     }
 
     public void setAction(Runnable action) {
         this.action = action;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (!enabled) {
-            // Reset interaction states when disabled
             mouseOver = false;
             mousePressed = false;
-            update(); // force sprite back to normal
+            update();
+        } else {
+            update();
         }
-    }
-
-    public boolean isEnabled() {
-        return enabled;
     }
 
     @Override
     public void update() {
         if (!enabled) {
-            currentSprite = normal;
+            currentSprite = normal; // will be tinted in draw
             return;
         }
         if (mousePressed) {
@@ -81,28 +74,45 @@ public class GameButton extends Component {
 
     @Override
     public void draw(Graphics2D g) {
-        if (currentSprite != null) {
-            currentSprite.draw(g, x, y, width, height);
+        if (currentSprite == null) {
+            return;
         }
 
-        // Disabled tint: draw a semi‑transparent gray rectangle over the button
         if (!enabled) {
-            Color originalColor = g.getColor();
-            g.setColor(new Color(100, 100, 100, 180)); // gray tint, ~70% opacity
-            g.fillRect(x, y, width, height);
-            g.setColor(originalColor);
+            drawDisabled(g);
+        } else {
+            currentSprite.draw(g, x, y, width, height);
         }
     }
 
+    /**
+     * Draws the button in a disabled state – applies a gray tint only to non‑transparent pixels.
+     */
+    private void drawDisabled(Graphics2D g) {
+        BufferedImage temp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D tempG = temp.createGraphics();
+        currentSprite.draw(tempG, 0, 0, width, height);
+        tempG.setComposite(AlphaComposite.SrcAtop);
+        tempG.setColor(new Color(100, 100, 100, 180));
+        tempG.fillRect(0, 0, width, height);
+        tempG.dispose();
+        g.drawImage(temp, x, y, null);
+    }
+
     public void mouseMoved(MouseEvent e) {
-        if (!enabled) return;
+        if (!enabled) {
+            return;
+        }
         mouseOver = getBounds().contains(e.getX(), e.getY());
     }
 
     public void mousePressed(MouseEvent e) {
-        if (!enabled) return;
+        if (!enabled) {
+            return;
+        }
         if (getBounds().contains(e.getX(), e.getY())) {
             mousePressed = true;
+            AudioPlayer.getInstance().playEffect("button_pressed");
         }
     }
 

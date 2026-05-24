@@ -13,7 +13,9 @@ public enum SpriteSheets {
     MAP_BORDER("map_border", "/map/map_border.png", 32, 32),
 
     FONT_MONO("font_mono", "/ui/fonts/bitmap/font_mono.png", 12, 12),
-    FONT_MAIN("font_main", "/ui/fonts/bitmap/font_main.png", 16, 16);
+    FONT_MAIN("font_main", "/ui/fonts/bitmap/font_main.png", 16, 16),
+
+    ARROW_BUTTONS("buttons_dirs", "/ui/buttons/button_arrows.png", 32, 32);
 
     private final String key;
     private final String path;
