@@ -126,4 +126,8 @@ public class Banner extends Component {
     public void update() {
         // Nothing dynamic
     }
+
+    public String getText() {
+        return text;
+    }
 }

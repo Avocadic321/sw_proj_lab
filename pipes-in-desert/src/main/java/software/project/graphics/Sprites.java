@@ -5,8 +5,8 @@ public enum Sprites {
     MENU_PANEL("menu_panel", "/ui/panels/menu_panel.png"),
     MENU_TITLE("menu_title", "/ui/titles/menu_title_two.png"),
 
-    PUMP("pump", "/map/pump.png"),
     PUMP_FAN("pump_fan", "/map/pump_fan.png"),
+    PUMP_STATIC("pump", "/map/pump.png"),
 
     SPRING("spring", "/map/spring3.png"),
     SPRING_PIPE("spring_pipe", "/map/spring_pipe.png"),
@@ -17,7 +17,9 @@ public enum Sprites {
     GRASS("grass", "/map/grass.png"),
 
     PAPER_BANNER("paper_banner", "/ui/banners/paper_banner.png"),
-    TIMER_BANNER("timer_banner", "/ui/banners/timer_banner.png");
+    TIMER_BANNER("timer_banner", "/ui/banners/timer_banner.png"),
+
+    SIMPLE_PANEL("simple_panel", "/ui/panels/simple_panel.png");
 
     private final String key;
     private final String path;
