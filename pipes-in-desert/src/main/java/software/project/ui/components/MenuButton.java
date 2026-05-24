@@ -36,12 +36,15 @@ public class MenuButton {
 
     private int x;
     private int y; // centre position (in virtual coordinates)
+
     private Sprite normal;
     private Sprite hover;
     private Sprite pressed;
     private Sprite currentSprite;
+
     private boolean mouseOver;
     private boolean mousePressed;
+
     private Runnable action;
 
     public MenuButton(int rowIndex, int x, int y) {
