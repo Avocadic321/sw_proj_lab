@@ -59,13 +59,13 @@ public class InsertPumpCommand implements ICommand {
             return;
         }
 
-        if (!(plumber.getCarriedItem() instanceof Pump pump)) {
+        if (!(plumber.getCarriedItem(0) instanceof Pump pump)) {
             System.out.println("[ERROR] INSERT_PUMP NOT_CARRYING_PUMP");
             return;
         }
 
         try {
-            plumber.insertPumpIntoPipe(pump, pipe);
+            plumber.insertPumpIntoPipe(pump, pipe,0);
         } catch (Exception e) {
             System.out.println("[ERROR] INSERT_PUMP " + e.getMessage());
         }

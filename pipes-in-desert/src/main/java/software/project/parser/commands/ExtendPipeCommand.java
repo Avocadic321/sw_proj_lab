@@ -40,7 +40,7 @@ public class ExtendPipeCommand implements ICommand {
         }
 
         try {
-            ((Plumber) p).extendPipeSystem();
+            ((Plumber) p).extendPipeSystem(0);
             System.out.println("[OK] EXTEND_PIPE");
         } catch (Exception e) {
             System.out.println("[ERROR] EXTEND_PIPE " + e.getMessage());

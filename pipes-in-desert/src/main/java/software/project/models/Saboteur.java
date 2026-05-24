@@ -1,5 +1,6 @@
 package software.project.models;
 
+import software.project.audio.AudioPlayer;
 import software.project.map.Element;
 import software.project.map.Pipe;
 
@@ -45,6 +46,15 @@ public class Saboteur extends Player {
         pipe.breakElement();
         System.out.printf("[OK] SABOTAGE_PIPE %s %s%n", this.id, pipe.getId());
         System.out.printf("[EVENT] PIPE_BROKEN %s", pipe.getId());
+    }
+
+    @Override
+    public boolean doMainAction() {
+        if (getCurrentPosition() instanceof Pipe pipe && !pipe.isBroken()) {
+            this.sabotagePipe(pipe);
+            return true;
+        }
+        return false;
     }
 
     @Override

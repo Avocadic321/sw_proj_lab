@@ -84,6 +84,10 @@ public class Player {
         return true;
     }
 
+    public boolean doMainAction() {
+
+        return false;
+    }
     /**
      * Sets or changes the direction of the specified pump.
      * <p>
