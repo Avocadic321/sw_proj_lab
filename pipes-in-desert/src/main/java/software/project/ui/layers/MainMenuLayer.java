@@ -3,8 +3,6 @@ package software.project.ui.layers;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import software.project.graphics.Animation;
 import software.project.graphics.Sprite;
@@ -14,20 +12,16 @@ import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
-import software.project.ui.components.MenuButton;
-import software.project.ui.components.Panel;
+import software.project.ui.components.Menu;
 
 public class MainMenuLayer extends Layer {
 
-    private static final int BUTTON_COUNT = 4;
     private static final int ANIMATION_FRAME_DELAY_MS = 33;
     private static final boolean ANIMATED = true;
 
     private static final double TOP_MARGIN_PERCENT = 0.23;
     private static final double BOTTOM_MARGIN_PERCENT = 0.07;
     private static final double INNER_PADDING_PERCENT = 0.03;
-    private static final double EFFECTIVE_TOP = TOP_MARGIN_PERCENT + INNER_PADDING_PERCENT;
-    private static final double EFFECTIVE_BOTTOM = BOTTOM_MARGIN_PERCENT + INNER_PADDING_PERCENT;
 
     private static final float MENU_SCALE_FACTOR = 0.65f;
     private static final float TITLE_SCALE_FACTOR = 0.4f;
@@ -37,13 +31,10 @@ public class MainMenuLayer extends Layer {
     private static final int[] BUTTON_ROW_INDICES = { 0, 1, 3, 2 };
 
     private final GameApplication app;
-    private final List<MenuButton> buttons = new ArrayList<>();
+    private Menu menu;
 
     private Animation backgroundAnimation;
     private Sprite menuTitleSprite;
-
-    // ✅ Create the panel BEFORE any layout computation
-    private Panel panel = new Panel(MENU_SCALE_FACTOR, MENU_VERTICAL_OFFSET);
 
     private int titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight;
 
@@ -53,7 +44,12 @@ public class MainMenuLayer extends Layer {
         if (ANIMATED) {
             loadBackgroundAnimation();
         }
-        createButtons();
+        // Create the menu with the appropriate constants and actions
+        menu = new Menu(MENU_SCALE_FACTOR, MENU_VERTICAL_OFFSET, BUTTON_ROW_INDICES, TOP_MARGIN_PERCENT, BOTTOM_MARGIN_PERCENT, INNER_PADDING_PERCENT);
+        menu.setAction(0, () -> app.replaceLayer(new PlayingLayer(app)));
+        menu.setAction(1, () -> System.out.println("OPTIONS clicked"));
+        menu.setAction(2, () -> System.out.println("CREDITS clicked"));
+        menu.setAction(3, () -> System.exit(0));
     }
 
     private void loadSprites() {
@@ -85,66 +81,14 @@ public class MainMenuLayer extends Layer {
             titleDrawY = TITLE_VERTICAL_OFFSET;
         }
 
-        // ✅ Now panel is guaranteed to be non-null
-        panel.recomputeLayout();
-
-        // Use the panel's original dimensions to compute the global scale
-        MenuButton.setGlobalScale((float) (Math.min(
-            (double) virtualW / panel.getOriginalWidth(),
-            (double) virtualH / panel.getOriginalHeight())
-            * MENU_SCALE_FACTOR));
-    }
-
-    private void createButtons() {
-        buttons.clear();
-        recomputeLayout();
-
-        int[] yPositions = computeButtonPositions();
-        int centerX = panel.getCenterX();
-
-        for (int i = 0; i < BUTTON_COUNT; i++) {
-            MenuButton button = new MenuButton(BUTTON_ROW_INDICES[i], centerX, yPositions[i]);
-            button.setAction(getActionForIndex(i));
-            buttons.add(button);
+        if (menu != null) {
+            menu.onResolutionChanged();
         }
-    }
-
-    private int[] computeButtonPositions() {
-        int scaledButtonHeight = MenuButton.getScaledHeight();
-        int usableHeight = (int) (panel.getHeight() * (1.0 - EFFECTIVE_TOP - EFFECTIVE_BOTTOM));
-        int totalButtonsHeight = BUTTON_COUNT * scaledButtonHeight;
-        int gapBetweenButtons;
-
-        if (totalButtonsHeight > usableHeight) {
-            gapBetweenButtons = 0;
-        } else {
-            int remaining = usableHeight - totalButtonsHeight;
-            gapBetweenButtons = remaining / (BUTTON_COUNT - 1);
-        }
-
-        int startY = panel.getY() + (int) (panel.getHeight() * EFFECTIVE_TOP);
-        int[] yPositions = new int[BUTTON_COUNT];
-        for (int i = 0; i < BUTTON_COUNT; i++) {
-            yPositions[i] = startY + i * (scaledButtonHeight + gapBetweenButtons);
-        }
-        return yPositions;
-    }
-
-    private Runnable getActionForIndex(int index) {
-        return switch (index) {
-            case 0 -> () -> app.replaceLayer(new PlayingLayer(app));
-            case 1 -> () -> System.out.println("OPTIONS clicked");
-            case 2 -> () -> System.out.println("CREDITS clicked");
-            case 3 -> () -> System.exit(0);
-            default -> () -> {
-            };
-        };
     }
 
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
-        panel.recomputeLayout();
-        createButtons();
+        recomputeLayout();
     }
 
     @Override
@@ -152,9 +96,8 @@ public class MainMenuLayer extends Layer {
         if (ANIMATED && backgroundAnimation != null) {
             backgroundAnimation.update();
         }
-
-        for (MenuButton button : buttons) {
-            button.update();
+        if (menu != null) {
+            menu.update();
         }
     }
 
@@ -176,33 +119,31 @@ public class MainMenuLayer extends Layer {
             menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
         }
 
-        panel.draw(g);
-
-        for (MenuButton button : buttons) {
-            button.draw(g);
+        if (menu != null) {
+            menu.render(g);
         }
     }
 
     @Override
     public boolean mouseMoved(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mouseMoved(e);
+        if (menu != null) {
+            menu.handleMouseMoved(e);
         }
         return true;
     }
 
     @Override
     public boolean mousePressed(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mousePressed(e);
+        if (menu != null) {
+            menu.handleMousePressed(e);
         }
         return true;
     }
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        for (MenuButton button : buttons) {
-            button.mouseReleased(e);
+        if (menu != null) {
+            menu.handleMouseReleased(e);
         }
         return true;
     }
