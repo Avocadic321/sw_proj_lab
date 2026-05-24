@@ -46,6 +46,13 @@ public class PlayingLayer extends Layer {
     public void update(float deltaTime) {
         renderer.update(deltaTime);
     }
+
+    @Override
+    public void onExit() {
+        super.onExit();
+        ScreenManager.getInstance().getPanel().setBackgroundPainter(null);
+    }
+
     @Override
     public boolean keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_P) {
