@@ -5,7 +5,7 @@ import software.project.map.Cistern;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Picks up a pump from a cistern.

@@ -1,5 +1,11 @@
 package software.project.ui;
 
+import software.project.graphics.Sprite;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheets;
+import software.project.graphics.Sprites;
+import software.project.ui.renderer.BackgroundPainter;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -19,6 +25,8 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
     private int lastBufferH = -1;
     private GameApplication app;
 
+    BackgroundPainter backgroundPainter;
+
     public GamePanel() {
         setFocusable(true);
         setBackground(new Color(20, 30, 50));
@@ -29,6 +37,10 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
 
     public void setApp(GameApplication app) {
         this.app = app;
+    }
+
+    public void setBackgroundPainter(BackgroundPainter painter) {
+        this.backgroundPainter = painter;
     }
 
     private void ensureBuffer() {
@@ -44,9 +56,15 @@ public class GamePanel extends JPanel implements KeyListener, MouseListener, Mou
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        if (backgroundPainter != null) {
+            backgroundPainter.paint(g2d);
+        }
+
         ensureBuffer();
         renderVirtual();
-        drawVirtualBuffer((Graphics2D) g);
+        drawVirtualBuffer(g2d);
     }
 
     private void renderVirtual() {

@@ -5,7 +5,7 @@ import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Sets the flow direction of a pump by specifying its input and output pipes.

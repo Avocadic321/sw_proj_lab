@@ -1,7 +1,5 @@
 package software.project.models;
 
-import software.project.utils.Teams;
-
 import java.util.ArrayList;
 import java.util.List;
 

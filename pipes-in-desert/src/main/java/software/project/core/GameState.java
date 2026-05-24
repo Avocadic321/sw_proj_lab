@@ -1,4 +1,4 @@
-package software.project.utils;
+package software.project.core;
 
 /**
  * Represents the possible states of a game session throughout its lifecycle.

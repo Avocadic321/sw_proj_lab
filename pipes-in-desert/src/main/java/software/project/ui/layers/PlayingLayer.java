@@ -7,14 +7,14 @@ import java.awt.event.MouseEvent;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.map.Pipe;
-import software.project.map.interfaces.IBreakable;
 import software.project.map.interfaces.IRepairable;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
+import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 public class PlayingLayer extends Layer {
     private final GameApplication app;
@@ -30,6 +30,10 @@ public class PlayingLayer extends Layer {
         this.renderer = new MapRenderer(this.model);
 
         model.startGame();
+
+        ScreenManager.getInstance().getPanel().setBackgroundPainter(
+            renderer::drawLetterboxSand
+        );
     }
 
     @Override
@@ -41,6 +45,13 @@ public class PlayingLayer extends Layer {
     public void update(float deltaTime) {
         renderer.update(deltaTime);
     }
+
+    @Override
+    public void onExit() {
+        super.onExit();
+        ScreenManager.getInstance().getPanel().setBackgroundPainter(null);
+    }
+
     @Override
     public boolean keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_P) {

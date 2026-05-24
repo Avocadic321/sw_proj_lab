@@ -6,10 +6,15 @@ public enum Sprites {
     MENU_TITLE("menu_title", "/ui/menu_title_two.png"),
 
     PUMP("pump", "/map/pump.png"),
-    SPRING("spring", "/map/spring.png"),
+    PUMP_FAN("pump_fan", "/map/pump_fan.png"),
+
+    SPRING("spring", "/map/spring3.png"),
+    SPRING_PIPE("spring_pipe", "/map/spring_pipe.png"),
 
     PLUMBER("plumber", "/entity/plumber.png"),
-    SABOTEUR("saboteur", "/entity/saboteur.png"),;
+    SABOTEUR("saboteur", "/entity/saboteur.png"),
+
+    GRASS("grass", "/map/grass.png"),;
 
     private final String key;
     private final String path;

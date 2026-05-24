@@ -2,7 +2,7 @@ package software.project.parser.commands;
 
 import software.project.core.GameModel;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Resumes a paused game.

@@ -5,7 +5,7 @@ import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;
-import software.project.utils.GameState;
+import software.project.core.GameState;
 
 /**
  * Sabotages (breaks) a pipe as a saboteur action.
