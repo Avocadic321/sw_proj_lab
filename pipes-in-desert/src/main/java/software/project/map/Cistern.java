@@ -53,6 +53,25 @@ public class Cistern extends ActiveElement implements IConnectable {
         return storedWater;
     }
 
+    private int pendingFlowingWater;
+    @Override
+    public int moveWater() {
+        return 0; // sink, never forwards
+    }
+
+    @Override
+    public void receiveWater(int water) {
+        int accepted = Math.min(water, capacity - storedWater);
+        storedWater += accepted;
+        pendingFlowingWater = water - accepted; // overflow staged
+    }
+
+    @Override
+    public int commit() {
+        int lost = pendingFlowingWater; // overflow is lost
+        pendingFlowingWater = 0;
+        return lost;
+    }
     /**
      * Accepts incoming water.
      * <p>

@@ -1,11 +1,14 @@
 package software.project;
 
+import software.project.core.GameConfig;
+import software.project.core.GameModel;
 import software.project.ui.GameApplication;
 
 public final class Main {
 
     public static void main(String[] args) {
         // App app = new App();
+
         if (args.length == 0) {
             new GameApplication();
         } else if (args.length == 2) {

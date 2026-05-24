@@ -3,11 +3,13 @@ package software.project.models;
 import software.project.core.WaterSimulator;
 import software.project.map.*;
 
+import java.awt.event.KeyEvent;
+
 public class WaterSimulationTestRunner {
 
     private final GameMap map;
     private final WaterSimulator simulator;
-    int ticks = 15;
+    int ticks = 5;
 
 
     public WaterSimulationTestRunner(GameMap map) {
@@ -29,46 +31,63 @@ public class WaterSimulationTestRunner {
             System.out.println("========================");
 
             // 1. simulate
-           int lostWater = simulator.tick();
+           int lostWater = simulator.tickFlow();
            System.out.printf("Amount of lost water %d%n",lostWater);
 
             // 2. debug output
             printState();
         }
 
+
+
+                var x =  map.getAllPipes().stream().filter(f -> f.getId().equals("PIPE3")).findAny();
+               var y = map.getAllPumps().stream().filter(f -> f.getId().equals("PUMP1")).findAny();
+                if(x.isPresent() && y.isPresent()){
+                    y.get().setDirection(y.get().getInputPipe(),x.get().getEnd1());
+                }
+
+        for (int i = 1; i <= ticks; i++) {
+
+            System.out.println("\n========================");
+            System.out.println("TICK " + i);
+            System.out.println("========================");
+
+            // 1. simulate
+            int lostWater = simulator.tickFlow();
+            System.out.printf("Amount of lost water %d%n",lostWater);
+
+            // 2. debug output
+            printState();
+        }
+
+
+
         System.out.println("\n===== END =====");
     }
 
     private void printState() {
-
         System.out.println("\n--- STATE SNAPSHOT ---");
 
         for (Element e : map.getElements()) {
-
             if (e instanceof Spring s) {
                 System.out.println("[SPRING " + s.getId() + "]");
-            }
-
-            if (e instanceof Pump p) {
+            } else if (e instanceof Pump p) {
                 System.out.println("[PUMP " + p.getId() + "]"
                         + " stored=" + p.getStoredWater()
+                        + " flowing=" + p.getCurrentFlowingWater()
                         + " broken=" + p.isBroken());
-            }
-
-            if (e instanceof Cistern c) {
+            } else if (e instanceof Cistern c) {
                 System.out.println("[CISTERN " + c.getId() + "]"
                         + " stored=" + c.getStoredWater());
-            }
-
-            if (e instanceof Pipe pipe) {
-                int in1 = pipe.getEnd1().getCurrentWater();
-                int in2 = pipe.getEnd2().getCurrentWater();
-
-                System.out.println("[PIPE " + pipe.getId() + "] "
-                        + "E1=" + in1 + " | E2=" + in2);
+            } else if (e instanceof Pipe pipe) {
+                System.out.println("[PIPE " + pipe.getId() + "]"
+                        + " currentWater=" + pipe.getCurrentWater()
+                        + " flowing=" + pipe.getCurrentFlowingWater()
+                        + " broken=" + pipe.isBroken()
+                        + " conflict=" + pipe.isConflict());
             }
         }
 
         System.out.println("---------------------\n");
     }
-}
+    }
