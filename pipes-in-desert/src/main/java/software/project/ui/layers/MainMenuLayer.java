@@ -9,6 +9,7 @@ import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Menu;
+import software.project.ui.components.ImageComponent;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -32,11 +33,9 @@ public class MainMenuLayer extends Layer {
 
     private final GameApplication app;
     private final Menu menu;
+    private ImageComponent titleComponent;
 
     private Animation backgroundAnimation;
-    private Sprite menuTitleSprite;
-
-    private int titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight;
 
     public MainMenuLayer(GameApplication app) {
         this.app = app;
@@ -44,7 +43,7 @@ public class MainMenuLayer extends Layer {
         if (ANIMATED) {
             loadBackgroundAnimation();
         }
-        // Create the menu with the appropriate constants and actions
+        // Create the menu
         menu = new Menu(
             MENU_SCALE_FACTOR,
             MENU_VERTICAL_OFFSET,
@@ -62,8 +61,8 @@ public class MainMenuLayer extends Layer {
 
     private void loadSprites() {
         SpriteManager sm = SpriteManager.getInstance();
-        menuTitleSprite = sm.getSprite(Sprites.MENU_TITLE);
-        recomputeLayout();
+        Sprite titleSprite = sm.getSprite(Sprites.MENU_TITLE);
+        recomputeLayout(titleSprite);
     }
 
     private void loadBackgroundAnimation() {
@@ -78,15 +77,17 @@ public class MainMenuLayer extends Layer {
         }
     }
 
-    private void recomputeLayout() {
+    private void recomputeLayout(Sprite titleSprite) {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
-        if (menuTitleSprite != null) {
-            titleDrawWidth = (int) (menuTitleSprite.getWidth() * TITLE_SCALE_FACTOR);
-            titleDrawHeight = (int) (menuTitleSprite.getHeight() * TITLE_SCALE_FACTOR);
-            titleDrawX = (virtualW - titleDrawWidth) / 2;
-            titleDrawY = TITLE_VERTICAL_OFFSET;
+        if (titleSprite != null) {
+            int titleWidth = (int) (titleSprite.getWidth() * TITLE_SCALE_FACTOR);
+            int titleHeight = (int) (titleSprite.getHeight() * TITLE_SCALE_FACTOR);
+            int titleX = (virtualW - titleWidth) / 2;
+            int titleY = TITLE_VERTICAL_OFFSET;
+
+            titleComponent = new ImageComponent(titleX, titleY, titleWidth, titleHeight, titleSprite);
         }
 
         if (menu != null) {
@@ -96,7 +97,9 @@ public class MainMenuLayer extends Layer {
 
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
-        recomputeLayout();
+        SpriteManager sm = SpriteManager.getInstance();
+        Sprite titleSprite = sm.getSprite(Sprites.MENU_TITLE);
+        recomputeLayout(titleSprite);
     }
 
     @Override
@@ -125,8 +128,8 @@ public class MainMenuLayer extends Layer {
             g.fillRect(0, 0, virtualW, virtualH);
         }
 
-        if (menuTitleSprite != null) {
-            menuTitleSprite.draw(g, titleDrawX, titleDrawY, titleDrawWidth, titleDrawHeight);
+        if (titleComponent != null) {
+            titleComponent.draw(g);
         }
 
         if (menu != null) {
