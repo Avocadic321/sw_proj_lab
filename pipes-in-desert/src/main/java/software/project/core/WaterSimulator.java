@@ -46,7 +46,6 @@ Basically simulation runs every couple of seconds, and player input is just appl
     }
 
     public int tickFlow() {
-
         List<Flow> newFlows = generateNewFlow();
         int lostWater = 0;
         flows.addAll(newFlows);
@@ -76,6 +75,13 @@ Basically simulation runs every couple of seconds, and player input is just appl
                    List<Element> potentialNewPath = buildPath(last);
                    // there is something added!!!!!
                    if(potentialNewPath.size() > 1) {
+                       markedForDeletion.add(flow);
+                       elements.clear();
+                       List<Element> newEl = new ArrayList<>(potentialNewPath);
+                       markedForAddition.add(
+                               new Flow(newEl,0)
+                       ) ;
+                   potentialNewPath.subList(1, potentialNewPath.size());
                        continue;
                    }
 
@@ -104,6 +110,7 @@ Basically simulation runs every couple of seconds, and player input is just appl
                     if(directionEnd == null) continue;
                   List<Element> newFlow =  new ArrayList<>(elements.subList(currentElement + 1, elements.size()));
                   markedForAddition.add(new Flow(newFlow,0));
+                  markedForDeletion.add(flow);
                     elements.subList(currentElement + 1, elements.size()).clear();
                     elements.addAll(buildPath(pipe));
                 }
@@ -151,7 +158,9 @@ Basically simulation runs every couple of seconds, and player input is just appl
 
         for (Spring spring : map.getAllSprings()) {
             for (PipeEnd pipeEnd: spring.getConnections()) {
+
                 if(pipeEnd.isFree()) continue;
+
                 Pipe pipe = pipeEnd.pipe;
                 List<Element> path = new ArrayList<>();
                 path.add(spring);
@@ -159,11 +168,14 @@ Basically simulation runs every couple of seconds, and player input is just appl
                if(end == null) {
                    continue;
                }
+
                 end.setInput(true);
                 path.addAll(buildPath(pipe));  // bfs includes the starting pipe
+
                 flows.add(new Flow(path, -1));
             }
         }
+
 
         return flows;
     }
@@ -172,10 +184,14 @@ Basically simulation runs every couple of seconds, and player input is just appl
         Set<Element> visited = new HashSet<>();
         List<Element> path = new ArrayList<>();
         if(startingElement instanceof Pipe p) {
+
             Pipe.DirectionEnd end = p.resolveInputEnd();
             if(end == null) return new ArrayList<>();
         }
+
         while(current != null) {
+            System.out.println(current);
+
             if(visited.contains(current)) {
                 path.add(current); // if we looped
                 break;
@@ -213,8 +229,12 @@ Basically simulation runs every couple of seconds, and player input is just appl
 //                if(pump.isBroken()){
 //                    break;
 //                }
-                pump.getOutgoingPipe().resolveEnd(pump.getOutputPipe()).setInput(true);
-                current = pump.getOutgoingPipe();
+                PipeEnd end = pump.getOutputPipe();
+                if(end == null) break;
+                Pipe pipe = pump.getOutgoingPipe();
+                if(pipe == null) break;
+                pipe.resolveEnd(end).setInput(true);
+                current = pipe;
 
             } else if(current instanceof Cistern) {
                 current = null;
