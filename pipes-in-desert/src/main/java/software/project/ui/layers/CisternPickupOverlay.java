@@ -1,5 +1,6 @@
 package software.project.ui.layers;
 
+import software.project.core.GameModel;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
@@ -10,6 +11,7 @@ import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.map.Cistern;
 import software.project.models.Plumber;
+import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Panel;
 
@@ -20,12 +22,14 @@ import static software.project.graphics.Sprites.SIMPLE_PANEL;
 
 
 import software.project.ui.components.GameButton;
-
+import software.project.utils.Constants;
 
 
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-public class CisternPickupOverlay extends Layer {
+public class CisternPickupOverlay extends Layer implements PropertyChangeListener {
 
     private static final float OVERLAY_SCALE = 2.5f;
     private static final int BASE_PANEL_PADDING = 20;
@@ -60,6 +64,21 @@ public class CisternPickupOverlay extends Layer {
     private Rectangle pumpBounds;
     private Rectangle pipeBounds;
 
+
+    private GameModel gameModel;
+    private GameApplication app;
+
+    private boolean hasClosed;
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
+            if(!hasClosed) {
+            // remove all layers till the player layer
+              app.popLayer();
+            }
+            this.gameModel.getTurnManager().removePropertyChangeListener(this);
+        }
+    }
     // Callbacks
     private PickupListener listener;
 
@@ -74,7 +93,7 @@ public class CisternPickupOverlay extends Layer {
         this.listener = listener;
     }
 
-    public CisternPickupOverlay(Plumber plumber, Cistern cistern) {
+    public CisternPickupOverlay(Plumber plumber, Cistern cistern, GameModel model, GameApplication app) {
         super(true, false); // blocks input to layers below
         this.plumber = plumber;
         this.cistern = cistern;
@@ -85,6 +104,9 @@ public class CisternPickupOverlay extends Layer {
         this.itemGap = (int) (BASE_ITEM_GAP * OVERLAY_SCALE);
         this.textScale = BASE_TEXT_SCALE * OVERLAY_SCALE;
         this.labelScale = BASE_LABEL_SCALE * OVERLAY_SCALE;
+        this.gameModel = model;
+        this.app = app;
+        this.gameModel.getTurnManager().addPropertyChangeListener(this);
 
         SpriteManager sm = SpriteManager.getInstance();
         pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
@@ -123,17 +145,13 @@ public class CisternPickupOverlay extends Layer {
         close();
     }
 
-    /**
-     * Call this when the overlay should be removed from the layer stack.
-     * Adjust according to your LayerManager implementation.
-     */
+    // Make sure that if I closed the modal, I unsubscribe
     private void close() {
-       onExit();
+       this.hasClosed = true;
+        this.gameModel.getTurnManager().removePropertyChangeListener(this);
     }
 
-    public void onExit() {
-        // To be overridden or used by your layer system.
-    }
+
 
     @Override
     public void onEnter() {

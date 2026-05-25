@@ -157,8 +157,9 @@ public class GameApplication implements ScreenManager.ResolutionListener {
     }
 
     public void render(Graphics2D g) {
-        for (Layer layer : layerStack) {
-            layer.render(g);
+
+        for (int i = 0; i < layerStack.size(); i++) {
+            layerStack.get(i).render(g);
         }
     }
 
