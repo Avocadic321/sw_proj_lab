@@ -3,7 +3,12 @@ package software.project.ui.renderer;
 import software.project.core.GameModel;
 import software.project.map.Element;
 import software.project.map.GameMap;
+import software.project.map.Pipe;
+import software.project.map.Pump;
+import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
+import software.project.models.Plumber;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -82,6 +87,29 @@ public class MapRenderer {
         }
     }
 
+    public Element getElementAt(int screenX, int screenY) {
+        for(ClickableElement ce : clickableElements) {
+            if(ce.bounds.contains(screenX, screenY)) {
+                return ce.element();
+            }
+        }
+            return null;
+    }
+    public boolean tryPlaceItem(ICarriable item, Plumber player, Pipe pipe, Point p) {
+        if(item instanceof Pump pump) {
+           Point gridPoints = grid.screenToGrid(p.x,p.y);
+
+            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(),pipe.getY()));
+           Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+           if(freePoint == null || gridPoints.x != freePoint.x || gridPoints.y != freePoint.y) return false;
+        boolean response = player.placePump(pipe,pump,freePoint);
+        if(response) {
+            model.getGameMap().addElement(pump);
+            player.getInventory().removeItem(pump);
+        }
+        }
+        return false;
+    }
     public void draw(Graphics2D g) {
         GameMap map = model.getGameMap();
         grid.computeFromMap(map);

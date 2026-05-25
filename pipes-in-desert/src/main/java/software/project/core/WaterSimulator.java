@@ -46,7 +46,6 @@ Basically simulation runs every couple of seconds, and player input is just appl
     }
 
     public int tickFlow() {
-
         List<Flow> newFlows = generateNewFlow();
         int lostWater = 0;
         flows.addAll(newFlows);
@@ -71,7 +70,21 @@ Basically simulation runs every couple of seconds, and player input is just appl
             if(currentElement >= elements.size() - 1) {
                 // last element
                 if(currentElement == elements.size() - 1) {
+                    // what happens if we add an element?
                     Element last = flow.elements.get(currentElement);
+                   List<Element> potentialNewPath = buildPath(last);
+                   // there is something added!!!!!
+                   if(potentialNewPath.size() > 1) {
+                       markedForDeletion.add(flow);
+                       elements.clear();
+                       List<Element> newEl = new ArrayList<>(potentialNewPath);
+                       markedForAddition.add(
+                               new Flow(newEl,0)
+                       ) ;
+                   potentialNewPath.subList(1, potentialNewPath.size());
+                       continue;
+                   }
+
                     int waterToLose = last.moveWater();
                     lostWater += waterToLose;
                 }
@@ -88,13 +101,30 @@ Basically simulation runs every couple of seconds, and player input is just appl
                 if(elements.get(currentElement + 1) != p.getOutgoingPipe()) {
                     // CHANGED
                     Pipe pipe = p.getOutgoingPipe();
+                    // basically the pipe was removed
+                    if(pipe == null) {
+                        elements.subList(currentElement + 1, elements.size());
+                        continue;
+                    }
                     var directionEnd = pipe.resolveEnd(p.getOutputPipe());
                     if(directionEnd == null) continue;
                   List<Element> newFlow =  new ArrayList<>(elements.subList(currentElement + 1, elements.size()));
                   markedForAddition.add(new Flow(newFlow,0));
+                  markedForDeletion.add(flow);
                     elements.subList(currentElement + 1, elements.size()).clear();
-                    elements.addAll(buildPath(pipe,directionEnd));
+                    elements.addAll(buildPath(pipe));
                 }
+            }
+            if(elements.get(currentElement) instanceof Pipe p) {
+                var end = p.resolveOutputEnd();
+                if(end == null) continue;
+                if(end.getEnd().connectedTo != elements.get(currentElement + 1)) {
+                  // change happened in the pipe (pump in the middle has been removed) so this pipe just became a sink
+                    elements.subList(currentElement + 1, elements.size());
+                    continue;
+                }
+
+
             }
            int moveFrom = elements.get(currentElement).moveWater();
             elements.get(currentElement + 1).receiveWater(moveFrom);
@@ -128,7 +158,9 @@ Basically simulation runs every couple of seconds, and player input is just appl
 
         for (Spring spring : map.getAllSprings()) {
             for (PipeEnd pipeEnd: spring.getConnections()) {
+
                 if(pipeEnd.isFree()) continue;
+
                 Pipe pipe = pipeEnd.pipe;
                 List<Element> path = new ArrayList<>();
                 path.add(spring);
@@ -136,27 +168,30 @@ Basically simulation runs every couple of seconds, and player input is just appl
                if(end == null) {
                    continue;
                }
-                path.addAll(buildPath(pipe, end));  // bfs includes the starting pipe
+
+                end.setInput(true);
+                path.addAll(buildPath(pipe));  // bfs includes the starting pipe
+
                 flows.add(new Flow(path, -1));
             }
         }
 
+
         return flows;
     }
-    // do traversal and get directions we set directions of pipes here (if there is a conflict we set it here)
-    // start from all the sources
-    private List<Element> buildPath(Pipe startingPipe, Pipe.DirectionEnd end) {
-
-        // we check the pipes conflicts
-        // check the pump conflicts as well
-        // we can do polymorphism but for now quickly instanceof in any case we need
-        List<Element> path = new ArrayList<>();
-        Element current = startingPipe;
-        end.setInput(true);
+    private List<Element> buildPath(Element startingElement) {
+        Element current = startingElement;
         Set<Element> visited = new HashSet<>();
+        List<Element> path = new ArrayList<>();
+        if(startingElement instanceof Pipe p) {
 
-        // make sure to not double add first one
+            Pipe.DirectionEnd end = p.resolveInputEnd();
+            if(end == null) return new ArrayList<>();
+        }
+
         while(current != null) {
+            System.out.println(current);
+
             if(visited.contains(current)) {
                 path.add(current); // if we looped
                 break;
@@ -194,8 +229,12 @@ Basically simulation runs every couple of seconds, and player input is just appl
 //                if(pump.isBroken()){
 //                    break;
 //                }
-                pump.getOutgoingPipe().resolveEnd(pump.getOutputPipe()).setInput(true);
-                current = pump.getOutgoingPipe();
+                PipeEnd end = pump.getOutputPipe();
+                if(end == null) break;
+                Pipe pipe = pump.getOutgoingPipe();
+                if(pipe == null) break;
+                pipe.resolveEnd(end).setInput(true);
+                current = pipe;
 
             } else if(current instanceof Cistern) {
                 current = null;
@@ -206,10 +245,75 @@ Basically simulation runs every couple of seconds, and player input is just appl
                 current = null;
             }
         }
-
         return path;
-
     }
+    // do traversal and get directions we set directions of pipes here (if there is a conflict we set it here)
+    // start from all the sources
+//    private List<Element> buildPath(Pipe startingPipe, Pipe.DirectionEnd end) {
+//
+//        // we check the pipes conflicts
+//        // check the pump conflicts as well
+//        // we can do polymorphism but for now quickly instanceof in any case we need
+//        List<Element> path = new ArrayList<>();
+//        Element current = startingPipe;
+//        end.setInput(true);
+//        Set<Element> visited = new HashSet<>();
+//
+//        // make sure to not double add first one
+//        while(current != null) {
+//            if(visited.contains(current)) {
+//                path.add(current); // if we looped
+//                break;
+//            }
+//            visited.add(current);
+//            // add current element
+//            path.add(current);
+//            if(current instanceof Pipe pipe) {
+//                // check for work here
+//                // set the direction
+//                Pipe.DirectionEnd input = pipe.resolveInputEnd();
+//                Pipe.DirectionEnd output = pipe.resolveOutputEnd();
+//                if(pipe.isMeetingAtSamePipe()) {
+//                    pipe.setConflict(true);
+//                    break;
+//                    // we dont need it but for clarity
+//                }
+////                if(pipe.isBroken()) {
+////                    break;
+////                }
+//                if(input == null || output == null) break;
+//                // check for conflict
+//                if(output.getEnd().connectedTo instanceof Pump p && p.getOutgoingPipe() == pipe) {
+//                    // LOOP CONFLICT
+//                    // STOP AT THIS ELEMENT
+//                    pipe.setConflict(true);
+//                    break;
+//                } else {
+//                    current = output.getEnd().connectedTo;
+//
+//                }
+//            }
+//            else if(current instanceof Pump pump) {
+//                // check here but we got everything
+////                if(pump.isBroken()){
+////                    break;
+////                }
+//                pump.getOutgoingPipe().resolveEnd(pump.getOutputPipe()).setInput(true);
+//                current = pump.getOutgoingPipe();
+//
+//            } else if(current instanceof Cistern) {
+//                current = null;
+//            } else if(current instanceof Spring){
+//                current = null;
+//            }
+//            else {
+//                current = null;
+//            }
+//        }
+//
+//        return path;
+//
+//    }
 
     private List<PipeEnd> getAllPipeEnds() {
         List<PipeEnd> ends = new ArrayList<>();

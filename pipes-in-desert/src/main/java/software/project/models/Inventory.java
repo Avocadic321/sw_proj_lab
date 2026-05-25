@@ -68,4 +68,12 @@ public class Inventory {
     public int getSize() {
         return size;
     }
+    public void removeItem(ICarriable item) {
+        for(int i = 0; i< inventory.length;i++) {
+            if(item == inventory[i]) {
+                inventory[i] = null;
+                break;
+            }
+        }
+    }
 }

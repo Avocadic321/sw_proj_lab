@@ -62,6 +62,7 @@ public class ResourceManager {
         audioPlayer.loadSong("main_theme", "/audio/pipes_desert_theme.wav");
         audioPlayer.loadEffect("pipe_break", "/audio/pipe_break.wav");
         audioPlayer.loadEffect("pipe_repair", "/audio/pipe_repair.wav");
+        audioPlayer.loadEffect("item_equip","/audio/equip_effect.wav");
     }
 
     public BitmapFont getFont(BitmapFonts font) {
