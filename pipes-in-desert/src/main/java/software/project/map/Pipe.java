@@ -148,7 +148,6 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         );
         currentWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
-
         if (isBroken || end1.isFree() || end2.isFree()) {
             int lost = waterAmount + currentWater;
             currentWater = 0;
@@ -156,6 +155,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
             currentFlowingWater = waterAmount;
             return lost;
         }
+
 
         currentFlowingWater = waterAmount;
         pendingFlowingWater = 0;

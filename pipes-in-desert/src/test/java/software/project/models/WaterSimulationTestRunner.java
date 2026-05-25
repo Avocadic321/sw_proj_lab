@@ -24,7 +24,7 @@ public class WaterSimulationTestRunner {
 
         System.out.println("===== WATER SIMULATION TEST START =====");
 
-        for (int i = 1; i <= ticks; i++) {
+        for (int i = 1; i <= 3; i++) {
 
             System.out.println("\n========================");
             System.out.println("TICK " + i);
@@ -40,13 +40,13 @@ public class WaterSimulationTestRunner {
 
 
 
-                var x =  map.getAllPipes().stream().filter(f -> f.getId().equals("PIPE3")).findAny();
+                var x =  map.getAllPipes().stream().filter(f -> f.getId().equals("PIPE4")).findAny();
                var y = map.getAllPumps().stream().filter(f -> f.getId().equals("PUMP1")).findAny();
                 if(x.isPresent() && y.isPresent()){
                     y.get().setDirection(y.get().getInputPipe(),x.get().getEnd1());
                 }
 
-        for (int i = 1; i <= ticks; i++) {
+        for (int i = 1; i <= 2; i++) {
 
             System.out.println("\n========================");
             System.out.println("TICK " + i);
