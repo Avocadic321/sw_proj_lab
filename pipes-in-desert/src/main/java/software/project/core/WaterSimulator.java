@@ -51,7 +51,7 @@ Basically simulation runs every couple of seconds, and player input is just appl
         int lostWater = 0;
         flows.addAll(newFlows);
         List<Flow> markedForDeletion = new ArrayList<>();
-
+        List<Flow> markedForAddition = new ArrayList<>();
         // move all flows by 1
         for(Flow flow: flows) {
             if(flow.currentElement < 0) continue;
@@ -61,8 +61,20 @@ Basically simulation runs every couple of seconds, and player input is just appl
             // if element is a pump check if it changed and rebuild its path
             int currentElement = flow.currentElement;
             List<Element> elements = flow.elements;
+            // BUG WE DONT DEAL WITH SINGLE ELEMENTS FLOWS!
+//            if(currentElement >= elements.size() - 1) {
+//                // mark for deletion
+//                markedForDeletion.add(flow);
+//                continue;
+//            }
+            // deal with  finishing or single element flows
             if(currentElement >= elements.size() - 1) {
-                // mark for deletion
+                // last element
+                if(currentElement == elements.size() - 1) {
+                    Element last = flow.elements.get(currentElement);
+                    int waterToLose = last.moveWater();
+                    lostWater += waterToLose;
+                }
                 markedForDeletion.add(flow);
                 continue;
             }
@@ -72,12 +84,14 @@ Basically simulation runs every couple of seconds, and player input is just appl
 
             // if pump is current element we rebuild the graph in case of changes
             if(elements.get(currentElement) instanceof Pump p) {
+
                 if(elements.get(currentElement + 1) != p.getOutgoingPipe()) {
                     // CHANGED
-                    System.out.println("[CHANGED IN DIRECTION, RECALCULATING]");
                     Pipe pipe = p.getOutgoingPipe();
                     var directionEnd = pipe.resolveEnd(p.getOutputPipe());
                     if(directionEnd == null) continue;
+                  List<Element> newFlow =  new ArrayList<>(elements.subList(currentElement + 1, elements.size()));
+                  markedForAddition.add(new Flow(newFlow,0));
                     elements.subList(currentElement + 1, elements.size()).clear();
                     elements.addAll(buildPath(pipe,directionEnd));
                 }
@@ -86,8 +100,6 @@ Basically simulation runs every couple of seconds, and player input is just appl
             elements.get(currentElement + 1).receiveWater(moveFrom);
 
         }
-
-        flows.removeAll(markedForDeletion);
         Set<Element> toCommit = new HashSet<>();
 
         for(Flow flow: flows) {
@@ -105,26 +117,11 @@ Basically simulation runs every couple of seconds, and player input is just appl
 
         for(Element e: toCommit) {
             lostWater += e.commit();
-
         }
+        flows.removeAll(markedForDeletion);
+        flows.addAll(markedForAddition);
         return lostWater;
     }
-
-    public int tick() {
-
-        int lostWater = 0;
-        for (Element e : map.getElements()) {
-            lostWater += e.receiveAndTransferWater();
-
-        }
-        for (PipeEnd pipeEnd : getAllPipeEnds()) {
-            pipeEnd.commit();
-        }
-        Debug.log("LEAKED WATER: %d", lostWater);
-        return lostWater;
-    }
-
-
 
     public List<Flow> generateNewFlow() {
         List<Flow> flows = new ArrayList<>();

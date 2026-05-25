@@ -244,36 +244,6 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         pendingFlowingWater = 0;
         return 0;
     }
-
-    @Override
-    public int receiveAndTransferWater() {
-        if (inputPipe == null || outputPipe == null) return 0;
-        int incoming = inputPipe.consumeWater();
-
-        int maxCapacity = GameConfig.PUMP_TANK_CAPACITY;
-        int maxTransfer = GameConfig.PUMP_MAX_FLOW_PER_TICK;
-
-        ElementWaterState waterAmount = Helper.waterToBePumpedOut(
-            incoming,
-            maxTransfer,
-            storedWater,
-            maxCapacity,
-            this::breakElement);
-
-        storedWater = waterAmount.currentlyStoredWater();
-        int out = waterAmount.pumpedWater();
-
-        if (isBroken || outputPipe.isFree()) {
-            int lost = out + storedWater;
-            storedWater = 0;
-            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), out);
-            return lost;
-        }
-        Debug.log("[PUMP] %s AMOUNT FORWARDED %d", this.getId(), out);
-        outputPipe.addPendingWater(out);
-        return 0;
-    }
-
     /**
      * Breaks the pump.
      */

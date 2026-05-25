@@ -162,7 +162,6 @@ public abstract class Element {
      *
      * @return amount of leaked water
      */
-    public abstract int receiveAndTransferWater();
     public abstract int moveWater();
     public abstract void receiveWater(int water);
     public abstract int commit();

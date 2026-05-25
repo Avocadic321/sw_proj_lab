@@ -74,31 +74,7 @@ public class Cistern extends ActiveElement implements IConnectable {
         pendingFlowingWater = 0;
         return lost;
     }
-    /**
-     * Accepts incoming water.
-     * <p>
-     * // * @param amount amount of water received
-     */
-    @Override
-    public int receiveAndTransferWater() {
-        int leaked = 0;
-        for (PipeEnd end : getConnections()) {
-            int incoming = end.consumeWater();
-            if (incoming <= 0)
-                continue;
-            int accepted = Math.min(incoming, capacity - storedWater);
-            storedWater += accepted;
-            int overflow = incoming - accepted;
-            if (overflow > 0 && Debug.ENABLED) {
-                Debug.log("Cistern Overflow - Amount :%d%n", overflow);
-            }
-
-            leaked += overflow;
-
-        }
-        return leaked;
-    }
-
+    
     /**
      * Indicates whether the cistern is full.
      *

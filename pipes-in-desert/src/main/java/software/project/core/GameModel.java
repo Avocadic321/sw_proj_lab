@@ -358,7 +358,7 @@ public class GameModel {
         }
 
         for (int i = 0; i < ticks; i++) {
-            int leakedAmount = waterSimulator.tick();
+            int leakedAmount = waterSimulator.tickFlow();
             calculateScore(leakedAmount);
             checkWinner();
 

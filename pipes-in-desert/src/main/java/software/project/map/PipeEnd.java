@@ -12,47 +12,6 @@ public class PipeEnd {
      * Active element currently connected to this end.
      */
     public ActiveElement connectedTo;
-
-    /**
-     * Water available in CURRENT tick (read phase)
-     */
-    private int currentWater = 0;
-
-    /**
-     * Water written during compute phase (next tick)
-     */
-    private int pendingWater = 0;
-
-    /**
-     * Read and consume current water (used by elements during compute phase)
-     */
-    public int consumeWater() {
-        int val = currentWater;
-        currentWater = 0;
-        return val;
-    }
-
-    /**
-     * Write water into this end for NEXT tick (compute phase only)
-     */
-    public void addPendingWater(int amount) {
-        if (amount <= 0)
-            return;
-        pendingWater += amount;
-    }
-
-    /**
-     * Commit all pending water into current state (commit phase)
-     */
-    public void commit() {
-        currentWater = pendingWater;
-        pendingWater = 0;
-    }
-
-    public int getCurrentWater() {
-        return currentWater;
-    }
-
     /**
      * Connects this end to an active element and registers it.
      *
@@ -100,11 +59,9 @@ public class PipeEnd {
         String connectedId = connectedTo == null ? "FREE" : connectedTo.getId();
 
         return String.format(
-            "[STATE] PIPE_END %s pipe=%s connectedTo=%s currentWater=%d pendingWater=%d",
+            "[STATE] PIPE_END %s pipe=%s connectedTo=%s",
             id,
             pipeId,
-            connectedId,
-            currentWater,
-            pendingWater);
+            connectedId);
     }
 }
