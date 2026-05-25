@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import software.project.map.ActiveElement;
 import software.project.map.Cistern;
-import software.project.map.Element;
 import software.project.map.GameMap;
 import software.project.map.Pump;
 import software.project.models.Plumber;
@@ -65,7 +64,7 @@ public class GameModel {
      * @param config game configuration
      */
     public GameModel(GameConfig config) {
-        this.gameMap = new GameMap();
+        this.gameMap = new GameMap(config.getPlumberCount(), config.getSaboteurCount());
         this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
         this.config = config;
@@ -114,10 +113,11 @@ public class GameModel {
         }
         // Filter to only those that can be occupied (e.g., not broken, not full, etc.)
         List<ActiveElement> occupiable = activeElements.stream()
-                                                       .filter(ActiveElement::canOccupy)
-                                                       .toList();
+                .filter(ActiveElement::canOccupy)
+                .toList();
         if (occupiable.isEmpty()) {
-            // Fallback to all active elements even if occupied (e.g., broken, but still allow)
+            // Fallback to all active elements even if occupied (e.g., broken, but still
+            // allow)
             occupiable = activeElements;
         }
         return occupiable.get(random.nextInt(occupiable.size()));

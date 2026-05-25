@@ -1,7 +1,5 @@
 package software.project.map;
 
-import software.project.utils.IdGenerator;
-
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,21 +11,14 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import software.project.utils.IdGenerator;
+
 public class GameMap {
     private final List<Element> elements = new ArrayList<>();
     private Element spawnPoint;
 
-    public GameMap() {
-        buildMap();
-    }
-
-    public GameMap(int choice) {
-        switch (choice) {
-            case 1 -> buildMap1();
-            case 2 -> buildMap2();
-            case 3 -> buildMap3();
-            default -> buildMap();
-        }
+    public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
+        buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
     }
 
     public boolean addElement(Element element) {
@@ -255,7 +246,7 @@ public class GameMap {
 
         if (from instanceof Pipe pipe) {
             return (pipe.getEnd1().connectedTo == to) ||
-                (pipe.getEnd2().connectedTo == to);
+                    (pipe.getEnd2().connectedTo == to);
         }
 
         if (from instanceof ActiveElement active) {
@@ -269,106 +260,17 @@ public class GameMap {
         return false;
     }
 
-    /**
-     * S1 → P1 → PipeX ← P2 ← S2
-     */
-    private void buildMap3() {
-        IdGenerator.reset();
-        elements.clear();
-
-        Spring spring1 = new Spring(0, 0);
-        Spring spring2 = new Spring(6, 0);
-        Cistern cistern1 = new Cistern(0, 4);
-        Cistern cistern2 = new Cistern(6, 4);
-        Pump pump1 = new Pump(2, 0);
-        Pump pump2 = new Pump(4, 0);
-
-        Pipe pipe1 = new Pipe(1, 0);
-        Pipe pipe2 = new Pipe(5, 0);
-        Pipe pipeX = new Pipe(3, 0);
-        Pipe pipe3 = new Pipe(1, 2);
-        Pipe pipe4 = new Pipe(5, 2);
-
-        pipe1.connectBothEnds(spring1, pump1);
-        pipe2.connectBothEnds(spring2, pump2);
-        pipeX.connectBothEnds(pump1, pump2);
-        pipe3.connectBothEnds(pump1, cistern1);
-        pipe4.connectBothEnds(pump2, cistern2);
-
-        pump1.setDirection(pipe1.getEnd2(), pipeX.getEnd1());
-        pump2.setDirection(pipe2.getEnd2(), pipeX.getEnd2());
-
-        addElements(List.of(
-            spring1, spring2, cistern1, cistern2,
-            pump1, pump2, pipeX, pipe1, pipe2, pipe3, pipe4
-        ));
-        spawnPoint = pump1;
-    }
-
-    /**
-     * S1 → P1 → FE S2 → P2 → FE
-     */
-    private void buildMap2() {
-        IdGenerator.reset();
-        elements.clear();
-
-        Spring spring1 = new Spring(0, 0);
-        Spring spring2 = new Spring(0, 4);
-        Pump pump1 = new Pump(2, 0);
-        Pump pump2 = new Pump(2, 4);
-
-        Pipe pipe1 = new Pipe(1, 0);
-        Pipe pipe2 = new Pipe(1, 4);
-        Pipe pipe3 = new Pipe(3, 0);
-        Pipe pipe4 = new Pipe(3, 4);
-
-        pipe1.connectBothEnds(spring1, pump1);
-        pipe2.connectBothEnds(spring2, pump2);
-        pipe3.connectBothEnds(pump1, null);
-        pipe4.connectBothEnds(pump2, null);
-
-        pump1.setDirection(pipe1.getEnd2(), pipe3.getEnd1());
-        pump2.setDirection(pipe2.getEnd2(), pipe4.getEnd1());
-
-        addElements(List.of(
-            spring1, spring2,
-            pump1, pump2,
-            pipe1, pipe2, pipe3, pipe4
-        ));
-        spawnPoint = pump1;
-    }
-
-    /**
-     * S1 → P1 → C1
-     */
-    private void buildMap1() {
-        IdGenerator.reset();
-        elements.clear();
-
-        Spring spring1 = new Spring(0, 0);
-        Cistern cistern1 = new Cistern(4, 0);
-        Pump pump1 = new Pump(2, 0);
-
-        Pipe pipe1 = new Pipe(1, 0);
-        Pipe pipe2 = new Pipe(3, 0);
-
-        pipe1.connectBothEnds(spring1, pump1);
-        pipe2.connectBothEnds(pump1, cistern1);
-
-        pump1.setDirection(pipe1.getEnd2(), pipe2.getEnd1());
-
-        addElements(List.of(spring1, cistern1, pump1, pipe1, pipe2));
-        spawnPoint = pump1;
-    }
-
-    /*           S1        S2
-     *           ||
-     *           B1
-     *           ||
+    /*
+     * Legacy
+     *
+     * S1 S2
+     * ||
+     * B1
+     * ||
      * FE===B2===P1===B3===P3===B9===FE
-     *           ||        ||
-     *           B4        B8
-     *           ||        ||
+     * || ||
+     * B4 B8
+     * || ||
      * C1===B5===P2===B6===P4===B7===C2
      */
     private void buildMap() {
@@ -409,13 +311,73 @@ public class GameMap {
         pump3.setDirection(pipe3.getEnd2(), pipe9.getEnd1());
 
         addElements(List.of(
-            spring1, spring2,
-            cistern1, cistern2,
-            pump1, pump2, pump3, pump4,
-            pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9
-        ));
+                spring1, spring2,
+                cistern1, cistern2,
+                pump1, pump2, pump3, pump4,
+                pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9));
 
         spawnPoint = pump1;
+    }
+
+    private void buildMapWithCisterns(int cisternCount) {
+        IdGenerator.reset();
+        elements.clear();
+
+        List<Spring> springs = new ArrayList<>();
+        List<Pump> pumps = new ArrayList<>();
+        List<Cistern> cisterns = new ArrayList<>();
+        List<Pipe> pipes = new ArrayList<>();
+        List<Pump> junctions = new ArrayList<>();
+
+        for (int i = 0; i < cisternCount; i++) {
+            int x = i * 4;
+
+            Spring spring = new Spring(x, 0);
+            Pump pump = new Pump(x, 2);
+            Cistern cistern = new Cistern(x, 4);
+
+            Pipe up = new Pipe(x, 1);
+            Pipe down = new Pipe(x, 3);
+
+            up.connectBothEnds(spring, pump);
+            down.connectBothEnds(pump, cistern);
+            pump.setDirection(up.getEnd2(), down.getEnd1());
+
+            springs.add(spring);
+            pumps.add(pump);
+            cisterns.add(cistern);
+            pipes.add(up);
+            pipes.add(down);
+        }
+
+        for (int i = 0; i < pumps.size() - 1; i++) {
+            int junctionX = i * 4 + 2;
+            Pump junction = new Pump(junctionX, 2);
+            Pipe left = new Pipe(junctionX - 1, 2);
+            Pipe right = new Pipe(junctionX + 1, 2);
+
+            left.connectBothEnds(pumps.get(i), junction);
+            right.connectBothEnds(junction, pumps.get(i + 1));
+            junction.setDirection(left.getEnd2(), right.getEnd1());
+
+            Pipe branch = new Pipe(junctionX, (i % 2 == 0) ? 1 : 3);
+            branch.connectBothEnds(junction, null);
+
+            junctions.add(junction);
+            pipes.add(left);
+            pipes.add(right);
+            pipes.add(branch);
+        }
+
+        List<Element> all = new ArrayList<>();
+        all.addAll(springs);
+        all.addAll(cisterns);
+        all.addAll(pumps);
+        all.addAll(junctions);
+        all.addAll(pipes);
+        addElements(all);
+
+        spawnPoint = pumps.isEmpty() ? null : pumps.get(0);
     }
 
     private record GraphNode(Element element, List<Element> neighbors) {
