@@ -15,6 +15,7 @@ public class MapRenderer {
     private final BackgroundRenderer background;
     private final ElementRenderer elements;
     private final PlayerRenderer players;
+    private final LeakRenderer leakRenderer;
 
     // Animation timers (paused automatically when update not called)
     private float gameTime = 0f;
@@ -39,11 +40,15 @@ public class MapRenderer {
         this.background = new BackgroundRenderer();
         this.elements = new ElementRenderer();
         this.players = new PlayerRenderer();
+        this.leakRenderer = new LeakRenderer();
     }
 
     public void update(float deltaTime) {
         // Always advance game time for other uses
         gameTime += deltaTime;
+
+        // Update leak particles
+        leakRenderer.update(deltaTime, model.getGameMap().getAllPipes(), grid);
 
         // Update fan angles for all pumps every frame
         elements.updateFanAngles(deltaTime, model.getGameMap().getAllPumps());
@@ -82,6 +87,9 @@ public class MapRenderer {
         background.drawSand(g, grid);
         background.drawGridLines(g, grid);
         elements.drawSprings(g, map.getAllSprings(), grid);
+
+        // Draw leaks before pipes so they appear behind/under the pipes
+        leakRenderer.draw(g, map.getAllPipes());
         elements.drawPipes(g, map.getAllPipes(), grid);
         elements.drawPumps(g, map.getAllPumps(), grid);
         elements.drawCisterns(g, map.getAllCisterns(), grid);

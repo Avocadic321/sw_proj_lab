@@ -8,14 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class ElementRenderer {
     private final SpriteManager sm = SpriteManager.getInstance();
     private final Map<Pump, Double> fanAngles = new HashMap<>();
-    private final Map<Pump, Double> targetFanSpeeds = new HashMap<>();
     private final Map<Pump, Double> currentFanSpeeds = new HashMap<>();
+    private final Random leakRandom = new Random();
 
-    private static final double SMOOTHING_FACTOR = 3.0; // Speed of transition (higher = faster)
+    private static final double SMOOTHING_FACTOR = 3.0;
 
     private int waterPercentToColumn(int percent, int numFrames) {
         if (percent < 0) return 0;
@@ -86,14 +87,9 @@ public class ElementRenderer {
         }
     }
 
-    /**
-     * Updates the fan angles for all pumps based on their current water flow.
-     * Uses smooth transitions so speed changes gradually.
-     * Called once per frame with deltaTime.
-     */
     public void updateFanAngles(float deltaTime, List<Pump> pumps) {
-        final double MIN_SPEED = 10.0;   // deg/sec (idle)
-        final double MAX_SPEED = 360.0;  // deg/sec (full flow)
+        final double MIN_SPEED = 10.0;
+        final double MAX_SPEED = 360.0;
         int maxFlow = GameConfig.PUMP_MAX_FLOW_PER_TICK;
 
         for (Pump pump : pumps) {
@@ -102,18 +98,12 @@ public class ElementRenderer {
             if (percentFlow > 100) percentFlow = 100;
             if (percentFlow < 0) percentFlow = 0;
 
-            // Target speed based on current water flow
             double targetSpeed = MIN_SPEED + (percentFlow / 100.0) * (MAX_SPEED - MIN_SPEED);
-
-            // Get current speed or initialize
             double currentSpeed = currentFanSpeeds.getOrDefault(pump, targetSpeed);
-
-            // Smoothly interpolate current speed toward target speed
             double diff = targetSpeed - currentSpeed;
             currentSpeed += diff * Math.min(1.0, SMOOTHING_FACTOR * deltaTime);
             currentFanSpeeds.put(pump, currentSpeed);
 
-            // Update angle using current speed
             double currentAngle = fanAngles.getOrDefault(pump, 0.0);
             currentAngle += currentSpeed * deltaTime;
             currentAngle %= 360.0;

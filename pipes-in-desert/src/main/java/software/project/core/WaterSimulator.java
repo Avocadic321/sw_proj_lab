@@ -74,7 +74,6 @@ Basically simulation runs every couple of seconds, and player input is just appl
             if(elements.get(currentElement) instanceof Pump p) {
                 if(elements.get(currentElement + 1) != p.getOutgoingPipe()) {
                     // CHANGED
-                    System.out.println("[CHANGED IN DIRECTION, RECALCULATING]");
                     Pipe pipe = p.getOutgoingPipe();
                     var directionEnd = pipe.resolveEnd(p.getOutputPipe());
                     if(directionEnd == null) continue;

@@ -101,6 +101,10 @@ public class PlayingLayer extends Layer {
             app.pushLayer(new PumpDirectionOverlay(app, (Pump) element));
             return true;
         }
+
+        if (e.getKeyCode() == KeyEvent.VK_S) {
+            model.getTurnManager().endTurn();
+        }
         return false;
     }
 
