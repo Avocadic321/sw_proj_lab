@@ -238,6 +238,16 @@ public class GameMap {
         return getElementsByType(Pipe.class);
     }
 
+    public List<ActiveElement> getActiveElements() {
+        List<ActiveElement> result = new ArrayList<>();
+        for (Element element : elements) {
+            if (element instanceof ActiveElement active) {
+                result.add(active);
+            }
+        }
+        return result;
+    }
+
     public boolean areConnected(Element from, Element to) {
         if (from == null || to == null) {
             return false;
