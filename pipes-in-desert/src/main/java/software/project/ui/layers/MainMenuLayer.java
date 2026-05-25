@@ -52,7 +52,7 @@ public class MainMenuLayer extends Layer {
                 INNER_PADDING_PERCENT);
 
         menu.setAction(0, () -> app.replaceLayer(new PlayingLayer(app)));
-        menu.setAction(1, () -> System.out.println("OPTIONS clicked"));
+        menu.setAction(1, () -> app.pushLayer(new OptionsLayer(app)));
         menu.setAction(2, () -> System.out.println("CREDITS clicked"));
         menu.setAction(3, () -> System.exit(0));
     }

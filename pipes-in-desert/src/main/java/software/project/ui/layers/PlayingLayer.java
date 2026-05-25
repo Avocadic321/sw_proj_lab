@@ -126,6 +126,7 @@ public class PlayingLayer extends Layer {
                     model.resumeGame();
                     app.popLayer();
                 });
+                overlay.setOptionsAction(() -> app.pushLayer(new OptionsLayer(app)));
                 overlay.setQuitAction(() -> {
                     model.endGame();
                     app.clearLayers();
