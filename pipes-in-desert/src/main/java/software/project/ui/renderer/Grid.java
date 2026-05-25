@@ -1,10 +1,10 @@
 package software.project.ui.renderer;
 
-import software.project.map.GameMap;
-import software.project.ui.ScreenManager;
-
 import java.awt.Point;
 import java.awt.Rectangle;
+
+import software.project.map.GameMap;
+import software.project.ui.ScreenManager;
 
 public class Grid {
     private static final int DEFAULT_GRID_WIDTH = 7;
@@ -63,7 +63,9 @@ public class Grid {
         int totalAreaHeight = gridHeight + TOP_BORDER_TILES + BOTTOM_BORDER_TILES;
         int vw = ScreenManager.getInstance().getVirtualWidth();
         int vh = ScreenManager.getInstance().getVirtualHeight();
-        tileSize = vh / totalAreaHeight;
+        int tileW = vw / totalAreaWidth;
+        int tileH = vh / totalAreaHeight;
+        tileSize = Math.min(tileW, tileH);
         if (tileSize < 8) {
             tileSize = 8;
         }
@@ -97,17 +99,15 @@ public class Grid {
 
     public Point getCellCenter(int gridX, int gridY) {
         return new Point(
-            offsetX + gridX * tileSize + tileSize / 2,
-            offsetY + gridY * tileSize + tileSize / 2
-        );
+                offsetX + gridX * tileSize + tileSize / 2,
+                offsetY + gridY * tileSize + tileSize / 2);
     }
 
     public Rectangle getCellBounds(int gridX, int gridY) {
         return new Rectangle(
-            offsetX + gridX * tileSize,
-            offsetY + gridY * tileSize,
-            tileSize, tileSize
-        );
+                offsetX + gridX * tileSize,
+                offsetY + gridY * tileSize,
+                tileSize, tileSize);
     }
 
     public Point screenToGrid(int screenX, int screenY) {
