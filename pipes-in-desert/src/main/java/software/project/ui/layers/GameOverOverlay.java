@@ -18,6 +18,10 @@ import software.project.models.Team;
 import software.project.models.Teams;
 import software.project.ui.ScreenManager;
 
+/**
+ * Game-over overlay that summarizes the final scores and returns the player
+ * to the main menu.
+ */
 public class GameOverOverlay extends Layer {
     private static final int PANEL_WIDTH = 520;
     private static final int PANEL_HEIGHT = 420;
@@ -58,6 +62,12 @@ public class GameOverOverlay extends Layer {
     private Runnable mainMenuAction = () -> {
     };
 
+    /**
+     * Creates the game-over overlay from the final game model state.
+     *
+     * @param model finished game model used to determine the winner and final
+     *              scores
+     */
     public GameOverOverlay(GameModel model) {
         super(true, true);
         this.titleFont = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
@@ -77,16 +87,33 @@ public class GameOverOverlay extends Layer {
         recomputeLayout();
     }
 
+    /**
+     * Sets the action invoked when the player presses the main menu button.
+     *
+     * @param mainMenuAction callback that replaces the overlay with the main
+     *                       menu
+     */
     public void setMainMenuAction(Runnable mainMenuAction) {
         this.mainMenuAction = mainMenuAction == null ? () -> {
         } : mainMenuAction;
     }
 
+    /**
+     * Recomputes the overlay layout when the virtual resolution changes.
+     *
+     * @param newWidth  new virtual width
+     * @param newHeight new virtual height
+     */
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
     }
 
+    /**
+     * Renders the dimmed backdrop, final score summary, and main menu button.
+     *
+     * @param g graphics context used for drawing the overlay
+     */
     @Override
     public void render(Graphics2D g) {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
@@ -133,12 +160,25 @@ public class GameOverOverlay extends Layer {
                 buttonBounds.y + buttonBounds.height / 2, BUTTON_TEXT_SCALE);
     }
 
+    /**
+     * Updates the button hover state based on the current mouse position.
+     *
+     * @param e mouse move event received from the UI system
+     * @return always {@code true} to indicate the event was handled
+     */
     @Override
     public boolean mouseMoved(MouseEvent e) {
         buttonHover = buttonBounds.contains(e.getPoint());
         return true;
     }
 
+    /**
+     * Handles clicks on the main menu button and triggers the configured
+     * action.
+     *
+     * @param e mouse press event received from the UI system
+     * @return always {@code true} because the overlay consumes the click
+     */
     @Override
     public boolean mousePressed(MouseEvent e) {
         if (buttonBounds.contains(e.getPoint())) {
@@ -149,6 +189,9 @@ public class GameOverOverlay extends Layer {
         return true;
     }
 
+    /**
+     * Centers the panel and action button within the current virtual screen.
+     */
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -162,6 +205,16 @@ public class GameOverOverlay extends Layer {
         buttonBounds.setBounds(buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT);
     }
 
+    /**
+     * Draws text centered on the provided x-coordinate.
+     *
+     * @param g       graphics context used for drawing
+     * @param font    font used for measuring and rendering the text
+     * @param text    text to draw
+     * @param centerX horizontal center position for the text
+     * @param y       vertical position of the text baseline region
+     * @param scale   font scale to apply while drawing
+     */
     private void drawCenteredText(Graphics2D g, BitmapFont font, String text, int centerX, int y, float scale) {
         if (font == null || text == null) {
             return;
@@ -173,6 +226,13 @@ public class GameOverOverlay extends Layer {
         font.draw(g, text, drawX, drawY, scale);
     }
 
+    /**
+     * Draws the final score line and its colored comparison bars.
+     *
+     * @param g       graphics context used for drawing
+     * @param centerX horizontal center position for the score line
+     * @param y       vertical anchor for the score line
+     */
     private void drawScoreLine(Graphics2D g, int centerX, int y) {
         if (scoreFont == null || plumberScoreText == null || saboteurScoreText == null) {
             return;
@@ -196,6 +256,12 @@ public class GameOverOverlay extends Layer {
         g.fillRoundRect(startX + plumberW + SCORE_SEGMENT_GAP, barY, saboteurW, SCORE_BAR_HEIGHT, 6, 6);
     }
 
+    /**
+     * Returns the score for the provided team, or zero when the team is absent.
+     *
+     * @param team team whose score should be read
+     * @return team score, or zero when the team is {@code null}
+     */
     private int getScore(Team team) {
         return team == null ? 0 : team.getScore();
     }

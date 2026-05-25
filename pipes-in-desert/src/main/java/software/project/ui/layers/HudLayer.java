@@ -35,6 +35,15 @@ import software.project.ui.components.Banner;
 import software.project.ui.renderer.Grid;
 import software.project.utils.Constants;
 
+/**
+ * Renders the gameplay HUD, including timer, scores, inventory, and status
+ * text.
+ *
+ * <p>
+ * Also tracks drag-and-drop state for plumber inventory interactions and
+ * listens for turn changes to reset temporary UI state.
+ * </p>
+ */
 public class HudLayer extends Layer implements PropertyChangeListener {
     private static final int MARGIN = 15;
     private static final int SCORE_GAP = 10;
@@ -78,16 +87,24 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private final Rectangle inventoryPanelBounds = new Rectangle();
     private Rectangle[] slotBounds = new Rectangle[0];
 
-
     private boolean dragging = false;
     private ICarriable draggedItem = null;
     private int draggedSlot = -1;
     private Point dragStart = null;
     private Point currentDragPos = null;
 
-    public boolean isDragging() { return dragging; }
-    public ICarriable getDraggedItem() { return draggedItem; }
-    public Point getCurrentDragPos() { return currentDragPos; }
+    public boolean isDragging() {
+        return dragging;
+    }
+
+    public ICarriable getDraggedItem() {
+        return draggedItem;
+    }
+
+    public Point getCurrentDragPos() {
+        return currentDragPos;
+    }
+
     public void resetDrag() {
         dragging = false;
         draggedItem = null;
@@ -103,6 +120,11 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Creates a HUD layer bound to the provided game model.
+     *
+     * @param model active game model used for scores, timers, and player state
+     */
     public HudLayer(GameModel model) {
         super(false, false);
         this.model = model;
@@ -126,11 +148,17 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         recomputeLayout();
     }
 
+    /**
+     * Recomputes layout when the virtual resolution changes.
+     */
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
     }
 
+    /**
+     * Updates banner text and inventory layout based on current game state.
+     */
     @Override
     public void update(float deltaTime) {
         int timeLeft = model.getTurnManager().getTimeLeft();
@@ -147,6 +175,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Draws HUD elements in a fixed screen-space overlay.
+     */
     @Override
     public void render(Graphics2D g) {
         timerBanner.draw(g);
@@ -166,12 +197,17 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         drawDragging(g, grid);
     }
 
+    /**
+     * Highlights grid cells where a carried pump can be placed.
+     */
     private void drawPossiblePumpConnections(Graphics2D g, Grid grid) {
         List<Pipe> pipes = model.getGameMap().getAllPipes();
-        for(Pipe pipe: pipes) {
-            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
+        for (Pipe pipe : pipes) {
+            List<Point> points = model.getGameMap()
+                    .getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
             Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-            if(freePoint == null) continue;
+            if (freePoint == null)
+                continue;
 
             // Draw highlight on that tile
             Rectangle tileRect = grid.getCellBounds(freePoint.x, freePoint.y);
@@ -188,24 +224,32 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Renders the dragged inventory item and its placement hints.
+     */
     private void drawDragging(Graphics2D g, Grid grid) {
         Player player = model.getTurnManager().getCurrentPlayer();
-        if(dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
+        if (dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
             Sprite sprite = getSpriteForItem(draggedItem);
-            if(sprite != null) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.8f));
-                sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,grid.getTileSize(),0);
+            if (sprite != null) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                sprite.drawCentered(g, currentDragPos.x, currentDragPos.y, grid.getTileSize(), 0);
             }
             drawPossiblePumpConnections(g, grid);
         }
     }
 
     private Sprite getSpriteForItem(ICarriable item) {
-        if (item instanceof Pump) return pumpSprite;
-        if (item instanceof Pipe) return pipeSheet == null ? null : pipeSheet.getSprite(0);
+        if (item instanceof Pump)
+            return pumpSprite;
+        if (item instanceof Pipe)
+            return pipeSheet == null ? null : pipeSheet.getSprite(0);
         return null;
     }
 
+    /**
+     * Computes HUD element positions based on the current virtual resolution.
+     */
     private void recomputeLayout() {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
@@ -229,6 +273,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Adjusts inventory layout when the slot count changes.
+     */
     private void updateInventoryLayout(Inventory inventory) {
         int slots = inventory.getInventory().length;
         if (slots != inventorySlots) {
@@ -237,6 +284,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Computes the inventory panel and slot rectangles.
+     */
     private void updateInventoryLayout(int panelX, int slots) {
         int panelW = slots * SLOT_SIZE + (2 * PANEL_PADDING);
         int panelH = SLOT_SIZE + (2 * PANEL_PADDING);
@@ -252,6 +302,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Draws the inventory panel and items for the current plumber.
+     */
     private void drawInventory(Graphics2D g, Inventory inventory) {
         if (inventoryPanelSprite != null) {
             inventoryPanelSprite.draw(g, inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
@@ -312,6 +365,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         g.drawRoundRect(x, y, w, h, SCORE_OUTLINE_RADIUS, SCORE_OUTLINE_RADIUS);
     }
 
+    /**
+     * Draws contextual action hints for the active player.
+     */
     private void drawActionHints(Graphics2D g, Player current) {
         List<ActionHint> hints = getActionHints(current);
         if (hints.isEmpty() || hudFont == null) {
@@ -361,6 +417,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Builds the list of action hints based on player role and position.
+     */
     private List<ActionHint> getActionHints(Player current) {
         List<ActionHint> hints = new ArrayList<>();
         if (current == null) {
@@ -391,8 +450,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             if (position instanceof Pipe pipe && pipe.isBroken()) {
                 hints.add(new ActionHint("f", "repair", teamColor));
             }
-            if(position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
-                hints.add(new ActionHint("m","split pipe",teamColor));
+            if (position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
+                hints.add(new ActionHint("m", "split pipe", teamColor));
             }
             return hints;
         }
@@ -412,6 +471,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         return hints;
     }
 
+    /**
+     * Draws a bottom-right summary of remaining small and big actions.
+     */
     private void drawActionStatus(Graphics2D g) {
         if (hudFont == null) {
             return;
@@ -420,7 +482,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         boolean smallLeft = model.getTurnManager().canUseSmallAction();
         boolean bigLeft = model.getTurnManager().canUseBigAction();
         String text = "Move is " + (smallLeft ? "available" : "used")
-            + "  Action is " + (bigLeft ? "available" : "used");
+                + "  Action is " + (bigLeft ? "available" : "used");
 
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -432,14 +494,18 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         hudFont.draw(g, text, x, y, ACTION_STATUS_TEXT_SCALE);
     }
 
+    /**
+     * Begins dragging an inventory item if the user clicks a slot.
+     */
     @Override
     public boolean mousePressed(MouseEvent e) {
         Player player = model.getTurnManager().getCurrentPlayer();
-        if(inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
-            for(int i = 0; i < slotBounds.length; i++) {
-                if(slotBounds[i].contains(e.getPoint())) {
+        if (inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
+            for (int i = 0; i < slotBounds.length; i++) {
+                if (slotBounds[i].contains(e.getPoint())) {
                     ICarriable item = plumber.getInventory().get(i);
-                    if(item == null) continue;
+                    if (item == null)
+                        continue;
                     dragging = true;
                     draggedItem = item;
                     draggedSlot = i;
@@ -452,15 +518,21 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         return false;
     }
 
+    /**
+     * Updates drag position for the inventory item.
+     */
     @Override
     public boolean mouseDragged(MouseEvent e) {
-        if(dragging) {
+        if (dragging) {
             currentDragPos = e.getPoint();
             return true;
         }
         return false;
     }
 
+    /**
+     * Ends drag state without placing an item.
+     */
     @Override
     public boolean mouseReleased(MouseEvent e) {
         if (dragging) {
