@@ -3,6 +3,8 @@ package software.project.ui.layers;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
@@ -24,8 +26,10 @@ public class PlayingLayer extends Layer {
     private final MapRenderer renderer;
     private final HudLayer hudLayer;
 
+    private final Map<Integer, Runnable> keyBindings = new HashMap<>();
+
     public PlayingLayer(GameApplication app) {
-        super(false, false); // non‑modal
+        super(false, false);
         this.app = app;
         GameConfig config = new GameConfig();
 
@@ -34,13 +38,86 @@ public class PlayingLayer extends Layer {
         this.hudLayer = new HudLayer(this.model);
 
         model.startGame();
-        ScreenManager.getInstance().getPanel().setBackgroundPainter(
-                renderer::drawLetterboxSand);
+        ScreenManager.getInstance().getPanel().setBackgroundPainter(renderer::drawLetterboxSand);
+        initKeyBindings();
     }
 
-    @Override
-    public void onEnter() {
-        super.onEnter();
+    private void initKeyBindings() {
+        // Pause
+        keyBindings.put(KeyEvent.VK_ESCAPE, this::togglePause);
+        keyBindings.put(KeyEvent.VK_P, this::togglePause);
+
+        // Skip turn
+        keyBindings.put(KeyEvent.VK_S, () -> model.getTurnManager().endTurn());
+
+        // Player action (repair/sabotage)
+        keyBindings.put(KeyEvent.VK_F, this::performPlayerAction);
+
+        // Open pump direction overlay
+        keyBindings.put(KeyEvent.VK_D, this::openPumpOverlay);
+
+        // Open cistern pickup overlay (plumber only)
+        keyBindings.put(KeyEvent.VK_Q, this::openCisternOverlay);
+    }
+
+    private void togglePause() {
+        if (model.getState() == GameState.RUNNING) {
+            model.pauseGame();
+            PauseOverlay overlay = new PauseOverlay();
+            overlay.setResumeAction(() -> {
+                model.resumeGame();
+                app.popLayer();
+            });
+            overlay.setQuitAction(() -> {
+                model.endGame();
+                app.clearLayers();
+                app.pushLayer(new MainMenuLayer(app));
+            });
+            app.pushLayer(overlay);
+        }
+    }
+
+    private void performPlayerAction() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        boolean done = player.doMainAction();
+        if (player instanceof Plumber && done) {
+            AudioPlayer.getInstance().playEffect("pipe_repair");
+        }
+        if (player instanceof Saboteur && done) {
+            AudioPlayer.getInstance().playEffect("pipe_break");
+        }
+    }
+
+    private void openPumpOverlay() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        Element element = player.getCurrentPosition();
+        if (element instanceof Pump pump) {
+            app.pushLayer(new PumpDirectionOverlay(app, pump));
+        }
+    }
+
+    private void openCisternOverlay() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        Element element = player.getCurrentPosition();
+        if (!(element instanceof Cistern cistern) || !(player instanceof Plumber plumber)) {
+            return;
+        }
+
+        CisternPickupOverlay overlay = new CisternPickupOverlay(plumber, cistern, model, app);
+        overlay.setListener(new CisternPickupOverlay.PickupListener() {
+            @Override
+            public void onConfirm(boolean tookPump, boolean tookPipe) {
+                if (tookPump) plumber.pickUpPump(cistern);
+                if (tookPipe) plumber.pickUpPipe(cistern);
+                app.popLayer();
+            }
+
+            @Override
+            public void onDiscard() {
+                app.popLayer();
+            }
+        });
+        app.pushLayer(overlay);
     }
 
     @Override
@@ -66,92 +143,14 @@ public class PlayingLayer extends Layer {
         ScreenManager.getInstance().getPanel().setBackgroundPainter(null);
     }
 
-    private boolean openCisternMenu(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_Q) {
-            Player player = model.getTurnManager().getCurrentPlayer();
-            Element element = player.getCurrentPosition();
-            if (element instanceof Cistern cistern && player instanceof Plumber plumber) {
-                {
-                    CisternPickupOverlay cisternPickupOverlay = new CisternPickupOverlay(plumber, cistern, this.model,
-                            this.app);
-                    cisternPickupOverlay.setListener(new CisternPickupOverlay.PickupListener() {
-                        @Override
-                        public void onConfirm(boolean tookPump, boolean tookPipe) {
-                            if (tookPump) {
-                                plumber.pickUpPump(cistern);
-                            }
-                            if (tookPipe) {
-                                plumber.pickUpPipe(cistern);
-                            }
-                            // on saving close overlay
-                            app.popLayer();
-                        }
-
-                        @Override
-                        public void onDiscard() {
-                            // close overlay
-                            app.popLayer();
-                        }
-                    });
-                    app.pushLayer(cisternPickupOverlay);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean onPlay(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_F) {
-            Player player = model.getTurnManager().getCurrentPlayer();
-            boolean done = player.doMainAction();
-            if (player instanceof Plumber && done) {
-                AudioPlayer.getInstance().playEffect("pipe_repair");
-            }
-            if (player instanceof Saboteur && done) {
-                AudioPlayer.getInstance().playEffect("pipe_break");
-            }
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_P) {
-            if (model.getState() == GameState.RUNNING) {
-                model.pauseGame();
-                PauseOverlay overlay = new PauseOverlay();
-                overlay.setResumeAction(() -> {
-                    model.resumeGame();
-                    app.popLayer();
-                });
-                overlay.setQuitAction(() -> {
-                    model.endGame();
-                    app.clearLayers();
-                    app.pushLayer(new MainMenuLayer(app));
-                });
-                app.pushLayer(overlay);
-            }
+        Runnable action = keyBindings.get(e.getKeyCode());
+        if (action != null) {
+            action.run();
             return true;
-        }
-        onPlay(e);
-        openCisternMenu(e);
-        if (e.getKeyCode() == KeyEvent.VK_D) {
-            Element element = model.getTurnManager().getCurrentPlayer().getCurrentPosition();
-            if (!(element instanceof Pump)) {
-                return false;
-            }
-
-            app.pushLayer(new PumpDirectionOverlay(app, (Pump) element));
-            return true;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_S) {
-            model.getTurnManager().endTurn();
         }
         return false;
-
     }
 
     @Override
