@@ -1,14 +1,16 @@
 package software.project.models;
 
-import software.project.audio.AudioPlayer;
 import software.project.map.Element;
 import software.project.map.Pipe;
+import software.project.map.Pump;
 
 /**
  * A player whose objective is to disrupt the water transport system.
  * <p>
- * Saboteurs can puncture pipes to cause water leakage and tamper with pump directions to reroute water away from
- * cisterns. Their score is derived from every gallon of water that leaks into the desert.
+ * Saboteurs can puncture pipes to cause water leakage and tamper with pump
+ * directions to reroute water away from
+ * cisterns. Their score is derived from every gallon of water that leaks into
+ * the desert.
  * </p>
  *
  * @see Player
@@ -28,7 +30,8 @@ public class Saboteur extends Player {
     /**
      * Damages the specified pipe, causing it to leak water.
      * <p>
-     * Once a pipe is punctured, water passing through it spills into the desert and contributes to the saboteur team's
+     * Once a pipe is punctured, water passing through it spills into the desert and
+     * contributes to the saboteur team's
      * score. The pipe remains leaking until repaired by a plumber.
      * </p>
      *
@@ -48,10 +51,37 @@ public class Saboteur extends Player {
         System.out.printf("[EVENT] PIPE_BROKEN %s", pipe.getId());
     }
 
+    /**
+     * Damages the specified pump, causing it to malfunction.
+     * <p>
+     * Once a pump is sabotaged, it stops functioning correctly and may reroute
+     * water away from cisterns.
+     * The pump remains broken until repaired by a plumber.
+     * </p>
+     *
+     * @param pump the pump to sabotage
+     */
+    public void sabotagePump(Pump pump) {
+        if (pump != this.currentPosition) {
+            System.out.println("[ERROR] SABOTAGE_PUMP NOT_ON_PUMP");
+            return;
+        }
+        if (pump.isBroken()) {
+            System.out.println("[ERROR] SABOTAGE_PUMP ALREADY_BROKEN");
+            return;
+        }
+        pump.breakElement();
+        System.out.printf("[OK] SABOTAGE_PUMP %s %s%n", this.id, pump.getId());
+        System.out.printf("[EVENT] PUMP_BROKEN %s", pump.getId());
+    }
+
     @Override
     public boolean doMainAction() {
         if (getCurrentPosition() instanceof Pipe pipe && !pipe.isBroken()) {
             this.sabotagePipe(pipe);
+            return true;
+        } else if (getCurrentPosition() instanceof Pump pump && !pump.isBroken()) {
+            this.sabotagePump(pump);
             return true;
         }
         return false;
