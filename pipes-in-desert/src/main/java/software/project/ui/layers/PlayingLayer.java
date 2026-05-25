@@ -87,6 +87,10 @@ public class PlayingLayer extends Layer {
 
     private void performPlayerAction() {
         Player player = model.getTurnManager().getCurrentPlayer();
+        if (!model.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+            return;
+        }
         boolean done = player.doMainAction();
         if (player instanceof Plumber && done) {
             AudioPlayer.getInstance().playEffect("pipe_repair");
@@ -94,13 +98,16 @@ public class PlayingLayer extends Layer {
         if (player instanceof Saboteur && done) {
             AudioPlayer.getInstance().playEffect("pipe_break");
         }
+        if (done) {
+            model.getTurnManager().useBigAction();
+        }
     }
 
     private void openPumpOverlay() {
         Player player = model.getTurnManager().getCurrentPlayer();
         Element element = player.getCurrentPosition();
         if (element instanceof Pump pump) {
-            app.pushLayer(new PumpDirectionOverlay(app, pump));
+            app.pushLayer(new PumpDirectionOverlay(app, pump, model.getTurnManager()));
         }
     }
 
@@ -115,9 +122,29 @@ public class PlayingLayer extends Layer {
         overlay.setListener(new CisternPickupOverlay.PickupListener() {
             @Override
             public void onConfirm(boolean tookPump, boolean tookPipe) {
-                if (tookPump) plumber.pickUpPump(cistern);
-                if (tookPipe) plumber.pickUpPipe(cistern);
-                if(tookPipe || tookPump) {
+                if (tookPump || tookPipe) {
+                    if (!model.getTurnManager().canUseBigAction()) {
+                        System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+                        return;
+                    }
+                }
+
+                boolean pickedUp = false;
+                try {
+                    if (tookPump) {
+                        plumber.pickUpPump(cistern);
+                        pickedUp = true;
+                    }
+                    if (tookPipe) {
+                        plumber.pickUpPipe(cistern);
+                        pickedUp = true;
+                    }
+                } catch (IllegalArgumentException | IllegalStateException ex) {
+                    System.out.println("[ERROR] PICKUP " + ex.getMessage());
+                }
+
+                if (pickedUp) {
+                    model.getTurnManager().useBigAction();
                     AudioPlayer.getInstance().playEffect("item_equip");
                 }
                 app.popLayer();

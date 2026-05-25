@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Sabotages (breaks) a pipe as a saboteur action.
@@ -47,8 +47,17 @@ public class SabotagePipeCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] SABOTAGE_PIPE NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         try {
+            boolean wasBroken = pipe.isBroken();
             ((Saboteur) p).sabotagePipe(pipe);
+            if (!wasBroken && pipe.isBroken()) {
+                gameModel.getTurnManager().useBigAction();
+            }
         } catch (Exception e) {
             System.out.println("[ERROR] SABOTAGE_PIPE " + e.getMessage());
             return;

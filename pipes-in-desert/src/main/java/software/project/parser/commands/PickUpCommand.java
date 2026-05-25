@@ -1,13 +1,13 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Cistern;
 import software.project.map.Pipe;
+import software.project.map.Pump;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Picks up a component (pipe or pump) from the ground or from a cistern.
@@ -44,6 +44,11 @@ public class PickUpCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] PICK_UP NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         Plumber plumber = (Plumber) p;
 
         // If target is a pipe or pump in the world
@@ -51,6 +56,7 @@ public class PickUpCommand implements ICommand {
         if (pipe != null) {
             try {
                 plumber.pickUpPipe(pipe);
+                gameModel.getTurnManager().useBigAction();
                 System.out.println("[OK] PICK_UP PIPE " + id);
             } catch (Exception e) {
                 System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -62,6 +68,7 @@ public class PickUpCommand implements ICommand {
         if (pump != null) {
             try {
                 plumber.pickUpPump(pump);
+                gameModel.getTurnManager().useBigAction();
                 System.out.println("[OK] PICK_UP PUMP " + id);
             } catch (Exception e) {
                 System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -77,12 +84,14 @@ public class PickUpCommand implements ICommand {
                 try {
                     if (type.equals("PIPE")) {
                         plumber.pickUpPipe(cistern);
+                        gameModel.getTurnManager().useBigAction();
                         System.out.println("[OK] PICK_UP PIPE_FROM " + id);
                         return;
                     }
 
                     if (type.equals("PUMP")) {
                         plumber.pickUpPump(cistern);
+                        gameModel.getTurnManager().useBigAction();
                         System.out.println("[OK] PICK_UP PUMP_FROM " + id);
                         return;
                     }
@@ -99,6 +108,7 @@ public class PickUpCommand implements ICommand {
             if (cistern.getStoredPipe() != null && cistern.getStoredPump() == null) {
                 try {
                     plumber.pickUpPipe(cistern);
+                    gameModel.getTurnManager().useBigAction();
                     System.out.println("[OK] PICK_UP PIPE_FROM " + id);
                 } catch (Exception e) {
                     System.out.println("[ERROR] PICK_UP " + e.getMessage());
@@ -109,6 +119,7 @@ public class PickUpCommand implements ICommand {
             if (cistern.getStoredPump() != null && cistern.getStoredPipe() == null) {
                 try {
                     plumber.pickUpPump(cistern);
+                    gameModel.getTurnManager().useBigAction();
                     System.out.println("[OK] PICK_UP PUMP_FROM " + id);
                 } catch (Exception e) {
                     System.out.println("[ERROR] PICK_UP " + e.getMessage());

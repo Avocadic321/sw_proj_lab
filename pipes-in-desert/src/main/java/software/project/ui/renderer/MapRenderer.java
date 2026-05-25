@@ -73,7 +73,10 @@ public class MapRenderer {
                 if (moveStepIndex >= movePath.size()) {
                     // Animation finished
                     moving = false;
-                    movingPlayer.moveTo(movePath.get(movePath.size() - 1));
+                    boolean moved = movingPlayer.moveTo(movePath.get(movePath.size() - 1));
+                    if (moved) {
+                        model.getTurnManager().useSmallAction();
+                    }
                     for (Element el : movePath) el.unlockElement();
                     movePath.clear();
                     movingPlayer = null;
@@ -96,6 +99,10 @@ public class MapRenderer {
             return null;
     }
     public boolean tryPlaceItem(ICarriable item, Plumber player, Pipe pipe, Point p) {
+        if (!model.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+            return false;
+        }
         if(item instanceof Pump pump) {
            Point gridPoints = grid.screenToGrid(p.x,p.y);
 
@@ -106,6 +113,8 @@ public class MapRenderer {
         if(response) {
             model.getGameMap().addElement(pump);
             player.getInventory().removeItem(pump);
+            model.getTurnManager().useBigAction();
+            return true;
         }
         }
         return false;
@@ -152,6 +161,10 @@ public class MapRenderer {
         if (moving) return false;
         Player player = model.getTurnManager().getCurrentPlayer();
         if (player == null) return false;
+        if (!model.getTurnManager().canUseSmallAction()) {
+            System.out.println("[ERROR] MOVE NO_SMALL_ACTIONS_LEFT");
+            return false;
+        }
 
         for (ClickableElement ce : clickableElements) {
             if (ce.bounds().contains(e.getX(), e.getY())) {

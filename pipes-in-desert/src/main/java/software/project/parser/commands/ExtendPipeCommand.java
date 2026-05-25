@@ -1,10 +1,10 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Extends the pipe system by the current plumber player.
@@ -39,8 +39,14 @@ public class ExtendPipeCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] EXTEND_PIPE NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         try {
             ((Plumber) p).extendPipeSystem(0);
+            gameModel.getTurnManager().useBigAction();
             System.out.println("[OK] EXTEND_PIPE");
         } catch (Exception e) {
             System.out.println("[ERROR] EXTEND_PIPE " + e.getMessage());

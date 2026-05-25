@@ -114,7 +114,13 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
             close();
         });
 
-        confirmButton.setAction(() -> finish(true));
+        confirmButton.setAction(() -> {
+            if ((pumpSelected || pipeSelected) && !gameModel.getTurnManager().canUseBigAction()) {
+                System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+                return;
+            }
+            finish(true);
+        });
         discardButton.setAction(() -> finish(false));
 
         pumpSelected = false;

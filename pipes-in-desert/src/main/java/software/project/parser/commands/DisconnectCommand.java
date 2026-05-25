@@ -1,12 +1,12 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Pipe;
 import software.project.map.PipeEnd;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Disconnects a pipe end from an active element.
@@ -59,6 +59,11 @@ public class DisconnectCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] DISCONNECT NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         if (!(p instanceof Plumber)) {
             System.out.println("[ERROR] DISCONNECT NOT_A_PLUMBER");
             return;
@@ -66,6 +71,7 @@ public class DisconnectCommand implements ICommand {
 
         try {
             ((Plumber) p).disconnect(end);
+            gameModel.getTurnManager().useBigAction();
         } catch (IllegalArgumentException | IllegalStateException ex) {
             System.out.println("[ERROR] DISCONNECT " + ex.getMessage());
         }

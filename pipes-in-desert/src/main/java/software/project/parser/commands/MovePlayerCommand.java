@@ -1,10 +1,10 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Element;
 import software.project.models.Player;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Moves a player to an adjacent element on the map.
@@ -34,6 +34,11 @@ public class MovePlayerCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseSmallAction()) {
+            System.out.println("[ERROR] MOVE NO_SMALL_ACTIONS_LEFT");
+            return;
+        }
+
         String targetId = args[0].trim();
         Element target = gameModel.getGameMap().getElement(targetId);
         if (target == null) {
@@ -41,6 +46,9 @@ public class MovePlayerCommand implements ICommand {
             return;
         }
 
-        p.moveTo(target);
+        boolean moved = p.moveTo(target);
+        if (moved) {
+            gameModel.getTurnManager().useSmallAction();
+        }
     }
 }

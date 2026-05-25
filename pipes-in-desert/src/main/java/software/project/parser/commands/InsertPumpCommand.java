@@ -1,12 +1,12 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Pipe;
+import software.project.map.Pump;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Inserts a pump that a plumber is carrying into a pipe.
@@ -53,6 +53,11 @@ public class InsertPumpCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] INSERT_PUMP NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         Pipe pipe = gameModel.getGameMap().getElement(pipeId, Pipe.class);
         if (pipe == null) {
             System.out.println("[ERROR] INSERT_PUMP PIPE_NOT_FOUND " + pipeId);
@@ -66,6 +71,7 @@ public class InsertPumpCommand implements ICommand {
 
         try {
             plumber.insertPumpIntoPipe(pump, pipe);
+            gameModel.getTurnManager().useBigAction();
         } catch (Exception e) {
             System.out.println("[ERROR] INSERT_PUMP " + e.getMessage());
         }
