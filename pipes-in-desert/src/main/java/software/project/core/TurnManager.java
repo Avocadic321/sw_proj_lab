@@ -8,8 +8,10 @@ import java.util.List;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
+import software.project.utils.Constants;
 import software.project.utils.Debug;
 import software.project.models.Teams;
+import software.project.utils.Helper;
 
 /**
  * Manages the turn-based flow of a game session.
@@ -43,6 +45,18 @@ public class TurnManager {
         playerSupport = new PropertyChangeSupport(this);
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        playerSupport.addPropertyChangeListener(pcl);
+    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        playerSupport.removePropertyChangeListener(pcl);
+    }
+    public void clearPropertyChangerListeners() {
+      var listeners = playerSupport.getPropertyChangeListeners();
+      for(int i = 0; i < listeners.length; i++) {
+          playerSupport.removePropertyChangeListener(listeners[i]);
+      }
+    }
 
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
@@ -144,6 +158,7 @@ public class TurnManager {
         currentIndex = (currentIndex + 1) % players.size();
         Player oldPlayer = currentPlayer;
         currentPlayer = players.get(currentIndex);
+        playerSupport.firePropertyChange(Constants.PLAYER_ADVANCED,oldPlayer,currentPlayer);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
     }

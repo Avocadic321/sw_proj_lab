@@ -94,7 +94,7 @@ public class CisternPickupOverlay extends Layer {
         backgroundPanel = new Panel(1.0f, 0, SIMPLE_PANEL);
 
         // Create Confirm and Discard buttons (using your button sprite sheet)
-        SpriteSheet btnSheet = sm.getSpriteSheet(SpriteSheets.BUTTONS); // adjust sheet name if needed
+        SpriteSheet btnSheet = sm.getSpriteSheet(SpriteSheets.CONFIRM_CANCEL_BUTTONS); // adjust sheet name if needed
         int btnSize = (int) (24 * OVERLAY_SCALE);
         confirmButton = new GameButton(btnSheet, 0, 0, 0, btnSize, btnSize);
         discardButton = new GameButton(btnSheet, 1, 0, 0, btnSize, btnSize);
@@ -107,6 +107,7 @@ public class CisternPickupOverlay extends Layer {
         pumpBounds = new Rectangle();
         pipeBounds = new Rectangle();
     }
+
 
     private void finish(boolean confirmed) {
         if (confirmed) {
@@ -127,10 +128,7 @@ public class CisternPickupOverlay extends Layer {
      * Adjust according to your LayerManager implementation.
      */
     private void close() {
-        // Typical pattern: get the layer manager and pop this layer
-        // Example: LayerManager.getInstance().popLayer();
-        // For now, we'll call onExit() which you can override to signal removal.
-        onExit();
+       onExit();
     }
 
     public void onExit() {

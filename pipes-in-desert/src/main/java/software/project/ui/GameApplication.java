@@ -65,6 +65,22 @@ public class GameApplication implements ScreenManager.ResolutionListener {
         }
     }
 
+    public void popLayersTill(Layer layer) {
+        if (!layerStack.contains(layer)) {
+            return; // or throw an exception, depending on your design
+        }
+        while (!layerStack.isEmpty() && layerStack.getLast() != layer) {
+            popLayer();
+        }
+    }
+    public Layer getLayerBefore(List<Layer> passBy) {
+        for(int i = layerStack.size() - 1; i >= 0 ; i--){
+            if(!passBy.contains(layerStack.get(i)))  {
+                return layerStack.get(i);
+            }
+        }
+        return null;
+    }
     public void replaceLayer(Layer newLayer) {
         popLayer();
         pushLayer(newLayer);
