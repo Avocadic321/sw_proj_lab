@@ -1,5 +1,6 @@
 package software.project.ui.layers;
 
+import software.project.audio.AudioPlayer;
 import software.project.core.GameModel;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
@@ -50,7 +51,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     private final BitmapFont font;
 
     private Sprite pumpSprite;
-    private Sprite pipeSprite;
+    private SpriteSheet pipeSprite;
 
     // UI elements
     private GameButton confirmButton;
@@ -110,7 +111,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
 
         SpriteManager sm = SpriteManager.getInstance();
         pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
-        pipeSprite = sm.getSprite(Sprites.SPRING_PIPE);
+        pipeSprite =  sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
         font = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MONO);
 
         backgroundPanel = new Panel(1.0f, 0, SIMPLE_PANEL);
@@ -185,9 +186,6 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         // No items to pick up
         if (!hasPump && !hasPipe) {
             drawCenteredTextLarge(g, "NOTHING TO PICK UP", centreX, centreY);
-            // Optionally show a single "OK" button to close
-            // For simplicity, we'll just close after a short time or let the caller handle.
-            // You could also add an "OK" button here.
             return;
         }
 
@@ -223,7 +221,8 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         if (hasPipe) {
             int x = itemCentresX[slot];
             pipeBounds.setBounds(x - itemSize / 2, itemTop, itemSize, itemSize);
-            pipeSprite.drawCentered(g, x, centreY, itemSize, 0);
+            Sprite pipeSpr = pipeSprite.getSprite(0);
+            pipeSpr.drawCentered(g, x, centreY, itemSize, 0);
             if (pipeSelected) {
                 drawSelectionBorder(g, x - itemSize / 2, itemTop, itemSize, itemSize);
             }
@@ -269,12 +268,12 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         Point p = e.getPoint();
         if (cistern.getStoredPump() != null && pumpBounds.contains(p)) {
             pumpSelected = !pumpSelected;
-            // Optional: play a sound
-            // AudioPlayer.getInstance().playEffect("ui_select");
+            AudioPlayer.getInstance().playEffect("button_pressed");
             return true;
         }
         if (cistern.getStoredPipe() != null && pipeBounds.contains(p)) {
             pipeSelected = !pipeSelected;
+            AudioPlayer.getInstance().playEffect("button_pressed");
             return true;
         }
         return true;
