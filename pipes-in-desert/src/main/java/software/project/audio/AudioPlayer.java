@@ -1,10 +1,12 @@
 package software.project.audio;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -17,7 +19,8 @@ public class AudioPlayer {
     private final Map<String, Clip> songs = new HashMap<>();
     private final Map<String, Clip> effects = new HashMap<>();
     private String currentSongKey;
-    private float volume = 0.8f;
+    private float songVolume = 0.8f;
+    private float effectVolume = 0.8f;
     private boolean songMute = false;
     private boolean effectMute = false;
 
@@ -54,6 +57,18 @@ public class AudioPlayer {
             effects.put(key, clip);
     }
 
+    /**
+     * Load a background music file (WAV) from the local filesystem.
+     *
+     * @param key  unique identifier for this song
+     * @param file audio file on disk
+     */
+    public void loadSongFromFile(String key, File file) {
+        Clip clip = loadClipFromFile(file);
+        if (clip != null)
+            songs.put(key, clip);
+    }
+
     private Clip loadClip(String path) {
         try {
             URL url = getClass().getResource(path);
@@ -61,14 +76,48 @@ public class AudioPlayer {
                 System.err.println("Audio file not found: " + path);
                 return null;
             }
-            AudioInputStream audio = AudioSystem.getAudioInputStream(url);
+            try (AudioInputStream audio = AudioSystem.getAudioInputStream(url);
+                    AudioInputStream decoded = decodeToPcm(audio)) {
+                Clip clip = AudioSystem.getClip();
+                clip.open(decoded);
+                return clip;
+            }
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Clip loadClipFromFile(File file) {
+        if (file == null) {
+            return null;
+        }
+        try (AudioInputStream audio = AudioSystem.getAudioInputStream(file);
+                AudioInputStream decoded = decodeToPcm(audio)) {
             Clip clip = AudioSystem.getClip();
-            clip.open(audio);
+            clip.open(decoded);
             return clip;
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private AudioInputStream decodeToPcm(AudioInputStream sourceStream) {
+        AudioFormat sourceFormat = sourceStream.getFormat();
+        if (AudioFormat.Encoding.PCM_SIGNED.equals(sourceFormat.getEncoding())) {
+            return sourceStream;
+        }
+
+        AudioFormat targetFormat = new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                sourceFormat.getSampleRate(),
+                16,
+                sourceFormat.getChannels(),
+                sourceFormat.getChannels() * 2,
+                sourceFormat.getSampleRate(),
+                false);
+        return AudioSystem.getAudioInputStream(targetFormat, sourceStream);
     }
 
     // --- Music playback ---
@@ -81,15 +130,36 @@ public class AudioPlayer {
             currentSongKey = key;
             clip.setMicrosecondPosition(0);
             clip.loop(Clip.LOOP_CONTINUOUSLY);
-            updateVolume(clip);
+            updateVolume(clip, songVolume);
+        }
+    }
+
+    public void playSongFromFile(File file) {
+        if (songMute)
+            return;
+        stopCurrentSong();
+        Clip clip = loadClipFromFile(file);
+        if (clip != null) {
+            currentSongKey = "__custom_file__";
+            songs.put(currentSongKey, clip);
+            clip.setMicrosecondPosition(0);
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            updateVolume(clip, songVolume);
         }
     }
 
     public void stopCurrentSong() {
         if (currentSongKey != null) {
             Clip clip = songs.get(currentSongKey);
-            if (clip != null && clip.isRunning())
-                clip.stop();
+            if (clip != null) {
+                if (clip.isRunning()) {
+                    clip.stop();
+                }
+                if ("__custom_file__".equals(currentSongKey)) {
+                    clip.close();
+                    songs.remove(currentSongKey);
+                }
+            }
             currentSongKey = null;
         }
     }
@@ -106,26 +176,51 @@ public class AudioPlayer {
             // Rewind to the beginning
             clip.setMicrosecondPosition(0);
             clip.start();
-            updateVolume(clip);
+            updateVolume(clip, effectVolume);
         }
     }
 
-    public void setVolume(float volume) {
-        this.volume = Math.clamp(volume, 0.0f, 1.0f);
+    public void setVolume(float songVolume, float effectVolume) {
+        this.songVolume = Math.clamp(songVolume, 0.0f, 1.0f);
+        this.effectVolume = Math.clamp(effectVolume, 0.0f, 1.0f);
         // Update currently playing song and all effects (if they are open)
         if (currentSongKey != null)
-            updateVolume(songs.get(currentSongKey));
+            updateVolume(songs.get(currentSongKey), songVolume);
         for (Clip clip : effects.values())
-            updateVolume(clip);
+            updateVolume(clip, effectVolume);
     }
 
-    private void updateVolume(Clip clip) {
+    public void setSongVolume(float volume) {
+        this.songVolume = Math.clamp(volume, 0.0f, 1.0f);
+        if (currentSongKey != null) {
+            updateVolume(songs.get(currentSongKey), songVolume);
+        }
+    }
+
+    public void setEffectVolume(float volume) {
+        this.effectVolume = Math.clamp(volume, 0.0f, 1.0f);
+        for (Clip clip : effects.values()) {
+            updateVolume(clip, effectVolume);
+        }
+    }
+
+    public float getSongVolume() {
+        return songVolume;
+    }
+
+    public float getEffectVolume() {
+        return effectVolume;
+    }
+
+    private void updateVolume(Clip clip, float volumeValue) {
         if (clip == null)
             return;
         FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
         float min = gainControl.getMinimum();
         float max = gainControl.getMaximum();
-        float gain = min + (max - min) * volume;
+        float clamped = Math.clamp(volumeValue, 0.0f, 1.0f);
+        float shaped = clamped == 0.0f ? 0.0f : (float) Math.log10(1.0 + 9.0 * clamped);
+        float gain = min + (max - min) * shaped;
         gainControl.setValue(gain);
     }
 
@@ -152,9 +247,5 @@ public class AudioPlayer {
 
     public boolean isEffectMute() {
         return effectMute;
-    }
-
-    public float getVolume() {
-        return volume;
     }
 }

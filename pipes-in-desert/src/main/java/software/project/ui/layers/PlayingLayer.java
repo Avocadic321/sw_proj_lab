@@ -68,6 +68,7 @@ public class PlayingLayer extends Layer {
                 model.resumeGame();
                 app.popLayer();
             });
+            overlay.setOptionsAction(() -> app.pushLayer(new OptionsLayer(app)));
             overlay.setQuitAction(() -> {
                 model.endGame();
                 app.clearLayers();
@@ -107,8 +108,10 @@ public class PlayingLayer extends Layer {
         overlay.setListener(new CisternPickupOverlay.PickupListener() {
             @Override
             public void onConfirm(boolean tookPump, boolean tookPipe) {
-                if (tookPump) plumber.pickUpPump(cistern);
-                if (tookPipe) plumber.pickUpPipe(cistern);
+                if (tookPump)
+                    plumber.pickUpPump(cistern);
+                if (tookPipe)
+                    plumber.pickUpPipe(cistern);
                 app.popLayer();
             }
 
