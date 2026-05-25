@@ -7,6 +7,7 @@ public enum Sprites {
 
     PUMP_FAN("pump_fan", "/map/pump_fan.png"),
     PUMP_STATIC("pump", "/map/pump.png"),
+    PUMP_BROKEN("pump_broken", "/map/pump_broken.png"),
 
     SPRING("spring", "/map/spring3.png"),
     SPRING_PIPE("spring_pipe", "/map/spring_pipe.png"),
