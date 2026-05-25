@@ -8,10 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class ElementRenderer {
     private final SpriteManager sm = SpriteManager.getInstance();
     private final Map<Pump, Double> fanAngles = new HashMap<>();
+    private final Map<Pump, Double> currentFanSpeeds = new HashMap<>();
+    private final Random leakRandom = new Random();
+
+    private static final double SMOOTHING_FACTOR = 3.0;
     private final Map<Cistern, Double> cisternItemAngles = new HashMap<>(); // for stored items rotation
 
     private int waterPercentToColumn(int percent, int numFrames) {
@@ -85,8 +90,8 @@ public class ElementRenderer {
 
 
     public void updateFanAngles(float deltaTime, List<Pump> pumps) {
-        final double MIN_SPEED = 30.0;   // deg/sec (idle)
-        final double MAX_SPEED = 720.0;  // deg/sec (full flow)
+        final double MIN_SPEED = 10.0;
+        final double MAX_SPEED = 360.0;
         int maxFlow = GameConfig.PUMP_MAX_FLOW_PER_TICK;
 
         for (Pump pump : pumps) {
@@ -95,9 +100,14 @@ public class ElementRenderer {
             if (percentFlow > 100) percentFlow = 100;
             if (percentFlow < 0) percentFlow = 0;
 
-            double fanSpeed = MIN_SPEED + (percentFlow / 100.0) * (MAX_SPEED - MIN_SPEED);
+            double targetSpeed = MIN_SPEED + (percentFlow / 100.0) * (MAX_SPEED - MIN_SPEED);
+            double currentSpeed = currentFanSpeeds.getOrDefault(pump, targetSpeed);
+            double diff = targetSpeed - currentSpeed;
+            currentSpeed += diff * Math.min(1.0, SMOOTHING_FACTOR * deltaTime);
+            currentFanSpeeds.put(pump, currentSpeed);
+
             double currentAngle = fanAngles.getOrDefault(pump, 0.0);
-            currentAngle += fanSpeed * deltaTime;
+            currentAngle += currentSpeed * deltaTime;
             currentAngle %= 360.0;
             fanAngles.put(pump, currentAngle);
         }
@@ -190,6 +200,7 @@ public class ElementRenderer {
             }
         }
     }
+
     public void drawSprings(Graphics2D g, List<Spring> springs, Grid grid) {
         Sprite springSprite = sm.getSprite(Sprites.SPRING);
         Sprite springPipe = sm.getSprite(Sprites.SPRING_PIPE);
