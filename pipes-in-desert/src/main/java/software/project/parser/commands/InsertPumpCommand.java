@@ -2,6 +2,7 @@ package software.project.parser.commands;
 
 import software.project.core.GameModel;
 import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.map.Pump;
@@ -65,7 +66,7 @@ public class InsertPumpCommand implements ICommand {
         }
 
         try {
-            plumber.insertPumpIntoPipe(pump, pipe);
+            plumber.insertPumpIntoPipe(pump, pipe,new Pipe(), new Pipe(), new PipeEnd(), new PipeEnd());
         } catch (Exception e) {
             System.out.println("[ERROR] INSERT_PUMP " + e.getMessage());
         }

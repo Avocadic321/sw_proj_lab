@@ -196,8 +196,6 @@ public class WaterSimulator {
         }
 
         while (current != null) {
-            System.out.println(current);
-
             if (visited.contains(current)) {
                 path.add(current); // if we looped
                 break;
