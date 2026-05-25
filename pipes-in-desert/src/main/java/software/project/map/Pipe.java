@@ -1,22 +1,19 @@
 package software.project.map;
 
+import java.awt.Point;
+import java.util.List;
+
 import software.project.core.GameConfig;
 import software.project.map.interfaces.IBreakable;
 import software.project.map.interfaces.ICarriable;
 import software.project.map.interfaces.IRepairable;
-import software.project.utils.Debug;
 import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Pipe segment that connects two pipe ends and can carry water.
  */
-public class Pipe extends Element implements IBreakable, IRepairable, ICarriable {
+public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICarriable {
     /**
      * First pipe end.
      */
@@ -233,6 +230,21 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     public PipeEnd getEnd2() {
         return end2;
+    }
+
+    @Override
+    public void connect(PipeEnd end) {
+        if (!connections.contains(end)) {
+            connections.add(end);
+        }
+    }
+
+    @Override
+    public void disconnect(PipeEnd end) {
+        connections.remove(end);
+        if (end != null && end.connectedTo == this) {
+            end.connectedTo = null;
+        }
     }
 
     public void connectBothEnds(ActiveElement end1Target, ActiveElement end2Target) {
