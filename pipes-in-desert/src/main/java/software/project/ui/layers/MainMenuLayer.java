@@ -51,8 +51,8 @@ public class MainMenuLayer extends Layer {
                 BOTTOM_MARGIN_PERCENT,
                 INNER_PADDING_PERCENT);
 
-        menu.setAction(0, () -> app.replaceLayer(new PlayingLayer(app)));
-        menu.setAction(1, () -> System.out.println("OPTIONS clicked"));
+        menu.setAction(0, () -> this.app.replaceLayer(new ConfigLayer(this.app)));
+        menu.setAction(1, () -> this.app.pushLayer(new OptionsLayer(this.app)));
         menu.setAction(2, () -> System.out.println("CREDITS clicked"));
         menu.setAction(3, () -> System.exit(0));
     }
@@ -81,7 +81,6 @@ public class MainMenuLayer extends Layer {
 
     private void recomputeLayout(Sprite titleSprite) {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
-        int virtualH = ScreenManager.getInstance().getVirtualHeight();
 
         if (titleSprite != null) {
             int titleWidth = (int) (titleSprite.getWidth() * TITLE_SCALE_FACTOR);
