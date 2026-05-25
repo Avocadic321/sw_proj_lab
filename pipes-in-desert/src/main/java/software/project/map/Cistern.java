@@ -47,6 +47,8 @@ public class Cistern extends ActiveElement implements IConnectable {
         }
         this.capacity = capacity;
         this.storedWater = 0;
+        this.storedPump = new Pump();
+        this.storedPipe = new Pipe();
     }
 
     public int getStoredWater() {
