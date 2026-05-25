@@ -1,6 +1,9 @@
 package software.project.ui.layers;
 
-import software.project.graphics.Animation;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
@@ -8,13 +11,9 @@ import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
-import software.project.ui.components.Menu;
-import software.project.ui.components.ImageComponent;
 import software.project.ui.components.AnimatedComponent;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
+import software.project.ui.components.ImageComponent;
+import software.project.ui.components.Menu;
 
 public class MainMenuLayer extends Layer {
 
@@ -30,7 +29,7 @@ public class MainMenuLayer extends Layer {
     private static final int MENU_VERTICAL_OFFSET = 50;
     private static final int TITLE_VERTICAL_OFFSET = 50;
 
-    private static final int[] BUTTON_ROW_INDICES = {0, 1, 3, 2};
+    private static final int[] BUTTON_ROW_INDICES = { 0, 1, 3, 2 };
 
     private final GameApplication app;
     private final Menu menu;
@@ -45,13 +44,12 @@ public class MainMenuLayer extends Layer {
         }
         // Create the menu
         menu = new Menu(
-            MENU_SCALE_FACTOR,
-            MENU_VERTICAL_OFFSET,
-            BUTTON_ROW_INDICES,
-            TOP_MARGIN_PERCENT,
-            BOTTOM_MARGIN_PERCENT,
-            INNER_PADDING_PERCENT
-        );
+                MENU_SCALE_FACTOR,
+                MENU_VERTICAL_OFFSET,
+                BUTTON_ROW_INDICES,
+                TOP_MARGIN_PERCENT,
+                BOTTOM_MARGIN_PERCENT,
+                INNER_PADDING_PERCENT);
 
         menu.setAction(0, () -> app.replaceLayer(new PlayingLayer(app)));
         menu.setAction(1, () -> System.out.println("OPTIONS clicked"));
@@ -73,10 +71,10 @@ public class MainMenuLayer extends Layer {
             int vw = ScreenManager.getInstance().getVirtualWidth();
             int vh = ScreenManager.getInstance().getVirtualHeight();
             backgroundComponent = new AnimatedComponent(
-                0, 0, vw, vh,
-                animationSheet,
-                ANIMATION_FRAME_DELAY_MS,
-                true // loop
+                    0, 0, vw, vh,
+                    animationSheet,
+                    ANIMATION_FRAME_DELAY_MS,
+                    true // loop
             );
         }
     }
@@ -129,8 +127,8 @@ public class MainMenuLayer extends Layer {
             backgroundComponent.draw(g);
         } else if (SpriteManager.getInstance().getSprite(Sprites.MENU_BACKGROUND) != null) {
             SpriteManager.getInstance()
-                         .getSprite(Sprites.MENU_BACKGROUND)
-                         .draw(g, 0, 0, virtualW, virtualH);
+                    .getSprite(Sprites.MENU_BACKGROUND)
+                    .draw(g, 0, 0, virtualW, virtualH);
         } else {
             g.setColor(new Color(20, 30, 50));
             g.fillRect(0, 0, virtualW, virtualH);
