@@ -9,6 +9,7 @@ import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
+import software.project.ui.CreditsVideoPlayer;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.AnimatedComponent;
@@ -53,7 +54,7 @@ public class MainMenuLayer extends Layer {
 
         menu.setAction(0, () -> this.app.replaceLayer(new ConfigLayer(this.app)));
         menu.setAction(1, () -> this.app.pushLayer(new OptionsLayer(this.app)));
-        menu.setAction(2, () -> System.out.println("CREDITS clicked"));
+        menu.setAction(2, CreditsVideoPlayer::play);
         menu.setAction(3, () -> System.exit(0));
     }
 
