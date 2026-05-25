@@ -1,6 +1,6 @@
 package software.project.ui.layers;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -12,12 +12,15 @@ import software.project.core.GameModel;
 import software.project.core.GameState;
 import software.project.map.Cistern;
 import software.project.map.Element;
+import software.project.map.Pipe;
 import software.project.map.Pump;
+import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
+import software.project.ui.renderer.Grid;
 import software.project.ui.renderer.MapRenderer;
 
 public class PlayingLayer extends Layer {
@@ -109,6 +112,9 @@ public class PlayingLayer extends Layer {
             public void onConfirm(boolean tookPump, boolean tookPipe) {
                 if (tookPump) plumber.pickUpPump(cistern);
                 if (tookPipe) plumber.pickUpPipe(cistern);
+                if(tookPipe || tookPump) {
+                    AudioPlayer.getInstance().playEffect("equip_effect");
+                }
                 app.popLayer();
             }
 
@@ -154,8 +160,36 @@ public class PlayingLayer extends Layer {
     }
 
     @Override
-    public boolean mousePressed(MouseEvent e) {
-        renderer.mousePressed(e);
+    public boolean mouseDragged(MouseEvent e) {
+        if(hudLayer.isDragging()) {
+            hudLayer.mouseDragged(e);
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public boolean mouseReleased(MouseEvent e) {
+        if(hudLayer.isDragging()) {
+
+            Player player = model.getTurnManager().getCurrentPlayer();
+            Element element = player.getCurrentPosition();
+            Point screenPoint = e.getPoint();
+            if(player instanceof Plumber plumber && element instanceof Pipe pipe){
+                ICarriable draggedItem = hudLayer.getDraggedItem();
+                if(draggedItem != null) {
+                    renderer.tryPlaceItem(draggedItem,plumber,pipe,screenPoint);
+                }
+            }
+            hudLayer.resetDrag();
+            return true;
+        }
+        hudLayer.mouseReleased(e);
+
         return true;
+    }
+    @Override
+    public boolean mousePressed(MouseEvent e) {
+        return hudLayer.mousePressed(e) || renderer.mousePressed(e);
+
     }
 }

@@ -1,9 +1,7 @@
 package software.project.ui.layers;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +67,23 @@ public class HudLayer extends Layer {
     private final Rectangle inventoryPanelBounds = new Rectangle();
     private Rectangle[] slotBounds = new Rectangle[0];
 
+
+    private boolean dragging = false;
+    private ICarriable draggedItem = null;
+    private int draggedSlot = -1;
+    private Point dragStart = null;
+    private Point currentDragPos = null;
+
+    public boolean isDragging() { return dragging; }
+    public ICarriable getDraggedItem() { return draggedItem; }
+    public Point getCurrentDragPos() { return currentDragPos; }
+    public void resetDrag() {
+        dragging = false;
+        draggedItem = null;
+        draggedSlot = -1;
+        dragStart = null;
+        currentDragPos = null;
+    }
     public HudLayer(GameModel model) {
         super(false, false);
         this.model = model;
@@ -126,8 +141,24 @@ public class HudLayer extends Layer {
             drawInventory(g, plumber.getInventory());
         }
         drawActionHints(g, current);
+        drawDragging(g);
     }
 
+    private void drawDragging(Graphics2D g) {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if(dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
+            Sprite sprite = getSpriteForItem(draggedItem);
+            if(sprite != null) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.6f));
+                sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,ICON_SIZE,0);
+            }
+        }
+    }
+    private Sprite getSpriteForItem(ICarriable item) {
+        if (item instanceof Pump) return pumpSprite;
+        if (item instanceof Pipe) return pipeSheet == null ? null : pipeSheet.getSprite(0);
+        return null;
+    }
     private void recomputeLayout() {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
@@ -331,6 +362,44 @@ public class HudLayer extends Layer {
         return hints;
     }
 
+    @Override
+    public boolean mousePressed(MouseEvent e) {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if(inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
+            for(int i = 0; i < slotBounds.length; i++) {
+                if(slotBounds[i].contains(e.getPoint())) {
+                    ICarriable item = plumber.getInventory().get(i);
+                    if(item == null) continue;
+                    dragging = true;
+                    draggedItem = item;
+                    draggedSlot = i;
+                    dragStart = e.getPoint();
+                    currentDragPos = e.getPoint();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseDragged(MouseEvent e) {
+        if(dragging) {
+            currentDragPos = e.getPoint();
+            return true;
+        }
+        return false;
+    }
+    @Override
+    public boolean mouseReleased(MouseEvent e) {
+        if (dragging) {
+            return true;
+        }
+        return false;
+    }
+    public Rectangle[] getSlotBounds() {
+        return slotBounds;
+    }
     private static final class ActionHint {
         private final String key;
         private final String action;

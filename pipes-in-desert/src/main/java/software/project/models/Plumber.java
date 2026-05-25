@@ -7,6 +7,7 @@ import software.project.map.interfaces.ICarriable;
 import software.project.map.interfaces.IRepairable;
 import software.project.map.*;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +86,7 @@ public class Plumber extends Player {
         }
 
         if (carriedItem instanceof Pump pump && currentPosition instanceof Pipe pipe) {
-            insertPumpIntoPipe(pump, pipe,item);
+            insertPumpIntoPipe(pump, pipe);
         }
     }
 
@@ -156,6 +157,13 @@ public class Plumber extends Player {
 
     }
 
+    public boolean placePump(Pipe pipe, Pump pump, Point p) {
+    PipeEnd freeEnd = pipe.getFreeEnd();
+    if(freeEnd == null) return false;
+    pump.setPosition(p.x,p.y);
+    freeEnd.connectsTo(pump);
+    return true;
+    }
     /**
      * Picks up an existing pipe from the network.
      *
@@ -247,7 +255,7 @@ public class Plumber extends Player {
      * @param pump the pump to insert (must be carried)
      * @param pipe the pipe to insert the pump into
      */
-    public void insertPumpIntoPipe(Pump pump, Pipe pipe, int item) {
+    public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
 
         if (inventory.get(pump) == null) {
             throw new IllegalStateException("Pump is not being carried");
@@ -264,7 +272,7 @@ public class Plumber extends Player {
         pump.connect(pipe1.getEnd2());
         pump.connect(pipe2.getEnd1());
 
-        inventory.remove(item);
+        inventory.removeItem(pump);
 
         currentPosition.removeOccupant(this);
         pump.addOccupant(this);
