@@ -20,7 +20,6 @@ import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
-import software.project.ui.renderer.Grid;
 import software.project.ui.renderer.MapRenderer;
 
 public class PlayingLayer extends Layer {
@@ -77,6 +76,7 @@ public class PlayingLayer extends Layer {
             overlay.setQuitAction(() -> {
                 model.endGame();
                 app.clearLayers();
+                model.getTurnManager().removePropertyChangeListener(this.hudLayer);
                 app.pushLayer(new MainMenuLayer(app));
             });
             app.pushLayer(overlay);

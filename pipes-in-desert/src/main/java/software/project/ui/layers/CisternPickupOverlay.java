@@ -340,10 +340,10 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
-            if (!hasClosed) {
+        if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED) && !hasClosed) {
                 close();
+                app.popLayer();
             }
-        }
+
     }
 }

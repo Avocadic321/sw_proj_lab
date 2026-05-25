@@ -2,6 +2,8 @@ package software.project.ui.layers;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +27,10 @@ import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Banner;
+import software.project.ui.renderer.Grid;
+import software.project.utils.Constants;
 
-public class HudLayer extends Layer {
+public class HudLayer extends Layer implements PropertyChangeListener {
     private static final int MARGIN = 15;
     private static final int SCORE_GAP = 10;
 
@@ -60,6 +64,7 @@ public class HudLayer extends Layer {
     private final Sprite inventoryPanelSprite;
     private final Sprite pumpSprite;
     private final SpriteSheet pipeSheet;
+    private Grid grid;
 
     private final int goalScore;
 
@@ -84,6 +89,12 @@ public class HudLayer extends Layer {
         dragStart = null;
         currentDragPos = null;
     }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
+            resetDrag();
+        }
+    }
     public HudLayer(GameModel model) {
         super(false, false);
         this.model = model;
@@ -103,7 +114,7 @@ public class HudLayer extends Layer {
         saboteurScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "S0/XXX",
                 SCORE_TEXT_SCALE);
         hudFont = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
-
+        this.model.getTurnManager().addPropertyChangeListener(this);
         recomputeLayout();
     }
 
@@ -141,16 +152,18 @@ public class HudLayer extends Layer {
             drawInventory(g, plumber.getInventory());
         }
         drawActionHints(g, current);
-        drawDragging(g);
+        grid = new Grid();
+        grid.computeFromMap(model.getGameMap());
+        drawDragging(g,grid);
     }
 
-    private void drawDragging(Graphics2D g) {
+    private void drawDragging(Graphics2D g, Grid grid) {
         Player player = model.getTurnManager().getCurrentPlayer();
         if(dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
             Sprite sprite = getSpriteForItem(draggedItem);
             if(sprite != null) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.6f));
-                sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,ICON_SIZE,0);
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.8f));
+                sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,grid.getTileSize(),0);
             }
         }
     }
