@@ -9,6 +9,7 @@ import software.project.map.*;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -86,7 +87,7 @@ public class Plumber extends Player {
         }
 
         if (carriedItem instanceof Pump pump && currentPosition instanceof Pipe pipe) {
-            insertPumpIntoPipe(pump, pipe);
+            insertPumpIntoPipe(pump, pipe, new Pipe(), new Pipe(), new PipeEnd(), new PipeEnd());
         }
     }
 
@@ -244,6 +245,14 @@ public class Plumber extends Player {
         return inventory.get(item);
     }
 
+    public record SplitItemPayload(Pump pump, Pipe pipeLeft, Pipe pipeRight) {}
+    public SplitItemPayload canSplit(Pipe p) {
+        ICarriable item = Arrays.stream(this.getInventory().getInventory()).filter(Pump.class::isInstance).findFirst().orElse(null);
+        if (item instanceof Pump pump && p.getEnd1().connectedTo != null && p.getEnd1().connectedTo instanceof Pipe pipeLeft && p.getEnd2().connectedTo != null && p.getEnd2().connectedTo instanceof Pipe pipeRight) {
+        return new SplitItemPayload(pump,pipeLeft,pipeRight);
+        }
+        return null;
+    }
 
     /**
      * Inserts a carried pump into the middle of an existing pipe.
@@ -255,7 +264,7 @@ public class Plumber extends Player {
      * @param pump the pump to insert (must be carried)
      * @param pipe the pipe to insert the pump into
      */
-    public void insertPumpIntoPipe(Pump pump, Pipe pipe) {
+    public void insertPumpIntoPipe(Pump pump, Pipe pipe, Pipe p1, Pipe p2, PipeEnd e1, PipeEnd e2) {
 
         if (inventory.get(pump) == null) {
             throw new IllegalStateException("Pump is not being carried");
@@ -265,21 +274,19 @@ public class Plumber extends Player {
             throw new IllegalArgumentException("Plumber is not at the location of the pipe");
         }
 
-        Pipe[] newPipes = pipe.splitForPump(pump);
-        Pipe pipe1 = newPipes[0];
-        Pipe pipe2 = newPipes[1];
 
-        pump.connect(pipe1.getEnd2());
-        pump.connect(pipe2.getEnd1());
-
+        pump.setPosition(pipe.getX(),pipe.getY());
+        pump.connect(e1);
+        e1.connectsTo(pump);
+        pump.connect(e2);
+        e2.connectsTo(pump);
         inventory.removeItem(pump);
-
         currentPosition.removeOccupant(this);
         pump.addOccupant(this);
         currentPosition = pump;
-
+        pump.setDirection(e1, e2);
         System.out.println("[OK] INSERT_PUMP " + id + " " + pipe.getId() + " " + pump.getId());
-        System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + pipe1.getId() + "," + pipe2.getId()
+        System.out.println("[EVENT] PIPE_SPLIT " + pipe.getId() + " into " + p1.getId() + "," + p2.getId()
             + " via " + pump.getId());
     }
 
