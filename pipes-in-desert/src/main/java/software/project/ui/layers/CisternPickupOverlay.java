@@ -17,6 +17,7 @@ import software.project.ui.ScreenManager;
 import software.project.ui.components.Panel;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -29,7 +30,7 @@ import software.project.utils.Constants;
 public class CisternPickupOverlay extends Layer implements PropertyChangeListener {
 
     private static final float OVERLAY_SCALE = 2.5f;
-    private static final int BASE_PANEL_PADDING = 16;
+    private static final int BASE_PANEL_PADDING = 24;           // increased for better spacing
     private static final int BASE_ITEM_SIZE = 32;
     private static final int BASE_ITEM_GAP = 10;
     private static final int BASE_GAP_ITEM_LABEL = 8;
@@ -55,6 +56,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
 
     private GameButton confirmButton;
     private GameButton discardButton;
+    private GameButton closeButton;          // for empty state
 
     private boolean pumpSelected;
     private boolean pipeSelected;
@@ -104,6 +106,13 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         int btnSize = (int) (24 * OVERLAY_SCALE);
         confirmButton = new GameButton(btnSheet, 0, 0, 0, btnSize, btnSize);
         discardButton = new GameButton(btnSheet, 1, 0, 0, btnSize, btnSize);
+        // Close button (use cancel button sprite or a dedicated X)
+        closeButton = new GameButton(btnSheet, 1, 0, 0, btnSize, btnSize);
+        closeButton.setAction(() -> {
+            if(hasClosed) return;
+            app.popLayer();
+            close();
+        });
 
         confirmButton.setAction(() -> finish(true));
         discardButton.setAction(() -> finish(false));
@@ -124,8 +133,18 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     }
 
     private void close() {
+        if (hasClosed) return;
         this.hasClosed = true;
         this.gameModel.getTurnManager().removePropertyChangeListener(this);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_Q) {
+            app.popLayer();
+            close();
+        }
+        return true;
     }
 
     @Override
@@ -144,6 +163,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     public void update(float deltaTime) {
         confirmButton.update();
         discardButton.update();
+        closeButton.update();
     }
 
     @Override
@@ -158,19 +178,25 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         int panelTop = backgroundPanel.getY();
         int panelLeft = backgroundPanel.getX();
 
-        // Empty case: draw message centered inside panel
+        // Empty case: show message and close button
         if (!hasPump && !hasPipe) {
-            String msg = "EMPTY";
+            String msg = "NOTHING TO PICK UP";
             int scaledCharW = (int) (font.getCharWidth() * textScale);
             int textWidth = msg.length() * scaledCharW;
             int textHeight = (int) (font.getCharHeight() * textScale);
             int msgX = panelLeft + (backgroundPanel.getWidth() - textWidth) / 2;
-            int msgY = panelTop + (backgroundPanel.getHeight() - textHeight) / 2 + textHeight / 2;
+            int msgY = panelTop + (backgroundPanel.getHeight() - textHeight) / 2 - textHeight;
             font.draw(g, msg, msgX, msgY, textScale);
+
+            // Draw close button centered below text
+            int btnSize = closeButton.getWidth();
+            int btnY = msgY + textHeight + panelPadding;
+            closeButton.setCenter(centreX, btnY + btnSize / 2);
+            closeButton.draw(g);
             return;
         }
 
-        // Normal case
+        // Normal case (at least one item)
         int contentTop = panelTop + panelPadding;
         int itemY = contentTop;
         int labelY = itemY + itemSize + gapItemLabel;
@@ -192,7 +218,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
             int x = itemCentresX[slot];
             pumpBounds.setBounds(x - itemSize / 2, itemY, itemSize, itemSize);
             pumpSprite.drawCentered(g, x, itemY + itemSize / 2, itemSize, 0);
-            if (pumpSelected) drawSelectionBorder(g, x - itemSize / 2, itemY, itemSize, itemSize);
+            if (pumpSelected) drawSelectionGlow(g, x - itemSize / 2, itemY, itemSize, itemSize);
             drawCenteredText(g, "PUMP", x, labelY);
             slot++;
         }
@@ -201,7 +227,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
             pipeBounds.setBounds(x - itemSize / 2, itemY, itemSize, itemSize);
             Sprite pipeSpr = pipeSpriteSheet.getSprite(0);
             pipeSpr.drawCentered(g, x, itemY + itemSize / 2, itemSize, 0);
-            if (pipeSelected) drawSelectionBorder(g, x - itemSize / 2, itemY, itemSize, itemSize);
+            if (pipeSelected) drawSelectionGlow(g, x - itemSize / 2, itemY, itemSize, itemSize);
             drawCenteredText(g, "PIPE", x, labelY);
         }
 
@@ -213,11 +239,20 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         discardButton.draw(g);
     }
 
-    private void drawSelectionBorder(Graphics2D g, int x, int y, int w, int h) {
-        g.setColor(Color.YELLOW);
-        g.setStroke(new BasicStroke(3));
-        g.drawRect(x, y, w, h);
-        g.setStroke(new BasicStroke(1));
+    /**
+     * Draws a glowing selection effect (rounded rectangle with semi-transparent fill).
+     */
+    private void drawSelectionGlow(Graphics2D g, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        // Outer glow
+        g2.setColor(new Color(255, 215, 0, 80)); // gold with alpha
+        g2.fillRoundRect(x - 2, y - 2, w + 4, h + 4, 12, 12);
+        // Border
+        g2.setColor(new Color(255, 200, 0));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(x - 1, y - 1, w + 2, h + 2, 10, 10);
+        g2.dispose();
     }
 
     private void drawCenteredText(Graphics2D g, String text, int cx, int y) {
@@ -231,6 +266,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     public boolean mousePressed(MouseEvent e) {
         confirmButton.mousePressed(e);
         discardButton.mousePressed(e);
+        closeButton.mousePressed(e);
 
         Point p = e.getPoint();
         if (cistern.getStoredPump() != null && pumpBounds.contains(p)) {
@@ -250,6 +286,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     public boolean mouseReleased(MouseEvent e) {
         confirmButton.mouseReleased(e);
         discardButton.mouseReleased(e);
+        closeButton.mouseReleased(e);
         return true;
     }
 
@@ -257,6 +294,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     public boolean mouseMoved(MouseEvent e) {
         confirmButton.mouseMoved(e);
         discardButton.mouseMoved(e);
+        closeButton.mouseMoved(e);
         return true;
     }
 
@@ -269,23 +307,28 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         int itemCount = (hasPump ? 1 : 0) + (hasPipe ? 1 : 0);
 
         if (itemCount == 0) {
-            String msg = "EMPTY";
+            // Empty state: panel sized for message + close button
+            String msg = "NOTHING TO PICK UP";
             int scaledCharW = (int) (font.getCharWidth() * textScale);
             int textWidth = msg.length() * scaledCharW;
             int textHeight = (int) (font.getCharHeight() * textScale);
-            int emptyPanelW = textWidth + 4 * panelPadding;
-            int emptyPanelH = textHeight + 4 * panelPadding;
-            backgroundPanel.setPosition(screenW / 2 - emptyPanelW / 2, screenH / 2 - emptyPanelH / 2);
-            backgroundPanel.setSize(emptyPanelW, emptyPanelH);
+            int btnSize = closeButton.getWidth();
+            int panelW = textWidth + 4 * panelPadding;
+            int panelH = textHeight + btnSize + 3 * panelPadding;
+            backgroundPanel.setPosition(screenW / 2 - panelW / 2, screenH / 2 - panelH / 2);
+            backgroundPanel.setSize(panelW, panelH);
             return;
         }
 
+        // At least one item
         int labelCharW = (int) (font.getCharWidth() * labelScale);
         int labelCharH = (int) (font.getCharHeight() * labelScale);
         int maxLabelWidth = Math.max("PUMP".length() * labelCharW, "PIPE".length() * labelCharW);
 
         int contentWidth = (itemCount == 1) ? itemSize : (2 * itemSize + itemGap);
         int panelWidth = Math.max(contentWidth, maxLabelWidth) + 2 * panelPadding;
+        // Ensure minimum width for better appearance
+        panelWidth = Math.max(panelWidth, 250);
 
         int btnSize = confirmButton.getWidth();
         int contentHeight = itemSize + gapItemLabel + labelCharH + gapLabelButtons + btnSize;
@@ -299,9 +342,8 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
             if (!hasClosed) {
-                app.popLayer();
+                close();
             }
-            this.gameModel.getTurnManager().removePropertyChangeListener(this);
         }
     }
 }

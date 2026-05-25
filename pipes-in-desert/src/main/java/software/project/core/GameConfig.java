@@ -38,7 +38,7 @@ public class GameConfig {
     public static final boolean DEFAULT_REAL_TIME_SCORING = false;
 
     // Random Events
-    private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = false;
+    private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = true;
 
     // Number of Players Constants
     public static final int DEFAULT_PLAYERS = 2;

@@ -12,6 +12,7 @@ import java.util.Map;
 public class ElementRenderer {
     private final SpriteManager sm = SpriteManager.getInstance();
     private final Map<Pump, Double> fanAngles = new HashMap<>();
+    private final Map<Cistern, Double> cisternItemAngles = new HashMap<>(); // for stored items rotation
 
     private int waterPercentToColumn(int percent, int numFrames) {
         if (percent < 0) return 0;
@@ -82,10 +83,7 @@ public class ElementRenderer {
         }
     }
 
-    /**
-     * Updates the fan angles for all pumps based on their current water flow.
-     * Should be called once per frame with the same deltaTime used for all game updates.
-     */
+
     public void updateFanAngles(float deltaTime, List<Pump> pumps) {
         final double MIN_SPEED = 30.0;   // deg/sec (idle)
         final double MAX_SPEED = 720.0;  // deg/sec (full flow)
@@ -102,6 +100,22 @@ public class ElementRenderer {
             currentAngle += fanSpeed * deltaTime;
             currentAngle %= 360.0;
             fanAngles.put(pump, currentAngle);
+        }
+    }
+
+
+    public void updateCisternItemAngles(float deltaTime, List<Cistern> cisterns) {
+        final double ROTATION_SPEED = 60.0; // degrees per second
+        for (Cistern cistern : cisterns) {
+            // Only rotate if there is at least one stored item
+            if (cistern.getStoredPipe() != null || cistern.getStoredPump() != null) {
+                double currentAngle = cisternItemAngles.getOrDefault(cistern, 0.0);
+                currentAngle += ROTATION_SPEED * deltaTime;
+                currentAngle %= 360.0;
+                cisternItemAngles.put(cistern, currentAngle);
+            } else {
+                cisternItemAngles.remove(cistern);
+            }
         }
     }
 
@@ -130,7 +144,11 @@ public class ElementRenderer {
 
     public void drawCisterns(Graphics2D g, List<Cistern> cisterns, Grid grid) {
         SpriteSheet cisternSheet = sm.getSpriteSheet(SpriteSheets.CISTERN);
+        SpriteSheet pipeSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
+        Sprite pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
+        Sprite pipeSprite = (pipeSheet != null) ? pipeSheet.getSprite(0, 0) : null;
         if (cisternSheet == null) return;
+
         for (Cistern cistern : cisterns) {
             int percent = (cistern.getStoredWater() * 100) / cistern.getCapacity();
             int col = waterPercentToColumn(percent, 4);
@@ -138,9 +156,40 @@ public class ElementRenderer {
             if (sprite == null) continue;
             Point center = grid.getCellCenter(cistern.getX(), cistern.getY());
             sprite.drawCentered(g, center.x, center.y, grid.getTileSize(), 0);
+
+            // Draw stored items
+            boolean hasPipe = cistern.getStoredPipe() != null;
+            boolean hasPump = cistern.getStoredPump() != null;
+            int itemCount = (hasPipe ? 1 : 0) + (hasPump ? 1 : 0);
+            if (itemCount == 0) continue;
+
+            int itemSize = 32;               // desired size for each stored item
+            int gap = 12;                    // gap between items when both present
+            double rotationAngle = cisternItemAngles.getOrDefault(cistern, 0.0);
+
+            if (itemCount == 1) {
+                // Single item: draw centered
+                if (hasPipe && pipeSprite != null) {
+                    pipeSprite.drawCentered(g, center.x, center.y, itemSize, rotationAngle);
+                } else if (hasPump && pumpSprite != null) {
+                    pumpSprite.drawCentered(g, center.x, center.y, itemSize, rotationAngle);
+                }
+            } else {
+
+                int halfGap = gap / 2;
+                int leftX = center.x - itemSize / 2 - halfGap;
+                int rightX = center.x + itemSize / 2 + halfGap;
+
+
+                if (hasPipe && pipeSprite != null) {
+                    pipeSprite.drawCentered(g, leftX, center.y, itemSize, rotationAngle);
+                }
+                if (hasPump && pumpSprite != null) {
+                    pumpSprite.drawCentered(g, rightX, center.y, itemSize, rotationAngle);
+                }
+            }
         }
     }
-
     public void drawSprings(Graphics2D g, List<Spring> springs, Grid grid) {
         Sprite springSprite = sm.getSprite(Sprites.SPRING);
         Sprite springPipe = sm.getSprite(Sprites.SPRING_PIPE);

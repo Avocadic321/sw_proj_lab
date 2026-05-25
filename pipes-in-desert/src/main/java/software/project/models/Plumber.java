@@ -100,6 +100,9 @@ public class Plumber extends Player {
             throw new IllegalArgumentException("Cistern is null or not at the current position");
         }
 
+        if(inventory.isFull()) {
+            throw new IllegalStateException("Inventory is full");
+        }
 
         if (!inventory.add(cistern.pickUpPump())) {
             throw new IllegalStateException("Inventory is full");
@@ -124,6 +127,10 @@ public class Plumber extends Player {
             }
         }
 
+        if(inventory.isFull()) {
+            throw new IllegalStateException("Inventory is full");
+        }
+
         if (!inventory.add(pump)) {
             throw new IllegalStateException("Inventory is full");
         }
@@ -139,6 +146,9 @@ public class Plumber extends Player {
 
         if (cistern == null || currentPosition != cistern) {
             throw new IllegalArgumentException("Cistern is null or not at the current position");
+        }
+        if(inventory.isFull()) {
+            throw new IllegalStateException("Inventory is full");
         }
         if (!inventory.add(cistern.pickUpPipe())) {
             throw new IllegalStateException("Inventory is full");
@@ -167,6 +177,9 @@ public class Plumber extends Player {
             end2.disconnect();
         }
 
+        if(inventory.isFull()) {
+            throw new IllegalStateException("Inventory is full");
+        }
         if(!inventory.add(pipe)){
             throw new IllegalStateException("Inventory is full");
         }

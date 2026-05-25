@@ -47,6 +47,7 @@ public class MapRenderer {
 
         // Update fan angles for all pumps every frame
         elements.updateFanAngles(deltaTime, model.getGameMap().getAllPumps());
+        elements.updateCisternItemAngles(deltaTime,model.getGameMap().getAllCisterns());
 
         // Arrow tick pauses during movement (optional)
         if (!moving) {
