@@ -119,12 +119,13 @@ Basically simulation runs every couple of seconds, and player input is just appl
                 var end = p.resolveOutputEnd();
                 if(end == null) continue;
                 if(end.getEnd().connectedTo != elements.get(currentElement + 1)) {
-                  // change happened in the pipe (pump in the middle has been removed) so this pipe just became a sink
-                    elements.subList(currentElement + 1, elements.size());
+                  // change happened in the pipe
+                    List<Element> newPath = buildPath(p);
+                    markedForAddition.add(new Flow(newPath,0));
+                    markedForDeletion.add(flow);
+                    elements.subList(currentElement + 1, elements.size()).clear();
                     continue;
                 }
-
-
             }
            int moveFrom = elements.get(currentElement).moveWater();
             elements.get(currentElement + 1).receiveWater(moveFrom);
