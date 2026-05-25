@@ -297,7 +297,7 @@ public class HudLayer extends Layer {
         boolean isSaboteur = current instanceof Saboteur;
         Color teamColor = isPlumber ? PLUMBER_COLOR : SABOTEUR_COLOR;
 
-        hints.add(new ActionHint("z", "skip turn", teamColor));
+        hints.add(new ActionHint("s", "skip turn", teamColor));
 
         if (isPlumber) {
             if (position instanceof Cistern) {
