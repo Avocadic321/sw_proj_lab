@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import software.project.map.ActiveElement;
 import software.project.map.Cistern;
@@ -80,18 +81,21 @@ public class GameModel {
         plumbers = new Team(Teams.PLUMBERS);
         saboteurs = new Team(Teams.SABOTEURS);
 
-        // Get a random spawn point that is an ActiveElement (pump, cistern, or spring)
-        ActiveElement spawnPoint = randomSpawnPoint();
-
         int plumberCount = config.getPlumberCount();
         int saboteurCount = config.getSaboteurCount();
 
+        // Spawn plumbers at random valid active elements
         for (int i = 0; i < plumberCount; i++) {
-            plumbers.addPlayer(new Plumber(spawnPoint));
+            ActiveElement spawn = randomSpawnPoint();
+            plumbers.addPlayer(new Plumber(spawn));
+            System.out.println("[SPAWN] Plumber " + i + " spawned at " + spawn.getId());
         }
 
+        // Spawn saboteurs at random valid active elements
         for (int i = 0; i < saboteurCount; i++) {
-            saboteurs.addPlayer(new Saboteur(spawnPoint));
+            ActiveElement spawn = randomSpawnPoint();
+            saboteurs.addPlayer(new Saboteur(spawn));
+            System.out.println("[SPAWN] Saboteur " + i + " spawned at " + spawn.getId());
         }
 
         turnManager.setTeams(plumbers, saboteurs);
@@ -111,16 +115,26 @@ public class GameModel {
         if (activeElements.isEmpty()) {
             throw new IllegalStateException("No active element (pump, cistern, spring) available for spawning");
         }
-        // Filter to only those that can be occupied (e.g., not broken, not full, etc.)
-        List<ActiveElement> occupiable = activeElements.stream()
-                .filter(ActiveElement::canOccupy)
-                .toList();
-        if (occupiable.isEmpty()) {
-            // Fallback to all active elements even if occupied (e.g., broken, but still
-            // allow)
-            occupiable = activeElements;
+
+        // Filter: must be occupiable AND connected to the network (has a path to another element)
+        List<ActiveElement> valid = activeElements.stream()
+                                                  .filter(ActiveElement::canOccupy)
+                                                  .filter(e -> gameMap.isConnectedToNetwork(e))
+                                                  .collect(Collectors.toList());
+
+        if (valid.isEmpty()) {
+            System.err.println("WARNING: No active element connected to network. Using any occupiable element.");
+            valid = activeElements.stream()
+                                  .filter(ActiveElement::canOccupy)
+                                  .collect(Collectors.toList());
         }
-        return occupiable.get(random.nextInt(occupiable.size()));
+
+        if (valid.isEmpty()) {
+            System.err.println("WARNING: No occupiable active elements. Using any active element.");
+            valid = activeElements;
+        }
+
+        return valid.get(random.nextInt(valid.size()));
     }
 
     /**
@@ -134,7 +148,7 @@ public class GameModel {
         }
         if (gameLoopTask == null || gameLoopTask.isDone()) {
             gameLoopTask = scheduler.scheduleAtFixedRate(
-                    this::tick, 0, 1, TimeUnit.SECONDS);
+                this::tick, 0, 1, TimeUnit.SECONDS);
             Debug.log("Game loop task scheduled at 1 sec interval.");
         } else {
             Debug.log("Game loop task already running.");
@@ -172,8 +186,9 @@ public class GameModel {
      * Pauses the game if it is currently running.
      */
     public void pauseGame() {
-        if (state != GameState.RUNNING)
+        if (state != GameState.RUNNING) {
             return;
+        }
         Debug.log("Game paused.");
         state = GameState.PAUSED;
         turnManager.suspendTurn();
@@ -184,8 +199,9 @@ public class GameModel {
      * Resumes the game if it is currently paused.
      */
     public void resumeGame() {
-        if (state != GameState.PAUSED)
+        if (state != GameState.PAUSED) {
             return;
+        }
         Debug.log("Game resumed.");
         state = GameState.RUNNING;
         turnManager.resumeTurn();
@@ -196,8 +212,9 @@ public class GameModel {
      * Ends the game session.
      */
     public void endGame() {
-        if (state == GameState.FINALIZED)
+        if (state == GameState.FINALIZED) {
             return;
+        }
         Debug.log("Ending game. Shutting down game loop...");
         state = GameState.FINALIZED;
         turnManager.endTurn();
@@ -233,8 +250,10 @@ public class GameModel {
     private void calculateScore(int leakedAmount) {
         if (leakedAmount > 0) {
             saboteurs.addScore(leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED);
-            Debug.log("Saboteur score +%d (total: %d)",
-                    leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore());
+            Debug.log(
+                "Saboteur score +%d (total: %d)",
+                leakedAmount * GameConfig.SCORE_PER_WATER_LEAKED, saboteurs.getScore()
+            );
         }
 
         int totalStored = 0;
@@ -298,8 +317,9 @@ public class GameModel {
      */
     public void produceRandomComponent() {
         List<Cistern> cisterns = gameMap.getAllCisterns();
-        if (cisterns.isEmpty())
+        if (cisterns.isEmpty()) {
             return;
+        }
 
         Cistern c = cisterns.get(random.nextInt(cisterns.size()));
         boolean producePipe = random.nextBoolean();
@@ -469,19 +489,20 @@ public class GameModel {
     @Override
     public String toString() {
         String currentPlayer = turnManager.getCurrentPlayer() == null
-                ? "NONE"
-                : turnManager.getCurrentPlayer().getId();
+            ? "NONE"
+            : turnManager.getCurrentPlayer().getId();
         String activeTeam = turnManager.getActiveTeam() == null
-                ? "NONE"
-                : turnManager.getActiveTeam().name();
+            ? "NONE"
+            : turnManager.getActiveTeam().name();
 
         return String.format(
-                "[STATE] GAME GAME state=%s currentPlayer=%s activeTeam=%s plumbersScore=%d saboteursScore=%d mapElements=%d",
-                state,
-                currentPlayer,
-                activeTeam,
-                plumbers == null ? 0 : plumbers.getScore(),
-                saboteurs == null ? 0 : saboteurs.getScore(),
-                gameMap.getElements().size());
+            "[STATE] GAME GAME state=%s currentPlayer=%s activeTeam=%s plumbersScore=%d saboteursScore=%d mapElements=%d",
+            state,
+            currentPlayer,
+            activeTeam,
+            plumbers == null ? 0 : plumbers.getScore(),
+            saboteurs == null ? 0 : saboteurs.getScore(),
+            gameMap.getElements().size()
+        );
     }
 }
