@@ -41,7 +41,7 @@ public class MapRenderer {
 
     public MapRenderer(GameModel model) {
         this.model = model;
-        this.grid = new Grid();
+        this.grid = Grid.getInstance();
         this.background = new BackgroundRenderer();
         this.elements = new ElementRenderer();
         this.players = new PlayerRenderer();
@@ -112,7 +112,7 @@ public class MapRenderer {
     }
     public void draw(Graphics2D g) {
         GameMap map = model.getGameMap();
-        grid.computeFromMap(map);
+        grid.update(model.getGameMap());
         background.drawSand(g, grid);
         background.drawGridLines(g, grid);
         elements.drawSprings(g, map.getAllSprings(), grid);

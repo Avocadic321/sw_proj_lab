@@ -64,14 +64,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private final Sprite inventoryPanelSprite;
     private final Sprite pumpSprite;
     private final SpriteSheet pipeSheet;
-    private Grid grid;
 
     private final int goalScore;
 
     private int inventorySlots = -1;
     private final Rectangle inventoryPanelBounds = new Rectangle();
     private Rectangle[] slotBounds = new Rectangle[0];
-
 
     private boolean dragging = false;
     private ICarriable draggedItem = null;
@@ -112,9 +110,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
         timerBanner = new Banner(timerSprite, TIMER_BANNER_SCALE, BitmapFonts.FONT_MAIN, "T0000", TIMER_TEXT_SCALE);
         plumberScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "P0/XXX",
-                SCORE_TEXT_SCALE);
+                                        SCORE_TEXT_SCALE);
         saboteurScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "S0/XXX",
-                SCORE_TEXT_SCALE);
+                                         SCORE_TEXT_SCALE);
         hudFont = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
         this.model.getTurnManager().addPropertyChangeListener(this);
         recomputeLayout();
@@ -154,19 +152,36 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             drawInventory(g, plumber.getInventory());
         }
         drawActionHints(g, current);
-        grid = new Grid();
-        grid.computeFromMap(model.getGameMap());
-        drawDragging(g, grid);
+
+        // Update the singleton Grid with the current map and layout
+        Grid.getInstance().update(model.getGameMap());
+        drawDragging(g);
+        drawConnectHighlights(g);
     }
 
-    private void drawPossiblePumpConnections(Graphics2D g, Grid grid) {
-        List<Pipe> pipes = model.getGameMap().getAllPipes();
-        for(Pipe pipe: pipes) {
-            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
-            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-            if(freePoint == null) continue;
+    private void drawConnectHighlights(Graphics2D g) {
+        if (!connectMode || highlightedTiles.isEmpty()) return;
+        for (Rectangle rect : highlightedTiles) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+            g2.setColor(new Color(0, 200, 0, 100));
+            g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+            g2.setColor(Color.GREEN);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawRect(rect.x, rect.y, rect.width, rect.height);
+            g2.dispose();
+        }
+    }
 
-            // Draw highlight on that tile
+    private void drawPossiblePumpConnections(Graphics2D g) {
+        List<Pipe> pipes = model.getGameMap().getAllPipes();
+        Grid grid = Grid.getInstance();
+        for (Pipe pipe : pipes) {
+            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(
+                model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
+            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+            if (freePoint == null) continue;
+
             Rectangle tileRect = grid.getCellBounds(freePoint.x, freePoint.y);
             if (tileRect != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -181,15 +196,16 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
-    private void drawDragging(Graphics2D g, Grid grid) {
+    private void drawDragging(Graphics2D g) {
         Player player = model.getTurnManager().getCurrentPlayer();
-        if(dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
+        if (dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
             Sprite sprite = getSpriteForItem(draggedItem);
-            if(sprite != null) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.8f));
-                sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,grid.getTileSize(),0);
+            if (sprite != null) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                sprite.drawCentered(g, currentDragPos.x, currentDragPos.y,
+                                    Grid.getInstance().getTileSize(), 0);
             }
-            drawPossiblePumpConnections(g, grid);
+            drawPossiblePumpConnections(g);
         }
     }
 
@@ -248,15 +264,15 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private void drawInventory(Graphics2D g, Inventory inventory) {
         if (inventoryPanelSprite != null) {
             inventoryPanelSprite.draw(g, inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height);
+                                      inventoryPanelBounds.height);
         } else {
             g.setColor(new Color(10, 10, 10, 140));
             g.fillRoundRect(inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height, 12, 12);
+                            inventoryPanelBounds.height, 12, 12);
             g.setColor(new Color(230, 210, 160, 180));
             g.setStroke(new BasicStroke(2f));
             g.drawRoundRect(inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height, 12, 12);
+                            inventoryPanelBounds.height, 12, 12);
         }
 
         for (int i = 0; i < slotBounds.length; i++) {
@@ -276,10 +292,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     }
 
     private void drawIcon(Graphics2D g, Sprite sprite, Rectangle slot) {
-        if (sprite == null) {
-            return;
-        }
-        int centerX = slot.x + slot.width / 2 + 1; // +1 for a slight right adjustment
+        if (sprite == null) return;
+        int centerX = slot.x + slot.width / 2 + 1;
         int centerY = slot.y + slot.height / 2;
         sprite.drawCentered(g, centerX, centerY, ICON_SIZE, 0);
     }
@@ -307,9 +321,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     private void drawActionHints(Graphics2D g, Player current) {
         List<ActionHint> hints = getActionHints(current);
-        if (hints.isEmpty() || hudFont == null) {
-            return;
-        }
+        if (hints.isEmpty() || hudFont == null) return;
 
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -319,9 +331,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         int maxTextW = 0;
         for (ActionHint hint : hints) {
             int textW = (int) (hudFont.getCharWidth() * HINT_TEXT_SCALE) * hint.action.length();
-            if (textW > maxTextW) {
-                maxTextW = textW;
-            }
+            if (textW > maxTextW) maxTextW = textW;
         }
         int blockW = HINT_KEY_SIZE + HINT_GAP + maxTextW + (2 * HINT_PADDING);
         int totalHeight = (blockH * hints.size()) + (HINT_GAP * (hints.size() - 1));
@@ -356,13 +366,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     private List<ActionHint> getActionHints(Player current) {
         List<ActionHint> hints = new ArrayList<>();
-        if (current == null) {
-            return hints;
-        }
+        if (current == null) return hints;
         Element position = current.getCurrentPosition();
-        if (position == null) {
-            return hints;
-        }
+        if (position == null) return hints;
 
         boolean isPlumber = current instanceof Plumber;
         boolean isSaboteur = current instanceof Saboteur;
@@ -384,8 +390,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             if (position instanceof Pipe pipe && pipe.isBroken()) {
                 hints.add(new ActionHint("f", "repair", teamColor));
             }
-            if(position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
-                hints.add(new ActionHint("m","split pipe",teamColor));
+            if (position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
+                hints.add(new ActionHint("m", "split pipe", teamColor));
             }
             return hints;
         }
@@ -401,18 +407,17 @@ public class HudLayer extends Layer implements PropertyChangeListener {
                 }
             }
         }
-
         return hints;
     }
 
     @Override
     public boolean mousePressed(MouseEvent e) {
         Player player = model.getTurnManager().getCurrentPlayer();
-        if(inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
-            for(int i = 0; i < slotBounds.length; i++) {
-                if(slotBounds[i].contains(e.getPoint())) {
+        if (inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
+            for (int i = 0; i < slotBounds.length; i++) {
+                if (slotBounds[i].contains(e.getPoint())) {
                     ICarriable item = plumber.getInventory().get(i);
-                    if(item == null) continue;
+                    if (item == null) continue;
                     dragging = true;
                     draggedItem = item;
                     draggedSlot = i;
@@ -427,7 +432,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     @Override
     public boolean mouseDragged(MouseEvent e) {
-        if(dragging) {
+        if (dragging) {
             currentDragPos = e.getPoint();
             return true;
         }
@@ -436,9 +441,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        if (dragging) {
-            return true;
-        }
+        if (dragging) return true;
         return false;
     }
 
@@ -450,11 +453,54 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         private final String key;
         private final String action;
         private final Color teamColor;
-
         private ActionHint(String key, String action, Color teamColor) {
             this.key = key;
             this.action = action;
             this.teamColor = teamColor;
         }
     }
+
+    // Connect mode
+    private boolean connectMode = false;
+    private List<Rectangle> highlightedTiles = new ArrayList<>();
+
+    public void toggleConnectMode() {
+        if (connectMode) {
+            exitConnectMode();
+        } else {
+            Player player = model.getTurnManager().getCurrentPlayer();
+            if (player instanceof Plumber) {
+                enterConnectMode();
+            }
+        }
+    }
+
+    private void enterConnectMode() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (player == null) return;
+        Element pos = player.getCurrentPosition();
+        if (pos == null) return;
+
+        List<Point> emptyAdjacent = model.getGameMap().getAdjacentEmptyPositions(pos);
+        if (emptyAdjacent.isEmpty()) return;
+
+        Grid grid = Grid.getInstance();
+        grid.update(model.getGameMap());
+
+        highlightedTiles.clear();
+        for (Point p : emptyAdjacent) {
+            Rectangle bounds = grid.getCellBounds(p.x, p.y);
+            if (bounds != null) {
+                highlightedTiles.add(bounds);
+            }
+        }
+        connectMode = !highlightedTiles.isEmpty();
+    }
+
+    public void exitConnectMode() {
+        connectMode = false;
+        highlightedTiles.clear();
+    }
+
+    public boolean isConnectMode() { return connectMode; }
 }

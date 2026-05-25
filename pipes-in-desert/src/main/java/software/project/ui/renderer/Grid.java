@@ -7,6 +7,7 @@ import software.project.map.GameMap;
 import software.project.ui.ScreenManager;
 
 public class Grid {
+    private static Grid instance;
     private static final int DEFAULT_GRID_WIDTH = 7;
     private static final int DEFAULT_GRID_HEIGHT = 5;
     private static final int TOP_BORDER_TILES = 1;
@@ -20,7 +21,16 @@ public class Grid {
     private int offsetX;
     private int offsetY;
 
-    public void computeFromMap(GameMap map) {
+    private Grid() {}
+
+    public static Grid getInstance() {
+        if (instance == null) {
+            instance = new Grid();
+        }
+        return instance;
+    }
+
+    public void update(GameMap map) {
         computeMapBounds(map);
         computeLayout();
     }
@@ -32,18 +42,10 @@ public class Grid {
         for (var e : map.getElements()) {
             hasElements = true;
             int x = e.getX(), y = e.getY();
-            if (x < minX) {
-                minX = x;
-            }
-            if (x > maxX) {
-                maxX = x;
-            }
-            if (y < minY) {
-                minY = y;
-            }
-            if (y > maxY) {
-                maxY = y;
-            }
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
         }
         if (!hasElements || maxX < minX || maxY < minY) {
             gridWidth = DEFAULT_GRID_WIDTH;
@@ -66,9 +68,7 @@ public class Grid {
         int tileW = vw / totalAreaWidth;
         int tileH = vh / totalAreaHeight;
         tileSize = Math.min(tileW, tileH);
-        if (tileSize < 8) {
-            tileSize = 8;
-        }
+        if (tileSize < 8) tileSize = 8;
         int totalW = tileSize * totalAreaWidth;
         int totalH = tileSize * totalAreaHeight;
         int areaX = (vw - totalW) / 2;
@@ -77,48 +77,32 @@ public class Grid {
         offsetY = areaY + TOP_BORDER_TILES * tileSize;
     }
 
-    public int getTileSize() {
-        return tileSize;
-    }
-
-    public int getOffsetX() {
-        return offsetX;
-    }
-
-    public int getOffsetY() {
-        return offsetY;
-    }
-
-    public int getGridWidth() {
-        return gridWidth;
-    }
-
-    public int getGridHeight() {
-        return gridHeight;
-    }
+    public int getTileSize() { return tileSize; }
+    public int getOffsetX() { return offsetX; }
+    public int getOffsetY() { return offsetY; }
+    public int getGridWidth() { return gridWidth; }
+    public int getGridHeight() { return gridHeight; }
 
     public Point getCellCenter(int gridX, int gridY) {
         return new Point(
-                offsetX + gridX * tileSize + tileSize / 2,
-                offsetY + gridY * tileSize + tileSize / 2);
+            offsetX + gridX * tileSize + tileSize / 2,
+            offsetY + gridY * tileSize + tileSize / 2
+        );
     }
 
     public Rectangle getCellBounds(int gridX, int gridY) {
         return new Rectangle(
-                offsetX + gridX * tileSize,
-                offsetY + gridY * tileSize,
-                tileSize, tileSize);
+            offsetX + gridX * tileSize,
+            offsetY + gridY * tileSize,
+            tileSize, tileSize
+        );
     }
 
     public Point screenToGrid(int screenX, int screenY) {
-        if (screenX < offsetX || screenY < offsetY) {
-            return null;
-        }
+        if (screenX < offsetX || screenY < offsetY) return null;
         int cellX = (screenX - offsetX) / tileSize;
         int cellY = (screenY - offsetY) / tileSize;
-        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) {
-            return null;
-        }
+        if (cellX < 0 || cellX >= gridWidth || cellY < 0 || cellY >= gridHeight) return null;
         return new Point(cellX, cellY);
     }
 }

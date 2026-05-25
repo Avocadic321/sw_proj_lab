@@ -18,6 +18,11 @@ public class GameMap {
     private final List<Element> elements = new ArrayList<>();
     private Element spawnPoint;
 
+    private int minX = Integer.MAX_VALUE;
+    private int maxX = Integer.MIN_VALUE;
+    private int minY = Integer.MAX_VALUE;
+    private int maxY = Integer.MIN_VALUE;
+
     public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
         buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
     }
@@ -25,6 +30,14 @@ public class GameMap {
     public boolean addElement(Element element) {
         if (element != null) {
             elements.add(element);
+            int x = element.getX();
+            int y = element.getY();
+
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+
             return true;
         }
         return false;
@@ -38,7 +51,7 @@ public class GameMap {
     }
 
     public boolean isPositionOccupied(int x, int y) {
-        if (x < 0 || y < 0) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
             return false;
         }
         for (Element e : elements) {
@@ -89,6 +102,9 @@ public class GameMap {
     }
 
     public Element getElementAt(int x, int y) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
+            return null;
+        }
         for (Element element : elements) {
             if (element.getX() == x && element.getY() == y) {
                 return element;
@@ -98,6 +114,9 @@ public class GameMap {
     }
 
     public boolean isEmpty(int x, int y) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
+            return false; // outside map – not considered empty for placement
+        }
         return getElementAt(x, y) == null;
     }
 
@@ -156,16 +175,18 @@ public class GameMap {
             return new ArrayList<>();
         }
         List<Directions> empty = new ArrayList<>();
-        if (isEmpty(e.getX(), e.getY() - 1)) {
+        int x = e.getX();
+        int y = e.getY();
+        if (y - 1 >= 0 && isEmpty(x, y - 1)) {
             empty.add(Directions.NORTH);
         }
-        if (isEmpty(e.getX(), e.getY() + 1)) {
+        if (y + 1 >= 0 && isEmpty(x, y + 1)) {
             empty.add(Directions.SOUTH);
         }
-        if (isEmpty(e.getX() + 1, e.getY())) {
+        if (x + 1 >= 0 && isEmpty(x + 1, y)) {
             empty.add(Directions.EAST);
         }
-        if (isEmpty(e.getX() - 1, e.getY())) {
+        if (x - 1 >= 0 && isEmpty(x - 1, y)) {
             empty.add(Directions.WEST);
         }
         return empty;
@@ -178,16 +199,16 @@ public class GameMap {
         List<Point> empty = new ArrayList<>();
         int x = e.getX();
         int y = e.getY();
-        if (isEmpty(x, y - 1)) {
+        if (y - 1 >= 0 && isEmpty(x, y - 1)) {
             empty.add(new Point(x, y - 1));
         }
-        if (isEmpty(x, y + 1)) {
+        if (y + 1 >= 0 && isEmpty(x, y + 1)) {
             empty.add(new Point(x, y + 1));
         }
-        if (isEmpty(x + 1, y)) {
+        if (x + 1 >= 0 && isEmpty(x + 1, y)) {
             empty.add(new Point(x + 1, y));
         }
-        if (isEmpty(x - 1, y)) {
+        if (x - 1 >= 0 && isEmpty(x - 1, y)) {
             empty.add(new Point(x - 1, y));
         }
         return empty;
@@ -211,6 +232,40 @@ public class GameMap {
         if (dx == -1 && dy == 0) {
             return Directions.WEST;
         }
+        return null;
+    }
+
+    /**
+     * Returns the direction from an element to a grid point.
+     * @param from the source element
+     * @param to the target point (grid coordinates)
+     * @return the direction, or null if not adjacent or any parameter is null
+     */
+    public Directions getDirection(Element from, Point to) {
+        if (from == null || to == null) return null;
+        int dx = to.x - from.getX();
+        int dy = to.y - from.getY();
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 0 && dy == 1) return Directions.SOUTH;
+        if (dx == 1 && dy == 0) return Directions.EAST;
+        if (dx == -1 && dy == 0) return Directions.WEST;
+        return null;
+    }
+
+    /**
+     * Returns the direction from one grid point to another.
+     * @param from the source point (grid coordinates)
+     * @param to the target point (grid coordinates)
+     * @return the direction, or null if not adjacent or any parameter is null
+     */
+    public Directions getDirection(Point from, Point to) {
+        if (from == null || to == null) return null;
+        int dx = to.x - from.x;
+        int dy = to.y - from.y;
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 0 && dy == 1) return Directions.SOUTH;
+        if (dx == 1 && dy == 0) return Directions.EAST;
+        if (dx == -1 && dy == 0) return Directions.WEST;
         return null;
     }
 
