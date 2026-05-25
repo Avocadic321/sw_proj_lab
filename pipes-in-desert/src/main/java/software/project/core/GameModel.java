@@ -50,6 +50,9 @@ public class GameModel {
 
     private final Random random = new Random();
 
+    private int pumpBreakTurnCounter = 0;
+    private int componentTurnCounter = 0;
+
     // Game Loop Thread
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> gameLoopTask;
@@ -77,13 +80,20 @@ public class GameModel {
         plumbers = new Team(Teams.PLUMBERS);
         saboteurs = new Team(Teams.SABOTEURS);
 
-        for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
+        pumpBreakTurnCounter = 0;
+        componentTurnCounter = 0;
+
+        for (int i = 0; i < config.getPlumberCount(); ++i) {
             // Random Spawn point
             int randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
             while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy()) {
                 randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
             }
             plumbers.addPlayer(new Plumber(gameMap.getAllPipes().get(randomSpawnPoint)));
+        }
+
+        for (int i = 0; i < config.getSaboteurCount(); ++i) {
+            int randomSpawnPoint;
             do {
                 randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
             } while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy());
@@ -301,8 +311,21 @@ public class GameModel {
         if (!config.areRandomEventsEnabled()) {
             return;
         }
-        breakRandomPump();
-        produceRandomComponent();
+        pumpBreakTurnCounter++;
+        componentTurnCounter++;
+
+        int pumpInterval = Math.max(1, config.getPumpBreakIntervalTurns());
+        int componentInterval = Math.max(1, config.getComponentProductionIntervalTurns());
+
+        if (pumpBreakTurnCounter >= pumpInterval) {
+            breakRandomPump();
+            pumpBreakTurnCounter = 0;
+        }
+
+        if (componentTurnCounter >= componentInterval) {
+            produceRandomComponent();
+            componentTurnCounter = 0;
+        }
     }
 
     /**
