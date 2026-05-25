@@ -323,50 +323,66 @@ public class GameMap {
         IdGenerator.reset();
         elements.clear();
 
+        int segments = Math.max(1, cisternCount / 2);
+        int springY = 0;
+        int pumpY = segments * 2;
+        int cisternY = pumpY + segments * 2;
+
         List<Spring> springs = new ArrayList<>();
         List<Pump> pumps = new ArrayList<>();
         List<Cistern> cisterns = new ArrayList<>();
         List<Pipe> pipes = new ArrayList<>();
         List<Pump> junctions = new ArrayList<>();
+        List<Pump> relayPumps = new ArrayList<>();
 
         for (int i = 0; i < cisternCount; i++) {
             int x = i * 4;
 
-            Spring spring = new Spring(x, 0);
-            Pump pump = new Pump(x, 2);
-            Cistern cistern = new Cistern(x, 4);
+            Spring spring = new Spring(x, springY);
+            Pump pump = new Pump(x, pumpY);
+            Cistern cistern = new Cistern(x, cisternY);
 
-            Pipe up = new Pipe(x, 1);
-            Pipe down = new Pipe(x, 3);
+            List<Pipe> upChain = createVerticalChain(x, spring, pump, segments, relayPumps);
+            List<Pipe> downChain = createVerticalChain(x, pump, cistern, segments, relayPumps);
 
-            up.connectBothEnds(spring, pump);
-            down.connectBothEnds(pump, cistern);
-            pump.setDirection(up.getEnd2(), down.getEnd1());
+            if (!upChain.isEmpty() && !downChain.isEmpty()) {
+                pump.setDirection(upChain.get(upChain.size() - 1).getEnd2(), downChain.get(0).getEnd1());
+            }
 
             springs.add(spring);
             pumps.add(pump);
             cisterns.add(cistern);
-            pipes.add(up);
-            pipes.add(down);
+            pipes.addAll(upChain);
+            pipes.addAll(downChain);
         }
 
         for (int i = 0; i < pumps.size() - 1; i++) {
             int junctionX = i * 4 + 2;
-            Pump junction = new Pump(junctionX, 2);
-            Pipe left = new Pipe(junctionX - 1, 2);
-            Pipe right = new Pipe(junctionX + 1, 2);
+            Pump junction = new Pump(junctionX, pumpY);
+            Pipe left = new Pipe(junctionX - 1, pumpY);
+            Pipe right = new Pipe(junctionX + 1, pumpY);
 
             left.connectBothEnds(pumps.get(i), junction);
             right.connectBothEnds(junction, pumps.get(i + 1));
             junction.setDirection(left.getEnd2(), right.getEnd1());
 
-            Pipe branch = new Pipe(junctionX, (i % 2 == 0) ? 1 : 3);
-            branch.connectBothEnds(junction, null);
+            if (i % 2 == 0) {
+                Spring sideSpring = new Spring(junctionX, pumpY - 2);
+                Pipe branch = new Pipe(junctionX, pumpY - 1);
+                branch.connectBothEnds(sideSpring, junction);
+                springs.add(sideSpring);
+                pipes.add(branch);
+            } else {
+                Cistern sideCistern = new Cistern(junctionX, pumpY + 2);
+                Pipe branch = new Pipe(junctionX, pumpY + 1);
+                branch.connectBothEnds(junction, sideCistern);
+                cisterns.add(sideCistern);
+                pipes.add(branch);
+            }
 
             junctions.add(junction);
             pipes.add(left);
             pipes.add(right);
-            pipes.add(branch);
         }
 
         List<Element> all = new ArrayList<>();
@@ -374,10 +390,46 @@ public class GameMap {
         all.addAll(cisterns);
         all.addAll(pumps);
         all.addAll(junctions);
+        all.addAll(relayPumps);
         all.addAll(pipes);
         addElements(all);
 
         spawnPoint = pumps.isEmpty() ? null : pumps.get(0);
+    }
+
+    private List<Pipe> createVerticalChain(
+            int x,
+            ActiveElement top,
+            ActiveElement bottom,
+            int segments,
+            List<Pump> relayPumpsOut) {
+        List<Pipe> chainPipes = new ArrayList<>();
+        List<ActiveElement> chain = new ArrayList<>();
+
+        chain.add(top);
+        for (int i = 1; i < segments; i++) {
+            Pump relay = new Pump(x, top.getY() + i * 2);
+            chain.add(relay);
+            relayPumpsOut.add(relay);
+        }
+        chain.add(bottom);
+
+        for (int i = 0; i < chain.size() - 1; i++) {
+            ActiveElement a = chain.get(i);
+            ActiveElement b = chain.get(i + 1);
+            Pipe pipe = new Pipe(x, a.getY() + 1);
+            pipe.connectBothEnds(a, b);
+            chainPipes.add(pipe);
+        }
+
+        for (int i = 1; i < chain.size() - 1; i++) {
+            Pump relay = (Pump) chain.get(i);
+            Pipe above = chainPipes.get(i - 1);
+            Pipe below = chainPipes.get(i);
+            relay.setDirection(above.getEnd2(), below.getEnd1());
+        }
+
+        return chainPipes;
     }
 
     private record GraphNode(Element element, List<Element> neighbors) {
