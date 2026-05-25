@@ -215,6 +215,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
 
     @Override
     public int moveWater() {
+        if(isBroken) return 0;
         return currentFlowingWater;
     }
 
@@ -237,6 +238,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
             int lost = waterAmount + storedWater;
             storedWater = 0;
             pendingFlowingWater = 0;
+            currentFlowingWater = 0;
             return lost;
         }
 
@@ -250,6 +252,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
     @Override
     public void breakElement() {
         this.isBroken = true;
+        currentFlowingWater = 0;
     }
 
     @Override
