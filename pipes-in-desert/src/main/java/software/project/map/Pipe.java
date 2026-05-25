@@ -219,44 +219,7 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
             end2.connectsTo(end2Target);
         }
     }
-
-    /**
-     * Transfers water through this pipe.
-     * <p>
-     * * @param amount incoming water amount
-     *
-     * @return forwarded water amount
-     */
-
-    // can be modified to a better thing
-    @Override
-    public int receiveAndTransferWater() {
-        if (end1.isFree() && end2.isFree())
-            return 0;
-        int fromA = end1.consumeWater();
-        int fromB = end2.consumeWater();
-        if (fromA <= 0 && fromB <= 0)
-            return 0;
-        PipeEnd outputEnd = fromA > 0 ? end2 : end1;
-
-        int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
-        ElementWaterState state = Helper.waterToBePumpedOut(fromA > 0 ? fromA : fromB, maxTransfer, currentWater,
-            capacity, this::breakElement);
-        currentWater = state.currentlyStoredWater();
-        int waterAmount = state.pumpedWater();
-
-        if (isBroken || outputEnd.isFree()) {
-            int lost = waterAmount + currentWater;
-            currentWater = 0; // lose all water we hold
-            System.out.printf("[EVENT] WATER_LEAK %s amount=%d", this.getId(), lost);
-            return lost;
-        }
-        Debug.log("[PIPE] %s AMOUNT FORWARDED %d", this.getId(), waterAmount);
-        outputEnd.addPendingWater(waterAmount);
-        return 0;
-
-    }
-
+    
     /**
      * Breaks the pipe, causing leakage.
      */

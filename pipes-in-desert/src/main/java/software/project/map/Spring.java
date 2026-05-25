@@ -105,22 +105,7 @@ public class Spring extends ActiveElement implements IConnectable {
         return GameConfig.SPRING_WATER_GENERATED_PER_TICK;
     }
 
-    @Override
-    public int receiveAndTransferWater() {
-        int produced = generateWater();
-
-        List<PipeEnd> ends = getConnections();
-
-        if (ends.isEmpty())
-            return 0;
-        int perEnd = produced / ends.size();
-
-        Debug.log("[SPRING] %s AMOUNT GENERATED %d", this.getId(), produced);
-        for (PipeEnd end : ends) {
-            end.addPendingWater(perEnd);
-        }
-        return 0; // cannot lose since it is the source
-    }
+    
     @Override
     public int moveWater() {
         List<PipeEnd> ends = getConnections();
