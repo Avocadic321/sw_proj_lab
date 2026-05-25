@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 
 import software.project.utils.IdGenerator;
@@ -240,11 +241,13 @@ public class GameMap {
     }
 
     /**
-     * Checks if the given element can reach any other element (not itself) via the network.
+     * Checks if the given element can reach any other element (not itself) via the
+     * network.
      * Returns false for isolated elements with no connections.
      */
     public boolean isConnectedToNetwork(Element start) {
-        if (start == null) return false;
+        if (start == null)
+            return false;
         Set<Element> visited = new HashSet<>();
         Queue<Element> queue = new LinkedList<>();
         queue.add(start);
@@ -254,16 +257,20 @@ public class GameMap {
             // Build neighbors manually (same logic as buildNode)
             List<Element> neighbors = new ArrayList<>();
             if (current instanceof Pipe pipe) {
-                if (pipe.getEnd1().connectedTo != null) neighbors.add(pipe.getEnd1().connectedTo);
-                if (pipe.getEnd2().connectedTo != null) neighbors.add(pipe.getEnd2().connectedTo);
+                if (pipe.getEnd1().connectedTo != null)
+                    neighbors.add(pipe.getEnd1().connectedTo);
+                if (pipe.getEnd2().connectedTo != null)
+                    neighbors.add(pipe.getEnd2().connectedTo);
             } else if (current instanceof ActiveElement active) {
                 for (PipeEnd end : active.getConnections()) {
-                    if (end.pipe != null) neighbors.add(end.pipe);
+                    if (end.pipe != null)
+                        neighbors.add(end.pipe);
                 }
             }
             for (Element neighbor : neighbors) {
                 if (!visited.contains(neighbor)) {
-                    if (neighbor != start) return true; // found a different element
+                    if (neighbor != start)
+                        return true; // found a different element
                     visited.add(neighbor);
                     queue.add(neighbor);
                 }
@@ -281,9 +288,9 @@ public class GameMap {
      * B1
      * ||
      * FE===B2===P1===B3===P3===B9===FE
-     *           ||        ||
-     *           B4        B8
-     *           ||        ||
+     * || ||
+     * B4 B8
+     * || ||
      * C1===B5===P2===B6===P4===B7===C2
      */
     private void buildMap() {
@@ -324,11 +331,10 @@ public class GameMap {
         pump3.setDirection(pipe3.getEnd2(), pipe9.getEnd1());
 
         addElements(List.of(
-            spring1, spring2,
-            cistern1, cistern2,
-            pump1, pump2, pump3, pump4,
-            pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9
-        ));
+                spring1, spring2,
+                cistern1, cistern2,
+                pump1, pump2, pump3, pump4,
+                pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9));
 
         spawnPoint = pump1;
     }
@@ -342,11 +348,13 @@ public class GameMap {
         int pumpY = segments * 2;
         int cisternY = pumpY + segments * 2;
 
+        Random rng = new Random();
         List<Spring> springs = new ArrayList<>();
         List<Pump> pumps = new ArrayList<>();
         List<Cistern> cisterns = new ArrayList<>();
         List<Pipe> pipes = new ArrayList<>();
         List<Pump> junctions = new ArrayList<>();
+        List<Pump> chainPumps = new ArrayList<>();
         List<Integer> columnXs = new ArrayList<>();
 
         int nextX = 0;
@@ -359,8 +367,8 @@ public class GameMap {
             Pump pump = new Pump(x, pumpY);
             Cistern cistern = new Cistern(x, cisternY);
 
-            List<Pipe> upChain = createPipeChainBetween(spring, pump);
-            List<Pipe> downChain = createPipeChainBetween(pump, cistern);
+            List<Pipe> upChain = createPipeChainBetween(spring, pump, chainPumps, rng);
+            List<Pipe> downChain = createPipeChainBetween(pump, cistern, chainPumps, rng);
 
             if (!upChain.isEmpty() && !downChain.isEmpty()) {
                 pump.setDirection(upChain.get(upChain.size() - 1).getEnd2(), downChain.get(0).getEnd1());
@@ -382,8 +390,8 @@ public class GameMap {
             if (useJunction) {
                 int junctionX = leftX + (gap / 2);
                 Pump junction = new Pump(junctionX, pumpY);
-                List<Pipe> leftChain = createPipeChainBetween(pumps.get(i), junction);
-                List<Pipe> rightChain = createPipeChainBetween(junction, pumps.get(i + 1));
+                List<Pipe> leftChain = createPipeChainBetween(pumps.get(i), junction, chainPumps, rng);
+                List<Pipe> rightChain = createPipeChainBetween(junction, pumps.get(i + 1), chainPumps, rng);
 
                 if (!leftChain.isEmpty() && !rightChain.isEmpty()) {
                     junction.setDirection(leftChain.get(leftChain.size() - 1).getEnd2(), rightChain.get(0).getEnd1());
@@ -394,9 +402,19 @@ public class GameMap {
                 pipes.addAll(rightChain);
                 addSideBranch(i, junction, pumpY, springs, cisterns, pipes);
             } else {
-                List<Pipe> chain = createPipeChainBetween(pumps.get(i), pumps.get(i + 1));
+                List<Pipe> chain = createPipeChainBetween(pumps.get(i), pumps.get(i + 1), chainPumps, rng);
                 pipes.addAll(chain);
             }
+        }
+
+        Set<Point> occupied = new HashSet<>();
+        addOccupiedPositions(occupied, springs, cisterns, pumps, junctions, chainPumps, pipes);
+
+        for (Spring spring : springs) {
+            addRandomFreePipeFrom(spring, 0.3, pipes, occupied, rng);
+        }
+        for (Cistern cistern : cisterns) {
+            addRandomFreePipeFrom(cistern, 0.3, pipes, occupied, rng);
         }
 
         List<Element> all = new ArrayList<>();
@@ -404,6 +422,7 @@ public class GameMap {
         all.addAll(cisterns);
         all.addAll(pumps);
         all.addAll(junctions);
+        all.addAll(chainPumps);
         all.addAll(pipes);
         addElements(all);
 
@@ -433,22 +452,107 @@ public class GameMap {
         }
     }
 
-    private List<Pipe> createPipeChainBetween(ActiveElement start, ActiveElement end) {
+    private void addRandomFreePipeFrom(
+            ActiveElement source,
+            double probability,
+            List<Pipe> pipes,
+            Set<Point> occupied,
+            Random rng) {
+        if (source == null || rng.nextDouble() > probability) {
+            return;
+        }
+
+        int x = source.getX();
+        int y = source.getY();
+        Point[] candidates = new Point[] {
+                new Point(x - 1, y),
+                new Point(x + 1, y),
+                new Point(x, y - 1),
+                new Point(x, y + 1)
+        };
+
+        for (Point candidate : candidates) {
+            if (candidate.x < 0 || candidate.y < 0) {
+                continue;
+            }
+            if (occupied.contains(candidate)) {
+                continue;
+            }
+            Pipe pipe = new Pipe(candidate.x, candidate.y);
+            pipe.connectBothEnds(source, null);
+            pipes.add(pipe);
+            occupied.add(candidate);
+            return;
+        }
+    }
+
+    private void addOccupiedPositions(
+            Set<Point> occupied,
+            List<Spring> springs,
+            List<Cistern> cisterns,
+            List<Pump> pumps,
+            List<Pump> junctions,
+            List<Pump> chainPumps,
+            List<Pipe> pipes) {
+        for (Spring spring : springs) {
+            occupied.add(new Point(spring.getX(), spring.getY()));
+        }
+        for (Cistern cistern : cisterns) {
+            occupied.add(new Point(cistern.getX(), cistern.getY()));
+        }
+        for (Pump pump : pumps) {
+            occupied.add(new Point(pump.getX(), pump.getY()));
+        }
+        for (Pump pump : junctions) {
+            occupied.add(new Point(pump.getX(), pump.getY()));
+        }
+        for (Pump pump : chainPumps) {
+            occupied.add(new Point(pump.getX(), pump.getY()));
+        }
+        for (Pipe pipe : pipes) {
+            occupied.add(new Point(pipe.getX(), pipe.getY()));
+        }
+    }
+
+    private List<Pipe> createPipeChainBetween(
+            ActiveElement start,
+            ActiveElement end,
+            List<Pump> chainPumpsOut,
+            Random rng) {
         List<Pipe> chainPipes = new ArrayList<>();
         List<ActiveElement> chain = new ArrayList<>();
+        List<Pump> midPumps = new ArrayList<>();
 
         chain.add(start);
 
+        boolean allowMidPump = rng != null && rng.nextDouble() < 0.2;
+
         if (start.getX() == end.getX()) {
             int step = start.getY() < end.getY() ? 1 : -1;
+            int distance = Math.abs(end.getY() - start.getY()) - 1;
+            int midY = start.getY() + step * (distance / 2 + 1);
             for (int y = start.getY() + step; y != end.getY(); y += step) {
+                if (allowMidPump && distance >= 3 && y == midY) {
+                    Pump midPump = new Pump(start.getX(), y);
+                    chain.add(midPump);
+                    midPumps.add(midPump);
+                    continue;
+                }
                 Pipe pipe = new Pipe(start.getX(), y);
                 chain.add(pipe);
                 chainPipes.add(pipe);
             }
         } else if (start.getY() == end.getY()) {
             int step = start.getX() < end.getX() ? 1 : -1;
+            int distance = Math.abs(end.getX() - start.getX()) - 1;
+            int midX = start.getX() + step * (distance / 2 + 1);
             for (int x = start.getX() + step; x != end.getX(); x += step) {
+                if (allowMidPump && distance >= 3 && x == midX) {
+                    Pump midPump = new Pump(x, start.getY());
+                    chain.add(midPump);
+                    midPumps.add(midPump);
+                    continue;
+                }
                 Pipe pipe = new Pipe(x, start.getY());
                 chain.add(pipe);
                 chainPipes.add(pipe);
@@ -458,11 +562,27 @@ public class GameMap {
         chain.add(end);
 
         for (int i = 1; i < chain.size() - 1; i++) {
-            Pipe pipe = (Pipe) chain.get(i);
-            ActiveElement prev = chain.get(i - 1);
-            ActiveElement next = chain.get(i + 1);
-            pipe.connectBothEnds(prev, next);
+            ActiveElement current = chain.get(i);
+            if (current instanceof Pipe pipe) {
+                ActiveElement prev = chain.get(i - 1);
+                ActiveElement next = chain.get(i + 1);
+                pipe.connectBothEnds(prev, next);
+            }
         }
+
+        for (Pump midPump : midPumps) {
+            int idx = chain.indexOf(midPump);
+            if (idx <= 0 || idx >= chain.size() - 1) {
+                continue;
+            }
+            ActiveElement prev = chain.get(idx - 1);
+            ActiveElement next = chain.get(idx + 1);
+            if (prev instanceof Pipe prevPipe && next instanceof Pipe nextPipe) {
+                midPump.setDirection(prevPipe.getEnd2(), nextPipe.getEnd1());
+            }
+        }
+
+        chainPumpsOut.addAll(midPumps);
 
         return chainPipes;
     }
