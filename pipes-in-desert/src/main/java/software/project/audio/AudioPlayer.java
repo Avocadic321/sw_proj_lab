@@ -19,6 +19,8 @@ public class AudioPlayer {
     private final Map<String, Clip> songs = new HashMap<>();
     private final Map<String, Clip> effects = new HashMap<>();
     private String currentSongKey;
+    private long pausedSongPosition = -1;
+    private boolean songPaused = false;
     private float songVolume = 0.8f;
     private float effectVolume = 0.8f;
     private boolean songMute = false;
@@ -128,6 +130,8 @@ public class AudioPlayer {
         Clip clip = songs.get(key);
         if (clip != null) {
             currentSongKey = key;
+            songPaused = false;
+            pausedSongPosition = -1;
             clip.setMicrosecondPosition(0);
             clip.loop(Clip.LOOP_CONTINUOUSLY);
             updateVolume(clip, songVolume);
@@ -142,6 +146,8 @@ public class AudioPlayer {
         if (clip != null) {
             currentSongKey = "__custom_file__";
             songs.put(currentSongKey, clip);
+            songPaused = false;
+            pausedSongPosition = -1;
             clip.setMicrosecondPosition(0);
             clip.loop(Clip.LOOP_CONTINUOUSLY);
             updateVolume(clip, songVolume);
@@ -155,6 +161,8 @@ public class AudioPlayer {
                 if (clip.isRunning()) {
                     clip.stop();
                 }
+                songPaused = false;
+                pausedSongPosition = -1;
                 if ("__custom_file__".equals(currentSongKey)) {
                     clip.close();
                     songs.remove(currentSongKey);
@@ -162,6 +170,39 @@ public class AudioPlayer {
             }
             currentSongKey = null;
         }
+    }
+
+    public boolean pauseCurrentSong() {
+        if (currentSongKey == null) {
+            return false;
+        }
+        Clip clip = songs.get(currentSongKey);
+        if (clip == null) {
+            return false;
+        }
+        pausedSongPosition = clip.getMicrosecondPosition();
+        if (clip.isRunning()) {
+            clip.stop();
+        }
+        songPaused = true;
+        return true;
+    }
+
+    public void resumeCurrentSong() {
+        if (songMute || currentSongKey == null || !songPaused) {
+            return;
+        }
+        Clip clip = songs.get(currentSongKey);
+        if (clip == null) {
+            return;
+        }
+        if (pausedSongPosition >= 0) {
+            clip.setMicrosecondPosition(pausedSongPosition);
+        }
+        clip.loop(Clip.LOOP_CONTINUOUSLY);
+        updateVolume(clip, songVolume);
+        songPaused = false;
+        pausedSongPosition = -1;
     }
 
     public void playEffect(String key) {
@@ -231,8 +272,8 @@ public class AudioPlayer {
             if (clip != null) {
                 if (songMute && clip.isRunning())
                     clip.stop();
-                else if (!songMute && !clip.isRunning())
-                    clip.start();
+                else if (!songMute && !clip.isRunning() && songPaused)
+                    resumeCurrentSong();
             }
         }
     }
