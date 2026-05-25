@@ -416,6 +416,9 @@ public class GameMap {
         for (Cistern cistern : cisterns) {
             addRandomFreePipeFrom(cistern, 0.3, pipes, occupied, rng);
         }
+        for (Pump pump : chainPumps) {
+            addRandomFreePipeFrom(pump, 0.3, pipes, occupied, rng);
+        }
 
         List<Element> all = new ArrayList<>();
         all.addAll(springs);
