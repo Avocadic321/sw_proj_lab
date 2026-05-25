@@ -2,6 +2,7 @@ package software.project.map;
 
 import software.project.utils.IdGenerator;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,8 +20,9 @@ public class GameMap {
     public GameMap() {
         buildMap();
     }
+
     public GameMap(int choice) {
-        switch(choice) {
+        switch (choice) {
             case 1 -> buildMap1();
             case 2 -> buildMap2();
             case 3 -> buildMap3();
@@ -44,7 +46,9 @@ public class GameMap {
     }
 
     public boolean isPositionOccupied(int x, int y) {
-        if (x < 0 || y < 0) return false;
+        if (x < 0 || y < 0) {
+            return false;
+        }
         for (Element e : elements) {
             if (e.getX() == x && e.getY() == y) {
                 return true;
@@ -101,6 +105,123 @@ public class GameMap {
         return null;
     }
 
+    public boolean isEmpty(int x, int y) {
+        return getElementAt(x, y) == null;
+    }
+
+    // ---------- Adjacency helpers ----------
+    public Element getNorthOf(Element e) {
+        if (e == null) {
+            return null;
+        }
+        return getElementAt(e.getX(), e.getY() - 1);
+    }
+
+    public Element getSouthOf(Element e) {
+        if (e == null) {
+            return null;
+        }
+        return getElementAt(e.getX(), e.getY() + 1);
+    }
+
+    public Element getEastOf(Element e) {
+        if (e == null) {
+            return null;
+        }
+        return getElementAt(e.getX() + 1, e.getY());
+    }
+
+    public Element getWestOf(Element e) {
+        if (e == null) {
+            return null;
+        }
+        return getElementAt(e.getX() - 1, e.getY());
+    }
+
+    public List<Element> getAdjacentElements(Element e) {
+        List<Element> adj = new ArrayList<>();
+        Element north = getNorthOf(e);
+        if (north != null) {
+            adj.add(north);
+        }
+        Element south = getSouthOf(e);
+        if (south != null) {
+            adj.add(south);
+        }
+        Element east = getEastOf(e);
+        if (east != null) {
+            adj.add(east);
+        }
+        Element west = getWestOf(e);
+        if (west != null) {
+            adj.add(west);
+        }
+        return adj;
+    }
+
+    public List<Directions> getAdjacentEmptyDirections(Element e) {
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        List<Directions> empty = new ArrayList<>();
+        if (isEmpty(e.getX(), e.getY() - 1)) {
+            empty.add(Directions.NORTH);
+        }
+        if (isEmpty(e.getX(), e.getY() + 1)) {
+            empty.add(Directions.SOUTH);
+        }
+        if (isEmpty(e.getX() + 1, e.getY())) {
+            empty.add(Directions.EAST);
+        }
+        if (isEmpty(e.getX() - 1, e.getY())) {
+            empty.add(Directions.WEST);
+        }
+        return empty;
+    }
+
+    public List<Point> getAdjacentEmptyPositions(Element e) {
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        List<Point> empty = new ArrayList<>();
+        int x = e.getX();
+        int y = e.getY();
+        if (isEmpty(x, y - 1)) {
+            empty.add(new Point(x, y - 1));
+        }
+        if (isEmpty(x, y + 1)) {
+            empty.add(new Point(x, y + 1));
+        }
+        if (isEmpty(x + 1, y)) {
+            empty.add(new Point(x + 1, y));
+        }
+        if (isEmpty(x - 1, y)) {
+            empty.add(new Point(x - 1, y));
+        }
+        return empty;
+    }
+
+    public Directions getDirection(Element from, Element to) {
+        if (from == null || to == null) {
+            return null;
+        }
+        int dx = to.getX() - from.getX();
+        int dy = to.getY() - from.getY();
+        if (dx == 0 && dy == -1) {
+            return Directions.NORTH;
+        }
+        if (dx == 0 && dy == 1) {
+            return Directions.SOUTH;
+        }
+        if (dx == 1 && dy == 0) {
+            return Directions.EAST;
+        }
+        if (dx == -1 && dy == 0) {
+            return Directions.WEST;
+        }
+        return null;
+    }
+
     public List<Spring> getAllSprings() {
         return getElementsByType(Spring.class);
     }
@@ -118,7 +239,9 @@ public class GameMap {
     }
 
     public boolean areConnected(Element from, Element to) {
-        if (from == null || to == null) return false;
+        if (from == null || to == null) {
+            return false;
+        }
 
         if (from instanceof Pipe pipe) {
             return (pipe.getEnd1().connectedTo == to) ||
@@ -127,7 +250,9 @@ public class GameMap {
 
         if (from instanceof ActiveElement active) {
             for (PipeEnd end : active.getConnections()) {
-                if (end.pipe == to) return true;
+                if (end.pipe == to) {
+                    return true;
+                }
             }
         }
 
@@ -148,11 +273,11 @@ public class GameMap {
         Pump pump1 = new Pump(2, 0);
         Pump pump2 = new Pump(4, 0);
 
-        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
-        Pipe pipe2 = new Pipe(5, 0); // spring2 → pump2
-        Pipe pipeX = new Pipe(3, 0); // contested pipe between pump1 and pump2
-        Pipe pipe3 = new Pipe(1, 2); // pump1 → cistern1 (unused, pump points to pipeX)
-        Pipe pipe4 = new Pipe(5, 2); // pump2 → cistern2 (unused, pump points to pipeX)
+        Pipe pipe1 = new Pipe(1, 0);
+        Pipe pipe2 = new Pipe(5, 0);
+        Pipe pipeX = new Pipe(3, 0);
+        Pipe pipe3 = new Pipe(1, 2);
+        Pipe pipe4 = new Pipe(5, 2);
 
         pipe1.connectBothEnds(spring1, pump1);
         pipe2.connectBothEnds(spring2, pump2);
@@ -160,20 +285,18 @@ public class GameMap {
         pipe3.connectBothEnds(pump1, cistern1);
         pipe4.connectBothEnds(pump2, cistern2);
 
-        // both pumps output into pipeX — conflict
         pump1.setDirection(pipe1.getEnd2(), pipeX.getEnd1());
         pump2.setDirection(pipe2.getEnd2(), pipeX.getEnd2());
 
         addElements(List.of(
-                spring1, spring2, cistern1, cistern2,
-                pump1, pump2, pipeX, pipe1, pipe2, pipe3, pipe4
+            spring1, spring2, cistern1, cistern2,
+            pump1, pump2, pipeX, pipe1, pipe2, pipe3, pipe4
         ));
         spawnPoint = pump1;
     }
 
     /**
-     *S1 → P1 → FE
-     * S2 → P2 → FE
+     * S1 → P1 → FE S2 → P2 → FE
      */
     private void buildMap2() {
         IdGenerator.reset();
@@ -184,10 +307,10 @@ public class GameMap {
         Pump pump1 = new Pump(2, 0);
         Pump pump2 = new Pump(2, 4);
 
-        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
-        Pipe pipe2 = new Pipe(1, 4); // spring2 → pump2
-        Pipe pipe3 = new Pipe(3, 0); // pump1 → free end
-        Pipe pipe4 = new Pipe(3, 4); // pump2 → free end
+        Pipe pipe1 = new Pipe(1, 0);
+        Pipe pipe2 = new Pipe(1, 4);
+        Pipe pipe3 = new Pipe(3, 0);
+        Pipe pipe4 = new Pipe(3, 4);
 
         pipe1.connectBothEnds(spring1, pump1);
         pipe2.connectBothEnds(spring2, pump2);
@@ -198,12 +321,13 @@ public class GameMap {
         pump2.setDirection(pipe2.getEnd2(), pipe4.getEnd1());
 
         addElements(List.of(
-                spring1, spring2,
-                pump1, pump2,
-                pipe1, pipe2, pipe3, pipe4
+            spring1, spring2,
+            pump1, pump2,
+            pipe1, pipe2, pipe3, pipe4
         ));
         spawnPoint = pump1;
     }
+
     /**
      * S1 → P1 → C1
      */
@@ -215,8 +339,8 @@ public class GameMap {
         Cistern cistern1 = new Cistern(4, 0);
         Pump pump1 = new Pump(2, 0);
 
-        Pipe pipe1 = new Pipe(1, 0); // spring1 → pump1
-        Pipe pipe2 = new Pipe(3, 0); // pump1 → cistern1
+        Pipe pipe1 = new Pipe(1, 0);
+        Pipe pipe2 = new Pipe(3, 0);
 
         pipe1.connectBothEnds(spring1, pump1);
         pipe2.connectBothEnds(pump1, cistern1);
@@ -236,22 +360,11 @@ public class GameMap {
      *           B4        B8
      *           ||        ||
      * C1===B5===P2===B6===P4===B7===C2
-     *
-     * Labels:
-     * FE - Free End
-     * B# - PIPE# - maybe you get it why is B :)
-     * P# - PUMP#
-     * C# - CISTERN#
-     * S# - SPRING#
-     * === or || - Pipes
-     *
-     * Spawn point: P1
      */
     private void buildMap() {
         IdGenerator.reset();
         elements.clear();
 
-        // Active Elements
         Spring spring1 = new Spring(2, 0);
         Spring spring2 = new Spring(4, 0);
         Cistern cistern1 = new Cistern(0, 4);
@@ -261,7 +374,6 @@ public class GameMap {
         Pump pump3 = new Pump(4, 2);
         Pump pump4 = new Pump(4, 4);
 
-        // Pipes
         Pipe pipe1 = new Pipe(2, 1);
         Pipe pipe2 = new Pipe(1, 2);
         Pipe pipe3 = new Pipe(3, 2);
@@ -272,7 +384,6 @@ public class GameMap {
         Pipe pipe8 = new Pipe(4, 3);
         Pipe pipe9 = new Pipe(5, 2);
 
-        // Connections
         pipe1.connectBothEnds(spring1, pump1);
         pipe2.connectBothEnds(null, pump1);
         pipe3.connectBothEnds(pump1, pump3);
@@ -285,8 +396,8 @@ public class GameMap {
 
         pump1.setDirection(pipe1.getEnd2(), pipe4.getEnd1());
         pump2.setDirection(pipe4.getEnd2(), pipe5.getEnd2());
-        pump3.setDirection(pipe3.getEnd2(),pipe9.getEnd1());
-        // Register all elements
+        pump3.setDirection(pipe3.getEnd2(), pipe9.getEnd1());
+
         addElements(List.of(
             spring1, spring2,
             cistern1, cistern2,
@@ -294,36 +405,24 @@ public class GameMap {
             pipe1, pipe2, pipe3, pipe4, pipe5, pipe6, pipe7, pipe8, pipe9
         ));
 
-        // Spawn point
         spawnPoint = pump1;
-
     }
-    private record GraphNode(
-            Element element,
-            List<Element> neighbors
-    ) {}
+
+    private record GraphNode(Element element, List<Element> neighbors) {
+    }
 
     private GraphNode buildNode(Element element) {
-
         List<Element> neighbors = new ArrayList<>();
 
-        // Pipe -> connected active elements
         if (element instanceof Pipe pipe) {
-
             if (pipe.getEnd1().connectedTo != null) {
                 neighbors.add(pipe.getEnd1().connectedTo);
             }
-
             if (pipe.getEnd2().connectedTo != null) {
                 neighbors.add(pipe.getEnd2().connectedTo);
             }
-        }
-
-        // ActiveElement -> connected pipes
-        else if (element instanceof ActiveElement active) {
-
+        } else if (element instanceof ActiveElement active) {
             for (PipeEnd end : active.getConnections()) {
-
                 if (end.pipe != null) {
                     neighbors.add(end.pipe);
                 }
@@ -336,8 +435,12 @@ public class GameMap {
     public List<Element> buildPathToDestination(Element src, Element dest) {
         List<Element> path = new ArrayList<>();
 
-        if (src == null || dest == null) return path;
-        if (!dest.canOccupy()) return path;
+        if (src == null || dest == null) {
+            return path;
+        }
+        if (!dest.canOccupy()) {
+            return path;
+        }
 
         Queue<Element> queue = new LinkedList<>();
         Set<Element> visited = new HashSet<>();
@@ -348,20 +451,27 @@ public class GameMap {
 
         while (!queue.isEmpty()) {
             Element current = queue.poll();
-
-            if (current.equals(dest)) break;
+            if (current.equals(dest)) {
+                break;
+            }
 
             GraphNode node = buildNode(current);
             for (Element neighbor : node.neighbors()) {
-                if (visited.contains(neighbor)) continue;
-                if (!neighbor.canOccupy() && !neighbor.equals(dest)) continue;
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                if (!neighbor.canOccupy() && !neighbor.equals(dest)) {
+                    continue;
+                }
                 visited.add(neighbor);
                 parent.put(neighbor, current);
                 queue.offer(neighbor);
             }
         }
 
-        if (!parent.containsKey(dest) && !src.equals(dest)) return path;
+        if (!parent.containsKey(dest) && !src.equals(dest)) {
+            return path;
+        }
 
         for (Element at = dest; at != null; at = parent.get(at)) {
             path.add(at);
