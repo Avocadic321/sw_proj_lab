@@ -1,5 +1,10 @@
 package software.project.core;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import software.project.map.Cistern;
 import software.project.map.Element;
 import software.project.map.GameMap;
@@ -7,12 +12,6 @@ import software.project.map.Pipe;
 import software.project.map.PipeEnd;
 import software.project.map.Pump;
 import software.project.map.Spring;
-import software.project.utils.Debug;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class WaterSimulator {
 
@@ -219,10 +218,21 @@ Basically simulation runs every couple of seconds, and player input is just appl
                     // STOP AT THIS ELEMENT
                     pipe.setConflict(true);
                     break;
-                } else {
-                    current = output.getEnd().connectedTo;
-
                 }
+
+                Element next = output.getEnd().connectedTo;
+                if (next instanceof Pipe nextPipe) {
+                    Pipe.DirectionEnd nextEnd = null;
+                    if (nextPipe.getEnd1().connectedTo == pipe) {
+                        nextEnd = nextPipe.resolveEnd(nextPipe.getEnd1());
+                    } else if (nextPipe.getEnd2().connectedTo == pipe) {
+                        nextEnd = nextPipe.resolveEnd(nextPipe.getEnd2());
+                    }
+                    if (nextEnd != null) {
+                        nextEnd.setInput(true);
+                    }
+                }
+                current = next;
             }
             else if(current instanceof Pump pump) {
                 // check here but we got everything
