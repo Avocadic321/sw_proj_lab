@@ -18,7 +18,7 @@ public class WaterSimulationTestRunner {
     }
 
     public static void main(String[] args) {
-        new WaterSimulationTestRunner(new GameMap()).run();
+        // new WaterSimulationTestRunner(new GameMap()).run();
     }
     public void run() {
 
