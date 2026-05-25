@@ -133,7 +133,9 @@ Basically simulation runs every couple of seconds, and player input is just appl
                 List<Element> path = new ArrayList<>();
                 path.add(spring);
                Pipe.DirectionEnd end = pipe.resolveEnd(pipeEnd);
-               if(end == null) continue;
+               if(end == null) {
+                   continue;
+               }
                 path.addAll(buildPath(pipe, end));  // bfs includes the starting pipe
                 flows.add(new Flow(path, -1));
             }
@@ -172,9 +174,9 @@ Basically simulation runs every couple of seconds, and player input is just appl
                     break;
                     // we dont need it but for clarity
                 }
-                if(pipe.isBroken()) {
-                    break;
-                }
+//                if(pipe.isBroken()) {
+//                    break;
+//                }
                 if(input == null || output == null) break;
                 // check for conflict
                 if(output.getEnd().connectedTo instanceof Pump p && p.getOutgoingPipe() == pipe) {
@@ -189,7 +191,9 @@ Basically simulation runs every couple of seconds, and player input is just appl
             }
             else if(current instanceof Pump pump) {
                 // check here but we got everything
-
+//                if(pump.isBroken()){
+//                    break;
+//                }
                 pump.getOutgoingPipe().resolveEnd(pump.getOutputPipe()).setInput(true);
                 current = pump.getOutgoingPipe();
 

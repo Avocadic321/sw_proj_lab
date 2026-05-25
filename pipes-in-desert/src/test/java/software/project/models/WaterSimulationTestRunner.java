@@ -24,7 +24,7 @@ public class WaterSimulationTestRunner {
 
         System.out.println("===== WATER SIMULATION TEST START =====");
 
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 15; i++) {
 
             System.out.println("\n========================");
             System.out.println("TICK " + i);
@@ -46,7 +46,8 @@ public class WaterSimulationTestRunner {
                     y.get().setDirection(y.get().getInputPipe(),x.get().getEnd1());
                 }
 
-        for (int i = 1; i <= 2; i++) {
+
+        for (int i = 1; i <= 30; i++) {
 
             System.out.println("\n========================");
             System.out.println("TICK " + i);

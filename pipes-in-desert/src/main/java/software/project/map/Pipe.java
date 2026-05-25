@@ -132,7 +132,8 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
 
     @Override
     public int moveWater() {
-    return currentFlowingWater;
+        if(isBroken) return 0;
+        return currentFlowingWater;
     }
 
     @Override
