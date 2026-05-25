@@ -89,12 +89,14 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         dragStart = null;
         currentDragPos = null;
     }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
             resetDrag();
         }
     }
+
     public HudLayer(GameModel model) {
         super(false, false);
         this.model = model;
@@ -154,7 +156,29 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         drawActionHints(g, current);
         grid = new Grid();
         grid.computeFromMap(model.getGameMap());
-        drawDragging(g,grid);
+        drawDragging(g, grid);
+    }
+
+    private void drawPossiblePumpConnections(Graphics2D g, Grid grid) {
+        List<Pipe> pipes = model.getGameMap().getAllPipes();
+        for(Pipe pipe: pipes) {
+            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
+            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+            if(freePoint == null) continue;
+
+            // Draw highlight on that tile
+            Rectangle tileRect = grid.getCellBounds(freePoint.x, freePoint.y);
+            if (tileRect != null) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+                g2.setColor(new Color(0, 200, 0, 100));
+                g2.fillRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
+                g2.setColor(Color.GREEN);
+                g2.setStroke(new BasicStroke(2));
+                g2.drawRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
+                g2.dispose();
+            }
+        }
     }
 
     private void drawDragging(Graphics2D g, Grid grid) {
@@ -165,13 +189,16 @@ public class HudLayer extends Layer implements PropertyChangeListener {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.8f));
                 sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,grid.getTileSize(),0);
             }
+            drawPossiblePumpConnections(g, grid);
         }
     }
+
     private Sprite getSpriteForItem(ICarriable item) {
         if (item instanceof Pump) return pumpSprite;
         if (item instanceof Pipe) return pipeSheet == null ? null : pipeSheet.getSprite(0);
         return null;
     }
+
     private void recomputeLayout() {
         int virtualW = ScreenManager.getInstance().getVirtualWidth();
         int virtualH = ScreenManager.getInstance().getVirtualHeight();
@@ -403,6 +430,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
         return false;
     }
+
     @Override
     public boolean mouseReleased(MouseEvent e) {
         if (dragging) {
@@ -410,9 +438,11 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
         return false;
     }
+
     public Rectangle[] getSlotBounds() {
         return slotBounds;
     }
+
     private static final class ActionHint {
         private final String key;
         private final String action;
