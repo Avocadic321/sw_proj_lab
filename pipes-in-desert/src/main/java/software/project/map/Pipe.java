@@ -8,6 +8,11 @@ import software.project.utils.Debug;
 import software.project.utils.ElementWaterState;
 import software.project.utils.Helper;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * Pipe segment that connects two pipe ends and can carry water.
  */
@@ -136,6 +141,33 @@ public class Pipe extends Element implements IBreakable, IRepairable, ICarriable
         return currentFlowingWater;
     }
 
+    public PipeEnd getFreeEnd() {
+        if(end1.isFree()) return end1;
+        if(end2.isFree()) return end2;
+        return null;
+    }
+    public boolean isVertical() {
+        // Check first connected end
+        if (end1 != null && !end1.isFree()) {
+            return end1.connectedTo.getX() == getX();
+        } else if (end2 != null && !end2.isFree()) {
+            return end2.connectedTo.getX() == getX();
+        }
+        // default horizontal if no connections? or return false
+        return false;
+    }
+    public Point getFreeEndConnectionCoordinates(List<Point> adjacentFreePoints) {
+        // undefined usage
+        if(end1.isFree() && end2.isFree()) return null;
+        // Atleast one end needs to be connected
+        // points can be out of bound so check
+        int x = getX();
+        int y = getY();
+        boolean isVert = isVertical();
+        return adjacentFreePoints.stream().filter(p -> !isVert ? p.y == y : p.x == x).findFirst().orElse(null);
+
+
+    }
     @Override
     public void receiveWater(int water) {
         pendingFlowingWater += water;

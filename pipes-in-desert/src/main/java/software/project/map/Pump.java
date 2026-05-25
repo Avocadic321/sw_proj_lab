@@ -234,7 +234,7 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         storedWater = state.currentlyStoredWater();
         int waterAmount = state.pumpedWater();
 
-        if (isBroken || outputPipe == null || outputPipe.isFree()) {
+        if (isBroken || outputPipe == null || outputPipe.isFree() || inputPipe.isFree()) {
             int lost = waterAmount + storedWater;
             storedWater = 0;
             pendingFlowingWater = 0;

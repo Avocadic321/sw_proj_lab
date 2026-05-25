@@ -65,7 +65,7 @@ public class InsertPumpCommand implements ICommand {
         }
 
         try {
-            plumber.insertPumpIntoPipe(pump, pipe,0);
+            plumber.insertPumpIntoPipe(pump, pipe);
         } catch (Exception e) {
             System.out.println("[ERROR] INSERT_PUMP " + e.getMessage());
         }
