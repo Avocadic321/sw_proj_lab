@@ -14,8 +14,8 @@ import software.project.map.Pump;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.models.Team;
-import software.project.utils.Debug;
 import software.project.models.Teams;
+import software.project.utils.Debug;
 
 /**
  * Coordinates gameplay flow, state, and high-level actions.
@@ -79,10 +79,10 @@ public class GameModel {
 
         for (int i = 0; i < config.getNumberOfPlayers(); ++i) {
             // Random Spawn point
-          int randomSpawnPoint =  random.nextInt(gameMap.getAllPipes().size());
-          while(!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy()){
-              randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
-          }
+            int randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
+            while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy()) {
+                randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
+            }
             plumbers.addPlayer(new Plumber(gameMap.getAllPipes().get(randomSpawnPoint)));
             do {
                 randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
@@ -421,6 +421,15 @@ public class GameModel {
      */
     public GameState getState() {
         return state;
+    }
+
+    /**
+     * Returns the game configuration settings.
+     *
+     * @return the game configuration
+     */
+    public GameConfig getConfig() {
+        return config;
     }
 
     @Override
