@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Pipe;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Repairs a broken pipe at the player's current location.
@@ -51,6 +51,11 @@ public class RepairPipeCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] REPAIR_PIPE NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         Pipe pipe = gameModel.getGameMap().getElement(pipeId, Pipe.class);
         if (pipe == null) {
             System.out.println("[ERROR] REPAIR_PIPE PIPE_NOT_FOUND " + pipeId);
@@ -68,6 +73,7 @@ public class RepairPipeCommand implements ICommand {
         }
 
         plumber.repair(pipe);
+        gameModel.getTurnManager().useBigAction();
         System.out.println("[OK] REPAIR_PIPE " + pipeId);
     }
 

@@ -1,6 +1,11 @@
 package software.project.ui.layers;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -50,6 +55,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private static final int HINT_GAP = 8;
     private static final int HINT_PADDING = 8;
     private static final float HINT_TEXT_SCALE = 1f;
+    private static final float ACTION_STATUS_TEXT_SCALE = 0.9f;
 
     private static final Color PLUMBER_COLOR = new Color(70, 130, 220);
     private static final Color SABOTEUR_COLOR = new Color(200, 70, 70);
@@ -154,6 +160,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             drawInventory(g, plumber.getInventory());
         }
         drawActionHints(g, current);
+        drawActionStatus(g);
         grid = new Grid();
         grid.computeFromMap(model.getGameMap());
         drawDragging(g, grid);
@@ -403,6 +410,26 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
 
         return hints;
+    }
+
+    private void drawActionStatus(Graphics2D g) {
+        if (hudFont == null) {
+            return;
+        }
+
+        boolean smallLeft = model.getTurnManager().canUseSmallAction();
+        boolean bigLeft = model.getTurnManager().canUseBigAction();
+        String text = "Move is " + (smallLeft ? "available" : "used")
+            + "  Action is " + (bigLeft ? "available" : "used");
+
+        int screenW = ScreenManager.getInstance().getVirtualWidth();
+        int screenH = ScreenManager.getInstance().getVirtualHeight();
+        int textW = (int) (hudFont.getCharWidth() * ACTION_STATUS_TEXT_SCALE) * text.length();
+        int textH = (int) (hudFont.getCharHeight() * ACTION_STATUS_TEXT_SCALE);
+        int x = screenW - MARGIN - textW;
+        int y = screenH - MARGIN - textH;
+
+        hudFont.draw(g, text, x, y, ACTION_STATUS_TEXT_SCALE);
     }
 
     @Override

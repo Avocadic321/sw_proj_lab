@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.Cistern;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Picks up a pipe from a cistern.
@@ -54,6 +54,11 @@ public class PickupPipeCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] PICKUP_PIPE NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         Cistern cistern = gameModel.getGameMap().getElement(cisternId, Cistern.class);
         if (cistern == null) {
             System.out.println("[ERROR] PICKUP_PIPE CISTERN_NOT_FOUND " + cisternId);
@@ -62,6 +67,7 @@ public class PickupPipeCommand implements ICommand {
 
         try {
             plumber.pickUpPipe(cistern);
+            gameModel.getTurnManager().useBigAction();
             System.out.println("[OK] PICKUP_PIPE " + player.getId() + " " + cistern.getId());
         } catch (Exception e) {
             System.out.println("[ERROR] PICKUP_PIPE " + e.getMessage());

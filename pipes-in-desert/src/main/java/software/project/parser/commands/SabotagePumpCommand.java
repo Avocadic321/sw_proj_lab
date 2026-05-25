@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.models.Player;
+import software.project.core.GameState;
 import software.project.map.Pump;
+import software.project.models.Player;
 import software.project.models.Saboteur;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Sabotages (breaks) a pump as a saboteur action.
@@ -47,6 +47,11 @@ public class SabotagePumpCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] SABOTAGE_PUMP NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         if (p.getCurrentPosition() != pump) {
             System.out.println("[ERROR] SABOTAGE_PUMP NOT_AT_PUMP");
             return;
@@ -58,6 +63,7 @@ public class SabotagePumpCommand implements ICommand {
         }
 
         pump.breakElement();
+        gameModel.getTurnManager().useBigAction();
         System.out.println("[OK] SABOTAGE_PUMP " + pumpId);
     }
 }

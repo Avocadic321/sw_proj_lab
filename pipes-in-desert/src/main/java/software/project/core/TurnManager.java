@@ -8,10 +8,9 @@ import java.util.List;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Team;
+import software.project.models.Teams;
 import software.project.utils.Constants;
 import software.project.utils.Debug;
-import software.project.models.Teams;
-import software.project.utils.Helper;
 
 /**
  * Manages the turn-based flow of a game session.
@@ -37,6 +36,8 @@ public class TurnManager {
     private Teams activeTeam;
 
     private boolean turnEnded = false;
+    private boolean smallActionUsed = false;
+    private boolean bigActionUsed = false;
 
     TurnManager(int turnDuration) {
         timer = new Timer(turnDuration);
@@ -48,14 +49,16 @@ public class TurnManager {
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         playerSupport.addPropertyChangeListener(pcl);
     }
+
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         playerSupport.removePropertyChangeListener(pcl);
     }
+
     public void clearPropertyChangerListeners() {
-      var listeners = playerSupport.getPropertyChangeListeners();
-      for(int i = 0; i < listeners.length; i++) {
-          playerSupport.removePropertyChangeListener(listeners[i]);
-      }
+        var listeners = playerSupport.getPropertyChangeListeners();
+        for (int i = 0; i < listeners.length; i++) {
+            playerSupport.removePropertyChangeListener(listeners[i]);
+        }
     }
 
     public void setTeams(Team plumbers, Team saboteurs) {
@@ -98,6 +101,7 @@ public class TurnManager {
     public void startTurn() {
         if (players.isEmpty())
             return;
+        resetActionLimits();
         timer.start();
         isRunning = true;
         Debug.log("Turn started: %s (%s) | Time left: %ds",
@@ -158,7 +162,7 @@ public class TurnManager {
         currentIndex = (currentIndex + 1) % players.size();
         Player oldPlayer = currentPlayer;
         currentPlayer = players.get(currentIndex);
-        playerSupport.firePropertyChange(Constants.PLAYER_ADVANCED,oldPlayer,currentPlayer);
+        playerSupport.firePropertyChange(Constants.PLAYER_ADVANCED, oldPlayer, currentPlayer);
         activeTeam = (currentPlayer instanceof Plumber) ? Teams.PLUMBERS : Teams.SABOTEURS;
         Debug.log("Advanced to index %d: %s (%s)", currentIndex, currentPlayer.getId(), activeTeam);
     }
@@ -208,5 +212,42 @@ public class TurnManager {
 
     public int getTurnDuration() {
         return timer.getTimeLeft();
+    }
+
+    public boolean canUseSmallAction() {
+        return !smallActionUsed;
+    }
+
+    public boolean canUseBigAction() {
+        return !bigActionUsed;
+    }
+
+    public boolean useSmallAction() {
+        if (smallActionUsed) {
+            return false;
+        }
+        smallActionUsed = true;
+        maybeEndTurnAfterActions();
+        return true;
+    }
+
+    public boolean useBigAction() {
+        if (bigActionUsed) {
+            return false;
+        }
+        bigActionUsed = true;
+        maybeEndTurnAfterActions();
+        return true;
+    }
+
+    private void resetActionLimits() {
+        smallActionUsed = false;
+        bigActionUsed = false;
+    }
+
+    private void maybeEndTurnAfterActions() {
+        if (smallActionUsed && bigActionUsed) {
+            endTurn();
+        }
     }
 }

@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
-import software.project.map.Pipe;
-import software.project.models.Player;
-import software.project.map.Pump;
-import software.project.parser.ICommand;
 import software.project.core.GameState;
+import software.project.map.Pipe;
+import software.project.map.Pump;
+import software.project.models.Player;
+import software.project.parser.ICommand;
 
 /**
  * Sets the flow direction of a pump by specifying its input and output pipes.
@@ -52,8 +52,14 @@ public class SetDirectionCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] SET_DIRECTION NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         boolean ok = player.changePumpDirection(pump, inPipe, outPipe);
         if (ok) {
+            gameModel.getTurnManager().useBigAction();
             System.out.println("[OK] SET_DIRECTION " + pumpId + " IN=" + inPipeId + " OUT=" + outPipeId);
         } else {
             System.out.println("[ERROR] SET_DIRECTION FAILED");

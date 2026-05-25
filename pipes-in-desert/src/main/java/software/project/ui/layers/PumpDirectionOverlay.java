@@ -7,6 +7,7 @@ import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.map.Directions;
 import software.project.map.Pump;
+import software.project.core.TurnManager;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Banner;
@@ -63,6 +64,7 @@ public class PumpDirectionOverlay extends Layer {
 
     private final GameApplication app;
     private final Pump pump;
+    private final TurnManager turnManager;
 
     // Dragging state
     private boolean dragging = false;
@@ -70,10 +72,11 @@ public class PumpDirectionOverlay extends Layer {
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
 
-    public PumpDirectionOverlay(GameApplication app, Pump pump) {
+    public PumpDirectionOverlay(GameApplication app, Pump pump, TurnManager turnManager) {
         super(true, false);
         this.app = app;
         this.pump = pump;
+        this.turnManager = turnManager;
         this.availableDirections = pump.getAvailableDirections();
 
         SpriteManager sm = SpriteManager.getInstance();
@@ -184,7 +187,16 @@ public class PumpDirectionOverlay extends Layer {
 
         confirmButton.setAction(() -> {
             if (selectedInput != null && selectedOutput != null) {
-                pump.setDirection(selectedInput, selectedOutput);
+                if (!turnManager.canUseBigAction()) {
+                    System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+                    return;
+                }
+                boolean ok = pump.setDirection(selectedInput, selectedOutput);
+                if (!ok) {
+                    System.out.println("[ERROR] SET_DIRECTION FAILED");
+                    return;
+                }
+                turnManager.useBigAction();
                 System.out.println("Confirm: " + selectedInput + " -> " + selectedOutput);
                 app.popLayer();
             }
