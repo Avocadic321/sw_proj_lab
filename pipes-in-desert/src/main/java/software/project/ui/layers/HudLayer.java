@@ -385,7 +385,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
                 hints.add(new ActionHint("f", "repair", teamColor));
             }
             if(position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
-                hints.add(new ActionHint("m","split pump",teamColor));
+                hints.add(new ActionHint("m","split pipe",teamColor));
             }
             return hints;
         }
