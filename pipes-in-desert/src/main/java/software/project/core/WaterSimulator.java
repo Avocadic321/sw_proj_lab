@@ -219,10 +219,16 @@ Basically simulation runs every couple of seconds, and player input is just appl
                     // STOP AT THIS ELEMENT
                     pipe.setConflict(true);
                     break;
-                } else {
+                }
+                if(output.getEnd().connectedTo instanceof Pump p) {
+                    if(p.getInputPipe().pipe != pipe) {
+                        // pipe is not connected to this pump
+                        break;
+                    }
+                }
                     current = output.getEnd().connectedTo;
 
-                }
+
             }
             else if(current instanceof Pump pump) {
                 // check here but we got everything
