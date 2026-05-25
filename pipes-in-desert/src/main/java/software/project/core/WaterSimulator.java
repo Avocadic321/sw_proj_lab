@@ -78,6 +78,7 @@ public class WaterSimulator {
                     List<Element> potentialNewPath = buildPath(last);
                     // there is something added!!!!!
                     if (potentialNewPath.size() > 1) {
+
                         markedForDeletion.add(flow);
                         elements.clear();
                         List<Element> newEl = new ArrayList<>(potentialNewPath);
@@ -194,7 +195,6 @@ public class WaterSimulator {
             if (end == null)
                 return new ArrayList<>();
         }
-
         while (current != null) {
             if (visited.contains(current)) {
                 path.add(current); // if we looped
@@ -202,12 +202,15 @@ public class WaterSimulator {
             }
             visited.add(current);
             // add current element
+
             path.add(current);
             if (current instanceof Pipe pipe) {
+
                 // check for work here
                 // set the direction
                 Pipe.DirectionEnd input = pipe.resolveInputEnd();
                 Pipe.DirectionEnd output = pipe.resolveOutputEnd();
+
                 if (pipe.isMeetingAtSamePipe()) {
                     pipe.setConflict(true);
                     break;
@@ -219,6 +222,7 @@ public class WaterSimulator {
                 if (input == null || output == null)
                     break;
                 // check for conflict
+
                 if (output.getEnd().connectedTo instanceof Pump p && p.getOutgoingPipe() == pipe) {
                     // LOOP CONFLICT
                     // STOP AT THIS ELEMENT
@@ -226,27 +230,34 @@ public class WaterSimulator {
                     break;
                 }
 
+
+                if(output.getEnd() != null) {
+
                 Element next = output.getEnd().connectedTo;
                 if (next instanceof Pipe nextPipe) {
                     Pipe.DirectionEnd nextEnd = null;
-                    if (nextPipe.getEnd1().connectedTo == pipe) {
+                    if (nextPipe.getEnd1() != null && nextPipe.getEnd1().connectedTo == pipe) {
                         nextEnd = nextPipe.resolveEnd(nextPipe.getEnd1());
-                    } else if (nextPipe.getEnd2().connectedTo == pipe) {
+                    } else if (nextPipe.getEnd2() != null && nextPipe.getEnd2().connectedTo == pipe) {
                         nextEnd = nextPipe.resolveEnd(nextPipe.getEnd2());
                     }
                     if (nextEnd != null) {
                         nextEnd.setInput(true);
                     }
                 }
+                }
+
                 if (output.getEnd().connectedTo instanceof Pump p) {
-                    if (p.getInputPipe().pipe != pipe) {
+                    if (p.getInputPipe() != null && p.getInputPipe().pipe != pipe) {
                         // pipe is not connected to this pump
                         break;
                     }
                 }
                 current = output.getEnd().connectedTo;
 
-            } else if (current instanceof Pump pump) {
+            }
+            else if (current instanceof Pump pump) {
+
                 // check here but we got everything
                 // if(pump.isBroken()){
                 // break;
