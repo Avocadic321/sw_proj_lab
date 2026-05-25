@@ -29,10 +29,12 @@ public class PlayingLayer extends Layer {
     private final Map<Integer, Runnable> keyBindings = new HashMap<>();
 
     public PlayingLayer(GameApplication app) {
+        this(app, new GameConfig());
+    }
+
+    public PlayingLayer(GameApplication app, GameConfig config) {
         super(false, false);
         this.app = app;
-        GameConfig config = new GameConfig();
-
         this.model = new GameModel(config);
         this.renderer = new MapRenderer(this.model);
         this.hudLayer = new HudLayer(this.model);
