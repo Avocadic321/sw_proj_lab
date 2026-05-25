@@ -181,6 +181,7 @@ public class GameModel {
         state = GameState.FINALIZED;
         turnManager.endTurn();
         terminateGameLoop();
+        this.getTurnManager().clearPropertyChangerListeners();
         System.out.println("[EVENT] GAME_OVER");
     }
 

@@ -4,20 +4,26 @@ import software.project.audio.AudioPlayer;
 import software.project.core.GameConfig;
 import software.project.core.GameModel;
 import software.project.core.GameState;
+
+import software.project.map.Cistern;
 import software.project.map.Element;
 import software.project.map.Pump;
+
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
+import software.project.utils.Constants;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-public class PlayingLayer extends Layer {
+public class PlayingLayer extends Layer implements PropertyChangeListener {
     private final GameApplication app;
     private final GameModel model;
     private final MapRenderer renderer;
@@ -29,14 +35,20 @@ public class PlayingLayer extends Layer {
 
         this.model = new GameModel(config);
         this.renderer = new MapRenderer(this.model);
-
+        this.model.getTurnManager().addPropertyChangeListener(this);
         model.startGame();
-
         ScreenManager.getInstance().getPanel().setBackgroundPainter(
             renderer::drawLetterboxSand
         );
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
+            // remove all layers till the player layer
+          //  app.popLayer();
+
+        }
+    }
     @Override
     public void onEnter() {
         super.onEnter();
@@ -58,7 +70,41 @@ public class PlayingLayer extends Layer {
         ScreenManager.getInstance().getPanel().setBackgroundPainter(null);
     }
 
-    private void onPlay(KeyEvent e) {
+    private boolean openCisternMenu(KeyEvent e) {
+        if(e.getKeyCode() == KeyEvent.VK_Q) {
+            Player player = model.getTurnManager().getCurrentPlayer();
+            Element element = player.getCurrentPosition();
+            if (element instanceof Cistern cistern && player instanceof Plumber plumber) {
+                {
+                  CisternPickupOverlay cisternPickupOverlay =  new CisternPickupOverlay(plumber, cistern);
+                    cisternPickupOverlay.setListener(new CisternPickupOverlay.PickupListener() {
+                        @Override
+                        public void onConfirm(boolean tookPump, boolean tookPipe) {
+                            if(tookPump) {
+                                plumber.pickUpPump(cistern);
+                            }
+                            if(tookPipe) {
+                                plumber.pickUpPipe(cistern);
+                            }
+                            // on saving close overlay
+                            app.popLayer();
+                            }
+
+                        @Override
+                        public void onDiscard() {
+                            // close overlay
+                            app.popLayer();
+                        }
+                    });
+                  app.pushLayer(cisternPickupOverlay);
+                }
+                return true;
+            }
+        }
+            return false;
+    }
+
+    private boolean onPlay(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_F) {
             Player player = model.getTurnManager().getCurrentPlayer();
            boolean done = player.doMainAction();
@@ -68,7 +114,9 @@ public class PlayingLayer extends Layer {
             if (player instanceof Saboteur && done) {
                 AudioPlayer.getInstance().playEffect("pipe_break");
             }
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -91,7 +139,7 @@ public class PlayingLayer extends Layer {
             return true;
         }
         onPlay(e);
-
+        openCisternMenu(e);
         if (e.getKeyCode() == KeyEvent.VK_D) {
             Element element = model.getTurnManager().getCurrentPlayer().getCurrentPosition();
             if (!(element instanceof Pump)) {
@@ -102,6 +150,7 @@ public class PlayingLayer extends Layer {
             return true;
         }
         return false;
+
     }
 
     @Override
