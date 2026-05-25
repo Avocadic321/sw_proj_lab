@@ -320,9 +320,11 @@ public class HudLayer extends Layer {
             if (position instanceof Pipe pipe && !pipe.isBroken()) {
                 hints.add(new ActionHint("f", "sabotage", teamColor));
             }
-            if (position instanceof Pump) {
+            if (position instanceof Pump pump) {
                 hints.add(new ActionHint("d", "direction", teamColor));
-                hints.add(new ActionHint("f", "sabotage", teamColor));
+                if (!pump.isBroken()) {
+                    hints.add(new ActionHint("f", "sabotage", teamColor));
+                }
             }
         }
 
