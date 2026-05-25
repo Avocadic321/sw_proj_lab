@@ -44,7 +44,8 @@ public class SetPlayersCommand implements ICommand {
             return;
         }
 
-        app.getGameConfig().setNumberOfPlayers(value);
+        app.getGameConfig().setPlumberCount(value);
+        app.getGameConfig().setSaboteurCount(value);
         System.out.println("[OK] SET_PLAYERS " + value);
     }
 }

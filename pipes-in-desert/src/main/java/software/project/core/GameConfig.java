@@ -13,8 +13,9 @@ package software.project.core;
  * turn</li>
  * <li><b>realTimeScoring</b> - Whether scores update every second or only after
  * turns</li>
- * <li><b>numberOfPlayers</b> - Total players in the game, split between
- * Plumbers and Saboteurs</li>
+ * <li><b>plumberCount</b> - Total plumbers in the game</li>
+ * <li><b>saboteurCount</b> - Total saboteurs in the game</li>
+ * <li><b>harshness</b> - Frequency of random events per turn</li>
  * </ul>
  *
  * <p>
@@ -40,10 +41,33 @@ public class GameConfig {
     // Random Events
     private static final boolean DEFAULT_RANDOM_EVENTS_ENABLED = true;
 
-    // Number of Players Constants
+    // Number of Players Constants (per team)
     public static final int DEFAULT_PLAYERS = 2;
     public static final int MIN_PLAYERS = 2;
     public static final int MAX_PLAYERS = 8;
+
+    // Harshness
+    public enum Harshness {
+        LIGHT(5, 1),
+        MEDIUM(3, 3),
+        HEAVY(1, 5);
+
+        private final int intervalTurnsForPumpBreak;
+        private final int intervalTurnsForComponentProduction;
+
+        Harshness(int intervalTurnsForPumpBreak, int intervalTurnsForComponentProduction) {
+            this.intervalTurnsForPumpBreak = intervalTurnsForPumpBreak;
+            this.intervalTurnsForComponentProduction = intervalTurnsForComponentProduction;
+        }
+
+        public int getIntervalTurnsForPumpBreak() {
+            return intervalTurnsForPumpBreak;
+        }
+
+        public int getIntervalTurnsForComponentProduction() {
+            return intervalTurnsForComponentProduction;
+        }
+    }
 
     // Plumber
     public static final int DEFAULT_INVENTORY_SIZE = 2;
@@ -73,8 +97,10 @@ public class GameConfig {
     private int goalScore;
     private int turnDurationSeconds;
     private boolean realTimeScoring;
-    private int numberOfPlayers;
+    private int plumberCount;
+    private int saboteurCount;
     private boolean randomEventsEnabled;
+    private Harshness harshness;
 
     /**
      * Creates a new config with all default values.
@@ -83,8 +109,10 @@ public class GameConfig {
         this.goalScore = DEFAULT_GOAL_SCORE;
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
-        this.numberOfPlayers = DEFAULT_PLAYERS;
+        this.plumberCount = DEFAULT_PLAYERS;
+        this.saboteurCount = DEFAULT_PLAYERS;
         this.randomEventsEnabled = DEFAULT_RANDOM_EVENTS_ENABLED;
+        this.harshness = Harshness.MEDIUM;
     }
 
     public boolean isTestMode() {
@@ -112,20 +140,30 @@ public class GameConfig {
     /**
      * Returns whether real-time scoring mode is enabled.
      *
-     * @return {@code true} if scores update continuously during turns, {@code false} if scores update only after each
-     * full round
+     * @return {@code true} if scores update continuously during turns,
+     *         {@code false} if scores update only after each
+     *         full round
      */
     public boolean isRealTimeScoring() {
         return realTimeScoring;
     }
 
     /**
-     * Returns the total number of players.
+     * Returns the total number of plumbers.
      *
-     * @return player count
+     * @return plumber count
      */
-    public int getNumberOfPlayers() {
-        return numberOfPlayers;
+    public int getPlumberCount() {
+        return plumberCount;
+    }
+
+    /**
+     * Returns the total number of saboteurs.
+     *
+     * @return saboteur count
+     */
+    public int getSaboteurCount() {
+        return saboteurCount;
     }
 
     /**
@@ -135,6 +173,33 @@ public class GameConfig {
      */
     public boolean areRandomEventsEnabled() {
         return randomEventsEnabled;
+    }
+
+    /**
+     * Returns the configured harshness level.
+     *
+     * @return harshness level
+     */
+    public Harshness getHarshness() {
+        return harshness;
+    }
+
+    /**
+     * Returns the number of turns between random pump breaks.
+     *
+     * @return interval in turns
+     */
+    public int getPumpBreakIntervalTurns() {
+        return harshness.getIntervalTurnsForPumpBreak();
+    }
+
+    /**
+     * Returns the number of turns between random component production.
+     *
+     * @return interval in turns
+     */
+    public int getComponentProductionIntervalTurns() {
+        return harshness.getIntervalTurnsForComponentProduction();
     }
 
     public void setTestMode(boolean testMode) {
@@ -162,22 +227,36 @@ public class GameConfig {
     /**
      * Enables or disables real-time scoring mode.
      *
-     * @param enabled true = scores update every second, false = scores update after each full round
+     * @param enabled true = scores update every second, false = scores update after
+     *                each full round
      */
     public void setRealTimeScoring(boolean enabled) {
         this.realTimeScoring = enabled;
     }
 
     /**
-     * Sets the total number of players.
+     * Sets the total number of plumbers.
      *
      * @param count must be between MIN_PLAYERS and MAX_PLAYERS
      */
-    public void setNumberOfPlayers(int count) {
+    public void setPlumberCount(int count) {
         if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
-            this.numberOfPlayers = count;
+            this.plumberCount = count;
         } else {
-            System.out.printf("[ERROR] SET_PLAYERS OUT_OF_RANGE [%d, %d]%n", MIN_PLAYERS, MAX_PLAYERS);
+            System.out.printf("[ERROR] SET_PLUMBERS OUT_OF_RANGE [%d, %d]%n", MIN_PLAYERS, MAX_PLAYERS);
+        }
+    }
+
+    /**
+     * Sets the total number of saboteurs.
+     *
+     * @param count must be between MIN_PLAYERS and MAX_PLAYERS
+     */
+    public void setSaboteurCount(int count) {
+        if (count >= MIN_PLAYERS && count <= MAX_PLAYERS) {
+            this.saboteurCount = count;
+        } else {
+            System.out.printf("[ERROR] SET_SABOTEURS OUT_OF_RANGE [%d, %d]%n", MIN_PLAYERS, MAX_PLAYERS);
         }
     }
 
@@ -191,14 +270,27 @@ public class GameConfig {
     }
 
     /**
+     * Sets the game harshness level.
+     *
+     * @param harshness the new harshness level
+     */
+    public void setHarshness(Harshness harshness) {
+        if (harshness != null) {
+            this.harshness = harshness;
+        }
+    }
+
+    /**
      * Restores all settings to their default values.
      */
     public void resetToDefault() {
         this.goalScore = DEFAULT_GOAL_SCORE;
         this.turnDurationSeconds = DEFAULT_TURN_DURATION;
         this.realTimeScoring = DEFAULT_REAL_TIME_SCORING;
-        this.numberOfPlayers = DEFAULT_PLAYERS;
+        this.plumberCount = DEFAULT_PLAYERS;
+        this.saboteurCount = DEFAULT_PLAYERS;
         this.randomEventsEnabled = DEFAULT_RANDOM_EVENTS_ENABLED;
+        this.harshness = Harshness.MEDIUM;
     }
 
     /**
@@ -209,11 +301,13 @@ public class GameConfig {
     @Override
     public String toString() {
         return String.format(
-            "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s numberOfPlayers=%d random=%s",
-            goalScore,
-            turnDurationSeconds,
-            realTimeScoring ? "ON" : "OFF",
-            numberOfPlayers,
-            randomEventsEnabled ? "ON" : "OFF");
+                "[STATE] GAME_CONFIG goalScore=%d turnDuration=%d realTimeScoring=%s plumbers=%d saboteurs=%d harshness=%s random=%s",
+                goalScore,
+                turnDurationSeconds,
+                realTimeScoring ? "ON" : "OFF",
+                plumberCount,
+                saboteurCount,
+                harshness.name(),
+                randomEventsEnabled ? "ON" : "OFF");
     }
 }
