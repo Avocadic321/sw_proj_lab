@@ -118,7 +118,7 @@ public class PlayingLayer extends Layer {
                 if (tookPump) plumber.pickUpPump(cistern);
                 if (tookPipe) plumber.pickUpPipe(cistern);
                 if(tookPipe || tookPump) {
-                    AudioPlayer.getInstance().playEffect("equip_effect");
+                    AudioPlayer.getInstance().playEffect("item_equip");
                 }
                 app.popLayer();
             }
