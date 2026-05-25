@@ -110,7 +110,7 @@ public class Spring extends ActiveElement implements IConnectable {
     public int moveWater() {
         List<PipeEnd> ends = getConnections();
         if (ends.isEmpty()) return 0;
-        int produced = generateWater() / ends.size();
+        int produced = generateWater();
         Debug.log("[SPRING] %s AMOUNT GENERATED %d", this.getId(), produced);
         return produced;
     }

@@ -3,6 +3,7 @@ package software.project.ui.layers;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import software.project.core.GameState;
 import software.project.map.Cistern;
 import software.project.map.Element;
 import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.map.Pump;
 import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
@@ -64,8 +66,32 @@ public class PlayingLayer extends Layer {
 
         // Open cistern pickup overlay (plumber only)
         keyBindings.put(KeyEvent.VK_Q, this::openCisternOverlay);
+
+        // split pipe into a pump
+        keyBindings.put(KeyEvent.VK_M,this::splitPipeIntoPump);
     }
 
+    private void splitPipeIntoPump() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        Element element = player.getCurrentPosition();
+        if(player instanceof Plumber plumber && element instanceof Pipe p) {
+            // must be current element a pipe and element behind a pipe and element infront pipe
+            // crazy if statement
+
+            var payload = plumber.canSplit(p);
+            if(payload == null) return;
+            Pipe pipeLeft = payload.pipeLeft();
+            Pipe pipeRight = payload.pipeRight();
+            Pump pump = payload.pump();
+                PipeEnd leftEnd = pipeLeft.getEnd1().connectedTo == p ? pipeLeft.getEnd1() : pipeLeft.getEnd2().connectedTo == p ? pipeLeft.getEnd2() : null;
+                PipeEnd rightEnd = pipeRight.getEnd1().connectedTo  == p? pipeRight.getEnd1() : pipeRight.getEnd2().connectedTo == p ? pipeRight.getEnd2() : null;
+                if(leftEnd == null || rightEnd == null) return;
+                plumber.insertPumpIntoPipe(pump,p,pipeLeft,pipeRight,leftEnd,rightEnd);
+                model.getGameMap().addElement(pump);
+                model.getGameMap().removeElement(p);
+
+        }
+    }
     private void togglePause() {
         if (model.getState() == GameState.RUNNING) {
             model.pauseGame();
