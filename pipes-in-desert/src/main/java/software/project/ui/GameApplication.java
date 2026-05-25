@@ -33,7 +33,7 @@ public class GameApplication implements ScreenManager.ResolutionListener {
 
         // Start the game loop
         startMainLoop();
-        // AudioPlayer.getInstance().playSong("main_theme");
+        AudioPlayer.getInstance().playSong("main_theme");
     }
 
     private void initLayers() {
