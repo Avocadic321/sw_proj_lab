@@ -8,7 +8,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import software.project.map.ActiveElement;
 import software.project.map.Cistern;
+import software.project.map.Element;
 import software.project.map.GameMap;
 import software.project.map.Pump;
 import software.project.models.Plumber;
@@ -76,28 +78,21 @@ public class GameModel {
     public void startGame() {
         state = GameState.INITIALIZING;
 
-        // Create Teams
         plumbers = new Team(Teams.PLUMBERS);
         saboteurs = new Team(Teams.SABOTEURS);
 
-        pumpBreakTurnCounter = 0;
-        componentTurnCounter = 0;
+        // Get a random spawn point that is an ActiveElement (pump, cistern, or spring)
+        ActiveElement spawnPoint = randomSpawnPoint();
 
-        for (int i = 0; i < config.getPlumberCount(); ++i) {
-            // Random Spawn point
-            int randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
-            while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy()) {
-                randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
-            }
-            plumbers.addPlayer(new Plumber(gameMap.getAllPipes().get(randomSpawnPoint)));
+        int plumberCount = config.getPlumberCount();
+        int saboteurCount = config.getSaboteurCount();
+
+        for (int i = 0; i < plumberCount; i++) {
+            plumbers.addPlayer(new Plumber(spawnPoint));
         }
 
-        for (int i = 0; i < config.getSaboteurCount(); ++i) {
-            int randomSpawnPoint;
-            do {
-                randomSpawnPoint = random.nextInt(gameMap.getAllPipes().size());
-            } while (!gameMap.getAllPipes().get(randomSpawnPoint).canOccupy());
-            saboteurs.addPlayer(new Saboteur(gameMap.getAllPipes().get(randomSpawnPoint)));
+        for (int i = 0; i < saboteurCount; i++) {
+            saboteurs.addPlayer(new Saboteur(spawnPoint));
         }
 
         turnManager.setTeams(plumbers, saboteurs);
@@ -110,6 +105,22 @@ public class GameModel {
         } else {
             Debug.log("Test Mode – game loop not started");
         }
+    }
+
+    private ActiveElement randomSpawnPoint() {
+        List<ActiveElement> activeElements = gameMap.getActiveElements();
+        if (activeElements.isEmpty()) {
+            throw new IllegalStateException("No active element (pump, cistern, spring) available for spawning");
+        }
+        // Filter to only those that can be occupied (e.g., not broken, not full, etc.)
+        List<ActiveElement> occupiable = activeElements.stream()
+                                                       .filter(ActiveElement::canOccupy)
+                                                       .toList();
+        if (occupiable.isEmpty()) {
+            // Fallback to all active elements even if occupied (e.g., broken, but still allow)
+            occupiable = activeElements;
+        }
+        return occupiable.get(random.nextInt(occupiable.size()));
     }
 
     /**

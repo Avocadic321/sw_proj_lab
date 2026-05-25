@@ -26,6 +26,8 @@ public class PlayingLayer extends Layer {
     private final MapRenderer renderer;
     private final HudLayer hudLayer;
 
+    private boolean gameOverShown = false;
+
     private final Map<Integer, Runnable> keyBindings = new HashMap<>();
 
     public PlayingLayer(GameApplication app) {
@@ -133,6 +135,17 @@ public class PlayingLayer extends Layer {
 
     @Override
     public void update(float deltaTime) {
+        if (!gameOverShown && model.getState() == GameState.FINALIZED) {
+            model.pauseGame();
+            gameOverShown = true;
+            GameOverOverlay overlay = new GameOverOverlay(model);
+            overlay.setMainMenuAction(() -> {
+                app.clearLayers();
+                app.pushLayer(new MainMenuLayer(app));
+            });
+            app.pushLayer(overlay);
+            return;
+        }
         renderer.update(deltaTime);
         hudLayer.update(deltaTime);
     }
