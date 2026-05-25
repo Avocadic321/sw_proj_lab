@@ -248,24 +248,36 @@ public class GameMap {
         return result;
     }
 
-    public boolean areConnected(Element from, Element to) {
-        if (from == null || to == null) {
-            return false;
-        }
-
-        if (from instanceof Pipe pipe) {
-            return (pipe.getEnd1().connectedTo == to) ||
-                (pipe.getEnd2().connectedTo == to);
-        }
-
-        if (from instanceof ActiveElement active) {
-            for (PipeEnd end : active.getConnections()) {
-                if (end.pipe == to) {
-                    return true;
+    /**
+     * Checks if the given element can reach any other element (not itself) via the network.
+     * Returns false for isolated elements with no connections.
+     */
+    public boolean isConnectedToNetwork(Element start) {
+        if (start == null) return false;
+        Set<Element> visited = new HashSet<>();
+        Queue<Element> queue = new LinkedList<>();
+        queue.add(start);
+        visited.add(start);
+        while (!queue.isEmpty()) {
+            Element current = queue.poll();
+            // Build neighbors manually (same logic as buildNode)
+            List<Element> neighbors = new ArrayList<>();
+            if (current instanceof Pipe pipe) {
+                if (pipe.getEnd1().connectedTo != null) neighbors.add(pipe.getEnd1().connectedTo);
+                if (pipe.getEnd2().connectedTo != null) neighbors.add(pipe.getEnd2().connectedTo);
+            } else if (current instanceof ActiveElement active) {
+                for (PipeEnd end : active.getConnections()) {
+                    if (end.pipe != null) neighbors.add(end.pipe);
+                }
+            }
+            for (Element neighbor : neighbors) {
+                if (!visited.contains(neighbor)) {
+                    if (neighbor != start) return true; // found a different element
+                    visited.add(neighbor);
+                    queue.add(neighbor);
                 }
             }
         }
-
         return false;
     }
 
