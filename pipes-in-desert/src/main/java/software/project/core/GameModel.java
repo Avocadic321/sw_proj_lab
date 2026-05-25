@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import software.project.map.ActiveElement;
 import software.project.map.Cistern;
-import software.project.map.Element;
 import software.project.map.GameMap;
 import software.project.map.Pump;
 import software.project.models.Plumber;
@@ -66,7 +65,7 @@ public class GameModel {
      * @param config game configuration
      */
     public GameModel(GameConfig config) {
-        this.gameMap = new GameMap();
+        this.gameMap = new GameMap(config.getPlumberCount(), config.getSaboteurCount());
         this.turnManager = new TurnManager(config.getTurnDurationSeconds());
         this.state = GameState.INITIALIZING;
         this.config = config;
