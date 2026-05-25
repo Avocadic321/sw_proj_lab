@@ -15,15 +15,12 @@ import software.project.models.Saboteur;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.renderer.MapRenderer;
-import software.project.utils.Constants;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
-public class PlayingLayer extends Layer implements PropertyChangeListener {
+public class PlayingLayer extends Layer {
     private final GameApplication app;
     private final GameModel model;
     private final MapRenderer renderer;
@@ -35,20 +32,14 @@ public class PlayingLayer extends Layer implements PropertyChangeListener {
 
         this.model = new GameModel(config);
         this.renderer = new MapRenderer(this.model);
-        this.model.getTurnManager().addPropertyChangeListener(this);
+
         model.startGame();
         ScreenManager.getInstance().getPanel().setBackgroundPainter(
             renderer::drawLetterboxSand
         );
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
-            // remove all layers till the player layer
-          //  app.popLayer();
 
-        }
-    }
     @Override
     public void onEnter() {
         super.onEnter();
@@ -76,7 +67,7 @@ public class PlayingLayer extends Layer implements PropertyChangeListener {
             Element element = player.getCurrentPosition();
             if (element instanceof Cistern cistern && player instanceof Plumber plumber) {
                 {
-                  CisternPickupOverlay cisternPickupOverlay =  new CisternPickupOverlay(plumber, cistern);
+                  CisternPickupOverlay cisternPickupOverlay =  new CisternPickupOverlay(plumber, cistern,this.model,this.app);
                     cisternPickupOverlay.setListener(new CisternPickupOverlay.PickupListener() {
                         @Override
                         public void onConfirm(boolean tookPump, boolean tookPipe) {

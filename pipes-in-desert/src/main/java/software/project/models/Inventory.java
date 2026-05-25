@@ -6,10 +6,12 @@ public class Inventory {
 
     private final ICarriable[] inventory;
     private int size;
+    private int capacity;
 
     public Inventory(int capacity) {
         inventory = new ICarriable[capacity];
         size = 0;
+        this.capacity = capacity;
     }
 
     public ICarriable[] getInventory() {
@@ -60,6 +62,9 @@ public class Inventory {
         return item;
     }
 
+    public boolean isFull() {
+        return size == capacity;
+    }
     public int getSize() {
         return size;
     }

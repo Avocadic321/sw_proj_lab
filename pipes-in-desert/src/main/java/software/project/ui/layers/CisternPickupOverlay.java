@@ -1,5 +1,7 @@
 package software.project.ui.layers;
 
+import software.project.audio.AudioPlayer;
+import software.project.core.GameModel;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
@@ -10,33 +12,37 @@ import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.map.Cistern;
 import software.project.models.Plumber;
+import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.Panel;
 
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import static software.project.graphics.Sprites.SIMPLE_PANEL;
 
-
 import software.project.ui.components.GameButton;
+import software.project.utils.Constants;
 
-
-
-import java.awt.*;
-
-public class CisternPickupOverlay extends Layer {
+public class CisternPickupOverlay extends Layer implements PropertyChangeListener {
 
     private static final float OVERLAY_SCALE = 2.5f;
-    private static final int BASE_PANEL_PADDING = 20;
+    private static final int BASE_PANEL_PADDING = 24;           // increased for better spacing
     private static final int BASE_ITEM_SIZE = 32;
     private static final int BASE_ITEM_GAP = 10;
-    private static final float BASE_TEXT_SCALE = 0.8f;
-    private static final float BASE_LABEL_SCALE = 0.6f;
+    private static final int BASE_GAP_ITEM_LABEL = 8;
+    private static final int BASE_GAP_LABEL_BUTTONS = 20;
+    private static final float BASE_TEXT_SCALE = 0.7f;
+    private static final float BASE_LABEL_SCALE = 0.5f;
 
     private final int panelPadding;
     private final int itemSize;
     private final int itemGap;
+    private final int gapItemLabel;
+    private final int gapLabelButtons;
     private final float textScale;
     private final float labelScale;
 
@@ -46,27 +52,26 @@ public class CisternPickupOverlay extends Layer {
     private final BitmapFont font;
 
     private Sprite pumpSprite;
-    private Sprite pipeSprite;
+    private SpriteSheet pipeSpriteSheet;
 
-    // UI elements
     private GameButton confirmButton;
     private GameButton discardButton;
+    private GameButton closeButton;          // for empty state
 
-    // Selection state
     private boolean pumpSelected;
     private boolean pipeSelected;
 
-    // Bounds for click detection
     private Rectangle pumpBounds;
     private Rectangle pipeBounds;
 
-    // Callbacks
+    private GameModel gameModel;
+    private GameApplication app;
+    private boolean hasClosed;
+
     private PickupListener listener;
 
     public interface PickupListener {
-        /** Called when the player confirms the selection. */
         void onConfirm(boolean tookPump, boolean tookPipe);
-        /** Called when the player discards/cancels. */
         void onDiscard();
     }
 
@@ -74,30 +79,40 @@ public class CisternPickupOverlay extends Layer {
         this.listener = listener;
     }
 
-    public CisternPickupOverlay(Plumber plumber, Cistern cistern) {
-        super(true, false); // blocks input to layers below
+    public CisternPickupOverlay(Plumber plumber, Cistern cistern, GameModel model, GameApplication app) {
+        super(true, false);
         this.plumber = plumber;
         this.cistern = cistern;
+        this.gameModel = model;
+        this.app = app;
+        this.gameModel.getTurnManager().addPropertyChangeListener(this);
 
-        // Scale UI elements
         this.panelPadding = (int) (BASE_PANEL_PADDING * OVERLAY_SCALE);
         this.itemSize = (int) (BASE_ITEM_SIZE * OVERLAY_SCALE);
         this.itemGap = (int) (BASE_ITEM_GAP * OVERLAY_SCALE);
+        this.gapItemLabel = (int) (BASE_GAP_ITEM_LABEL * OVERLAY_SCALE);
+        this.gapLabelButtons = (int) (BASE_GAP_LABEL_BUTTONS * OVERLAY_SCALE);
         this.textScale = BASE_TEXT_SCALE * OVERLAY_SCALE;
         this.labelScale = BASE_LABEL_SCALE * OVERLAY_SCALE;
 
         SpriteManager sm = SpriteManager.getInstance();
         pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
-        pipeSprite = sm.getSprite(Sprites.SPRING_PIPE);
+        pipeSpriteSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
         font = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MONO);
 
         backgroundPanel = new Panel(1.0f, 0, SIMPLE_PANEL);
 
-        // Create Confirm and Discard buttons (using your button sprite sheet)
-        SpriteSheet btnSheet = sm.getSpriteSheet(SpriteSheets.CONFIRM_CANCEL_BUTTONS); // adjust sheet name if needed
+        SpriteSheet btnSheet = sm.getSpriteSheet(SpriteSheets.CONFIRM_CANCEL_BUTTONS);
         int btnSize = (int) (24 * OVERLAY_SCALE);
         confirmButton = new GameButton(btnSheet, 0, 0, 0, btnSize, btnSize);
         discardButton = new GameButton(btnSheet, 1, 0, 0, btnSize, btnSize);
+        // Close button (use cancel button sprite or a dedicated X)
+        closeButton = new GameButton(btnSheet, 1, 0, 0, btnSize, btnSize);
+        closeButton.setAction(() -> {
+            if(hasClosed) return;
+            app.popLayer();
+            close();
+        });
 
         confirmButton.setAction(() -> finish(true));
         discardButton.setAction(() -> finish(false));
@@ -108,36 +123,32 @@ public class CisternPickupOverlay extends Layer {
         pipeBounds = new Rectangle();
     }
 
-
     private void finish(boolean confirmed) {
         if (confirmed) {
-            if (listener != null) {
-                listener.onConfirm(pumpSelected, pipeSelected);
-            }
+            if (listener != null) listener.onConfirm(pumpSelected, pipeSelected);
         } else {
-            if (listener != null) {
-                listener.onDiscard();
-            }
+            if (listener != null) listener.onDiscard();
         }
-        // Close the overlay – assuming the layer manager is a stack; override with your actual close mechanism
         close();
     }
 
-    /**
-     * Call this when the overlay should be removed from the layer stack.
-     * Adjust according to your LayerManager implementation.
-     */
     private void close() {
-       onExit();
+        if (hasClosed) return;
+        this.hasClosed = true;
+        this.gameModel.getTurnManager().removePropertyChangeListener(this);
     }
 
-    public void onExit() {
-        // To be overridden or used by your layer system.
+    @Override
+    public boolean keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_Q) {
+            app.popLayer();
+            close();
+        }
+        return true;
     }
 
     @Override
     public void onEnter() {
-        // Reset selections every time the overlay opens
         pumpSelected = false;
         pipeSelected = false;
         recomputeLayout();
@@ -152,6 +163,7 @@ public class CisternPickupOverlay extends Layer {
     public void update(float deltaTime) {
         confirmButton.update();
         discardButton.update();
+        closeButton.update();
     }
 
     @Override
@@ -163,69 +175,84 @@ public class CisternPickupOverlay extends Layer {
 
         int centreX = ScreenManager.getInstance().getVirtualWidth() / 2;
         int centreY = ScreenManager.getInstance().getVirtualHeight() / 2;
+        int panelTop = backgroundPanel.getY();
+        int panelLeft = backgroundPanel.getX();
 
-        // No items to pick up
+        // Empty case: show message and close button
         if (!hasPump && !hasPipe) {
-            drawCenteredTextLarge(g, "NOTHING TO PICK UP", centreX, centreY);
-            // Optionally show a single "OK" button to close
-            // For simplicity, we'll just close after a short time or let the caller handle.
-            // You could also add an "OK" button here.
+            String msg = "NOTHING TO PICK UP";
+            int scaledCharW = (int) (font.getCharWidth() * textScale);
+            int textWidth = msg.length() * scaledCharW;
+            int textHeight = (int) (font.getCharHeight() * textScale);
+            int msgX = panelLeft + (backgroundPanel.getWidth() - textWidth) / 2;
+            int msgY = panelTop + (backgroundPanel.getHeight() - textHeight) / 2 - textHeight;
+            font.draw(g, msg, msgX, msgY, textScale);
+
+            // Draw close button centered below text
+            int btnSize = closeButton.getWidth();
+            int btnY = msgY + textHeight + panelPadding;
+            closeButton.setCenter(centreX, btnY + btnSize / 2);
+            closeButton.draw(g);
             return;
         }
 
-        // Calculate positions for the items
+        // Normal case (at least one item)
+        int contentTop = panelTop + panelPadding;
+        int itemY = contentTop;
+        int labelY = itemY + itemSize + gapItemLabel;
+        int buttonsY = labelY + (int)(font.getCharHeight() * labelScale) + gapLabelButtons;
+
         int itemCount = (hasPump ? 1 : 0) + (hasPipe ? 1 : 0);
         int[] itemCentresX = new int[itemCount];
         if (itemCount == 1) {
             itemCentresX[0] = centreX;
         } else {
             int groupWidth = 2 * itemSize + itemGap;
-            int groupLeft = centreX - groupWidth / 2 + itemSize / 2;
-            itemCentresX[0] = groupLeft;
-            itemCentresX[1] = groupLeft + itemSize + itemGap;
+            int groupLeft = centreX - groupWidth / 2;
+            itemCentresX[0] = groupLeft + itemSize / 2;
+            itemCentresX[1] = groupLeft + itemSize + itemGap + itemSize / 2;
         }
-
-        int itemTop = centreY - itemSize / 2;
-        int labelY = itemTop + itemSize + panelPadding;
-        int btnY = labelY + (int) (font.getCharHeight() * labelScale) + panelPadding;
 
         int slot = 0;
         if (hasPump) {
             int x = itemCentresX[slot];
-            pumpBounds.setBounds(x - itemSize / 2, itemTop, itemSize, itemSize);
-            // Draw pump
-            pumpSprite.drawCentered(g, x, centreY, itemSize, 0);
-            // Highlight if selected
-            if (pumpSelected) {
-                drawSelectionBorder(g, x - itemSize / 2, itemTop, itemSize, itemSize);
-            }
+            pumpBounds.setBounds(x - itemSize / 2, itemY, itemSize, itemSize);
+            pumpSprite.drawCentered(g, x, itemY + itemSize / 2, itemSize, 0);
+            if (pumpSelected) drawSelectionGlow(g, x - itemSize / 2, itemY, itemSize, itemSize);
             drawCenteredText(g, "PUMP", x, labelY);
             slot++;
         }
         if (hasPipe) {
             int x = itemCentresX[slot];
-            pipeBounds.setBounds(x - itemSize / 2, itemTop, itemSize, itemSize);
-            pipeSprite.drawCentered(g, x, centreY, itemSize, 0);
-            if (pipeSelected) {
-                drawSelectionBorder(g, x - itemSize / 2, itemTop, itemSize, itemSize);
-            }
+            pipeBounds.setBounds(x - itemSize / 2, itemY, itemSize, itemSize);
+            Sprite pipeSpr = pipeSpriteSheet.getSprite(0);
+            pipeSpr.drawCentered(g, x, itemY + itemSize / 2, itemSize, 0);
+            if (pipeSelected) drawSelectionGlow(g, x - itemSize / 2, itemY, itemSize, itemSize);
             drawCenteredText(g, "PIPE", x, labelY);
         }
 
-        // Draw buttons
         int btnSize = confirmButton.getWidth();
-        int btnGap = (int) (8 * OVERLAY_SCALE);
-        confirmButton.setCenter(centreX - btnSize / 2 - btnGap, btnY + btnSize / 2);
-        discardButton.setCenter(centreX + btnSize / 2 + btnGap, btnY + btnSize / 2);
+        int btnGap = (int)(8 * OVERLAY_SCALE);
+        confirmButton.setCenter(centreX - btnSize / 2 - btnGap, buttonsY + btnSize / 2);
+        discardButton.setCenter(centreX + btnSize / 2 + btnGap, buttonsY + btnSize / 2);
         confirmButton.draw(g);
         discardButton.draw(g);
     }
 
-    private void drawSelectionBorder(Graphics2D g, int x, int y, int w, int h) {
-        g.setColor(Color.YELLOW);
-        g.setStroke(new BasicStroke(3));
-        g.drawRect(x, y, w, h);
-        g.setStroke(new BasicStroke(1));
+    /**
+     * Draws a glowing selection effect (rounded rectangle with semi-transparent fill).
+     */
+    private void drawSelectionGlow(Graphics2D g, int x, int y, int w, int h) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        // Outer glow
+        g2.setColor(new Color(255, 215, 0, 80)); // gold with alpha
+        g2.fillRoundRect(x - 2, y - 2, w + 4, h + 4, 12, 12);
+        // Border
+        g2.setColor(new Color(255, 200, 0));
+        g2.setStroke(new BasicStroke(2));
+        g2.drawRoundRect(x - 1, y - 1, w + 2, h + 2, 10, 10);
+        g2.dispose();
     }
 
     private void drawCenteredText(Graphics2D g, String text, int cx, int y) {
@@ -235,28 +262,21 @@ public class CisternPickupOverlay extends Layer {
         font.draw(g, text, cx - textWidth / 2, y, labelScale);
     }
 
-    private void drawCenteredTextLarge(Graphics2D g, String text, int cx, int y) {
-        if (font == null) return;
-        int scaledCharW = (int) (font.getCharWidth() * textScale);
-        int textWidth = text.length() * scaledCharW;
-        font.draw(g, text, cx - textWidth / 2, y, textScale);
-    }
-
     @Override
     public boolean mousePressed(MouseEvent e) {
         confirmButton.mousePressed(e);
         discardButton.mousePressed(e);
+        closeButton.mousePressed(e);
 
-        // Toggle selections
         Point p = e.getPoint();
         if (cistern.getStoredPump() != null && pumpBounds.contains(p)) {
             pumpSelected = !pumpSelected;
-            // Optional: play a sound
-            // AudioPlayer.getInstance().playEffect("ui_select");
+            AudioPlayer.getInstance().playEffect("button_pressed");
             return true;
         }
         if (cistern.getStoredPipe() != null && pipeBounds.contains(p)) {
             pipeSelected = !pipeSelected;
+            AudioPlayer.getInstance().playEffect("button_pressed");
             return true;
         }
         return true;
@@ -266,6 +286,7 @@ public class CisternPickupOverlay extends Layer {
     public boolean mouseReleased(MouseEvent e) {
         confirmButton.mouseReleased(e);
         discardButton.mouseReleased(e);
+        closeButton.mouseReleased(e);
         return true;
     }
 
@@ -273,6 +294,7 @@ public class CisternPickupOverlay extends Layer {
     public boolean mouseMoved(MouseEvent e) {
         confirmButton.mouseMoved(e);
         discardButton.mouseMoved(e);
+        closeButton.mouseMoved(e);
         return true;
     }
 
@@ -284,18 +306,44 @@ public class CisternPickupOverlay extends Layer {
         boolean hasPipe = cistern.getStoredPipe() != null;
         int itemCount = (hasPump ? 1 : 0) + (hasPipe ? 1 : 0);
 
-        int labelH = (int) (font.getCharHeight() * labelScale);
-        int btnSize = confirmButton.getWidth(); // both buttons same size
-
-        int panelW = 2 * itemSize + itemGap + 2 * panelPadding;
-        // If only one item, we can reduce width a bit, but keeping symmetric is fine
-        if (itemCount == 1) {
-            panelW = itemSize + 2 * panelPadding;
+        if (itemCount == 0) {
+            // Empty state: panel sized for message + close button
+            String msg = "NOTHING TO PICK UP";
+            int scaledCharW = (int) (font.getCharWidth() * textScale);
+            int textWidth = msg.length() * scaledCharW;
+            int textHeight = (int) (font.getCharHeight() * textScale);
+            int btnSize = closeButton.getWidth();
+            int panelW = textWidth + 4 * panelPadding;
+            int panelH = textHeight + btnSize + 3 * panelPadding;
+            backgroundPanel.setPosition(screenW / 2 - panelW / 2, screenH / 2 - panelH / 2);
+            backgroundPanel.setSize(panelW, panelH);
+            return;
         }
 
-        int panelH = itemSize + labelH + panelPadding + btnSize + panelPadding + panelPadding;
+        // At least one item
+        int labelCharW = (int) (font.getCharWidth() * labelScale);
+        int labelCharH = (int) (font.getCharHeight() * labelScale);
+        int maxLabelWidth = Math.max("PUMP".length() * labelCharW, "PIPE".length() * labelCharW);
 
-        backgroundPanel.setPosition(screenW / 2 - panelW / 2, screenH / 2 - panelH / 2);
-        backgroundPanel.setSize(panelW, panelH);
+        int contentWidth = (itemCount == 1) ? itemSize : (2 * itemSize + itemGap);
+        int panelWidth = Math.max(contentWidth, maxLabelWidth) + 2 * panelPadding;
+        // Ensure minimum width for better appearance
+        panelWidth = Math.max(panelWidth, 250);
+
+        int btnSize = confirmButton.getWidth();
+        int contentHeight = itemSize + gapItemLabel + labelCharH + gapLabelButtons + btnSize;
+        int panelHeight = contentHeight + 2 * panelPadding;
+
+        backgroundPanel.setPosition(screenW / 2 - panelWidth / 2, screenH / 2 - panelHeight / 2);
+        backgroundPanel.setSize(panelWidth, panelHeight);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
+            if (!hasClosed) {
+                close();
+            }
+        }
     }
 }
