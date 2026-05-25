@@ -39,6 +39,11 @@ public class TurnManager {
     private boolean smallActionUsed = false;
     private boolean bigActionUsed = false;
 
+    /**
+     * Creates a turn manager with the specified per-turn duration.
+     *
+     * @param turnDuration turn length in seconds
+     */
     TurnManager(int turnDuration) {
         timer = new Timer(turnDuration);
         currentPlayer = null;
@@ -46,14 +51,23 @@ public class TurnManager {
         playerSupport = new PropertyChangeSupport(this);
     }
 
+    /**
+     * Registers a listener for turn-advance notifications.
+     */
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         playerSupport.addPropertyChangeListener(pcl);
     }
 
+    /**
+     * Removes a previously registered turn-advance listener.
+     */
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         playerSupport.removePropertyChangeListener(pcl);
     }
 
+    /**
+     * Removes all registered turn-advance listeners.
+     */
     public void clearPropertyChangerListeners() {
         var listeners = playerSupport.getPropertyChangeListeners();
         for (int i = 0; i < listeners.length; i++) {
@@ -61,6 +75,14 @@ public class TurnManager {
         }
     }
 
+    /**
+     * Loads the team rosters and initializes turn order.
+     *
+     * <p>
+     * Players are interleaved so the turn order alternates between teams when
+     * possible.
+     * </p>
+     */
     public void setTeams(Team plumbers, Team saboteurs) {
         players.clear();
         List<Player> plList = plumbers.getPlayers();
@@ -108,6 +130,9 @@ public class TurnManager {
                 currentPlayer.getId(), activeTeam, timer.getTimeLeft());
     }
 
+    /**
+     * Advances the turn timer by one tick and ends the turn when it expires.
+     */
     public void tick() {
         if (!isRunning || currentPlayer == null)
             return;
@@ -131,7 +156,8 @@ public class TurnManager {
      * Terminates the current turn.
      *
      * <p>
-     * Stops the timer, clears the running flag, and advances to the next player.
+     * This stops the timer and flags the turn so the game loop can advance to
+     * the next player.
      * </p>
      */
     public void endTurn() {
@@ -147,6 +173,9 @@ public class TurnManager {
                 finishingPlayer.getId(), finishingTeam);
     }
 
+    /**
+     * Advances to the next player and immediately starts that player's turn.
+     */
     public void startNextTurn() {
         if (players.isEmpty())
             return;
@@ -156,6 +185,9 @@ public class TurnManager {
         }
     }
 
+    /**
+     * Moves turn state to the next player in the roster.
+     */
     private void advanceToNextPlayer() {
         if (players.isEmpty())
             return;
@@ -190,6 +222,9 @@ public class TurnManager {
         timer.resume();
     }
 
+    /**
+     * Returns true once for the turn that has just ended.
+     */
     public boolean justEnded() {
         if (turnEnded) {
             turnEnded = false;
@@ -198,30 +233,53 @@ public class TurnManager {
         return false;
     }
 
+    /**
+     * Returns the player whose turn is currently active.
+     */
     public Player getCurrentPlayer() {
         return currentPlayer;
     }
 
+    /**
+     * Returns the team that owns the current turn.
+     */
     public Teams getActiveTeam() {
         return activeTeam;
     }
 
+    /**
+     * Returns the remaining time in the current turn.
+     */
     public int getTimeLeft() {
         return timer.getTimeLeft();
     }
 
+    /**
+     * Returns the configured turn duration.
+     */
     public int getTurnDuration() {
         return timer.getTimeLeft();
     }
 
+    /**
+     * Returns true if the current player still has their move action available.
+     */
     public boolean canUseSmallAction() {
         return !smallActionUsed;
     }
 
+    /**
+     * Returns true if the current player still has their non-move action available.
+     */
     public boolean canUseBigAction() {
         return !bigActionUsed;
     }
 
+    /**
+     * Consumes the turn's small action if it has not been used yet.
+     *
+     * @return true if the action was consumed successfully
+     */
     public boolean useSmallAction() {
         if (smallActionUsed) {
             return false;
@@ -231,6 +289,11 @@ public class TurnManager {
         return true;
     }
 
+    /**
+     * Consumes the turn's big action if it has not been used yet.
+     *
+     * @return true if the action was consumed successfully
+     */
     public boolean useBigAction() {
         if (bigActionUsed) {
             return false;
@@ -240,11 +303,17 @@ public class TurnManager {
         return true;
     }
 
+    /**
+     * Resets the per-turn action counters.
+     */
     private void resetActionLimits() {
         smallActionUsed = false;
         bigActionUsed = false;
     }
 
+    /**
+     * Ends the turn automatically once both allowed actions have been used.
+     */
     private void maybeEndTurnAfterActions() {
         if (smallActionUsed && bigActionUsed) {
             endTurn();

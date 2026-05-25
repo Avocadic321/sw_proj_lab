@@ -1,13 +1,11 @@
 package software.project.core;
 
 /**
- * Measures and controls the time allocated to each player's turn.
+ * Tracks and updates the countdown for a single player turn.
+ *
  * <p>
- * The timer maintains the total turn duration and the remaining time, and
- * provides controls to start, pause, resume,
- * and stop the countdown. The timer ticks down at regular intervals and
- * notifies the turn manager when time expires,
- * ensuring that turns are properly limited according to the game configuration.
+ * The timer supports start, pause, resume, and stop operations, and keeps
+ * enough state for the turn manager to decide when a turn has expired.
  * </p>
  */
 public class Timer {
@@ -16,6 +14,11 @@ public class Timer {
     private boolean isRunning;
     private boolean expired;
 
+    /**
+     * Creates a timer with the specified duration.
+     *
+     * @param durationSeconds total turn length in seconds
+     */
     public Timer(int durationSeconds) {
         this.duration = durationSeconds;
         this.timeLeft = 0;
@@ -92,18 +95,32 @@ public class Timer {
         }
     }
 
+    /**
+     * Returns true when the timer has reached zero.
+     */
     public boolean hasExpired() {
         return expired;
     }
 
+    /**
+     * Returns the remaining time in seconds.
+     */
     public int getTimeLeft() {
         return timeLeft;
     }
 
+    /**
+     * Returns the configured duration in seconds.
+     */
     public int getDuration() {
         return duration;
     }
 
+    /**
+     * Updates the configured turn duration.
+     *
+     * @param duration new duration in seconds
+     */
     public void setTurnDuration(int duration) {
         this.duration = duration;
     }
