@@ -189,6 +189,10 @@ public class MapRenderer {
 
     private void rebuildClickTargets(GameMap map) {
         clickableElements.clear();
+
+        // CRITICAL: Update grid bounds before converting coordinates
+        grid.update(map);
+
         for (Element e : map.getElements()) {
             // Convert map coordinates to grid indices
             Point gridPos = grid.mapToGrid(e.getX(), e.getY());
