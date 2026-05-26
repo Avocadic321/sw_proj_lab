@@ -11,9 +11,11 @@ import software.project.core.GameConfig;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
+import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
+import software.project.graphics.Sprites;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 import software.project.ui.components.GeneralButton;
@@ -58,6 +60,7 @@ public class ConfigLayer extends Layer {
     private final GameApplication app;
     private final BitmapFont font;
     private final SpriteSheet buttonSheet;
+    private final Sprite sandSprite;
 
     private final Rectangle panelBounds = new Rectangle();
     private final Rectangle plumbersTrack = new Rectangle();
@@ -88,6 +91,9 @@ public class ConfigLayer extends Layer {
         this.font = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
         this.buttonSheet = SpriteManager.getInstance().getSpriteSheet(SpriteSheets.GENERAL_BUTTONS);
 
+        SpriteSheet borderSheet = SpriteManager.getInstance().getSpriteSheet(SpriteSheets.MAP_BORDER);
+        this.sandSprite = (borderSheet != null) ? borderSheet.getSprite(1, 1) : SpriteManager.getInstance().getSprite(Sprites.GRASS);
+
         if (buttonSheet == null) {
             throw new IllegalStateException("GENERAL_BUTTON sheet missing");
         }
@@ -104,6 +110,31 @@ public class ConfigLayer extends Layer {
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
+    }
+
+    /**
+     * Draws sand background filling the entire screen.
+     */
+    private void drawSandBackground(Graphics2D g) {
+        int vw = ScreenManager.getInstance().getVirtualWidth();
+        int vh = ScreenManager.getInstance().getVirtualHeight();
+        int tileSize = 64; // Use a fixed tile size for background sand
+
+        int totalCols = (int) Math.ceil((double) vw / tileSize);
+        int totalRows = (int) Math.ceil((double) vh / tileSize);
+
+        for (int row = 0; row < totalRows; row++) {
+            for (int col = 0; col < totalCols; col++) {
+                int x = col * tileSize;
+                int y = row * tileSize;
+                if (sandSprite != null) {
+                    sandSprite.draw(g, x, y, tileSize, tileSize);
+                } else {
+                    g.setColor(new Color(180, 150, 110));
+                    g.fillRect(x, y, tileSize, tileSize);
+                }
+            }
+        }
     }
 
     /**
@@ -143,6 +174,9 @@ public class ConfigLayer extends Layer {
      */
     @Override
     public void render(Graphics2D g) {
+        // Draw sand background first
+        drawSandBackground(g);
+
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
         g.setColor(new Color(0, 0, 0, 140));
