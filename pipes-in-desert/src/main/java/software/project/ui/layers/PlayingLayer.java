@@ -71,6 +71,7 @@ public class PlayingLayer extends Layer {
         // Rotate dragged pipe
         keyBindings.put(KeyEvent.VK_R, () -> hudLayer.rotateDraggedItem());
 
+        // Pickup mode
         keyBindings.put(KeyEvent.VK_E, () -> hudLayer.togglePickupMode());
     }
 
@@ -104,7 +105,6 @@ public class PlayingLayer extends Layer {
             overlay.setQuitAction(() -> {
                 model.endGame();
                 app.clearLayers();
-                model.getTurnManager().removePropertyChangeListener(hudLayer);
                 app.pushLayer(new MainMenuLayer(app));
             });
             app.pushLayer(overlay);
@@ -155,25 +155,10 @@ public class PlayingLayer extends Layer {
                     }
                 }
 
-                boolean pickedUp = false;
-                try {
-                    if (tookPump) {
-                        plumber.pickUpPump(cistern);
-                        pickedUp = true;
-                    }
-                    if (tookPipe) {
-                        plumber.pickUpPipe(cistern);
-                        pickedUp = true;
-                    }
-                } catch (IllegalArgumentException | IllegalStateException ex) {
-                    System.out.println("[ERROR] PICKUP " + ex.getMessage());
-                }
-
-                if (pickedUp) {
-                    model.getTurnManager().useBigAction();
                 if (tookPump) plumber.pickUpPump(cistern);
                 if (tookPipe) plumber.pickUpPipe(cistern);
                 if (tookPipe || tookPump) {
+                    model.getTurnManager().useBigAction();
                     AudioPlayer.getInstance().playEffect("item_equip");
                 }
                 app.popLayer();

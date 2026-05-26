@@ -13,30 +13,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 import software.project.core.GameModel;
+import software.project.graphics.BitmapFont;
+import software.project.graphics.BitmapFonts;
+import software.project.graphics.ResourceManager;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
-import software.project.map.Directions;
+import software.project.map.Cistern;
 import software.project.map.Element;
 import software.project.map.Pipe;
 import software.project.map.PipeEnd;
 import software.project.map.PipeOrientation;
 import software.project.map.Pump;
 import software.project.map.interfaces.ICarriable;
+import software.project.models.Inventory;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.ui.hud.*;
+import software.project.models.Saboteur;
+import software.project.ui.ScreenManager;
+import software.project.ui.components.Banner;
+import software.project.ui.hud.ConnectionsElement;
+import software.project.ui.hud.PickupElement;
 import software.project.ui.renderer.Grid;
 import software.project.utils.Constants;
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Renders the gameplay HUD, including timer, scores, inventory, and status
+ * text.
+ */
 public class HudLayer extends Layer implements PropertyChangeListener {
     private static final int MARGIN = 15;
     private static final int SCORE_GAP = 10;
@@ -63,12 +69,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private static final Color SABOTEUR_COLOR = new Color(200, 70, 70);
 
     private final GameModel model;
-    private final List<HudElement> elements = new ArrayList<>();
-    private final ConnectionsElement connectMode;
-    private final InventoryElement inventory;
-    private final PickupElement pickupElement;
+    private final BitmapFont hudFont;
 
-    // Drag state
+    private final Banner timerBanner;
+    private final Banner plumberScoreBanner;
+    private final Banner saboteurScoreBanner;
+
     private final Sprite inventoryPanelSprite;
     private final Sprite pumpSprite;
     private final SpriteSheet pipeSheet;
@@ -80,151 +86,53 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private final Rectangle inventoryPanelBounds = new Rectangle();
     private Rectangle[] slotBounds = new Rectangle[0];
 
+    // Component-based elements
+    private final ConnectionsElement connectMode;
+    private final PickupElement pickupElement;
+
+    // Drag state
     private boolean dragging = false;
     private ICarriable draggedItem = null;
     private int draggedSlot = -1;
+    private Point dragStart = null;
     private Point currentDragPos = null;
     private PipeOrientation draggedOrientation = PipeOrientation.VERTICAL;
-    private final Sprite pumpSprite;
-    private final Sprite pipeSprite;
-
-    public HudLayer(GameModel model) {
-        super(false, false);
-        this.model = model;
-        this.connectMode = new ConnectionsElement(model);
-        this.inventory = new InventoryElement(model, this::onDragStart);
-        this.pickupElement = new PickupElement(model);
-        this.pickupElement.setPickupListener(this::onPickupPipe);
-
-        elements.add(new TimerElement(model));
-        elements.add(new ScoreElement(model));
-        elements.add(inventory);
-        elements.add(connectMode);
-        elements.add(pickupElement);
-        elements.add(new ActionHintElement(model));
-
-        var sm = SpriteManager.getInstance();
-        pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
-        SpriteSheet pipeSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
-        pipeSprite = pipeSheet != null ? pipeSheet.getSprite(0) : null;
-
-        model.getTurnManager().addPropertyChangeListener(this);
-    }
-
-    // ========== Pipe Pickup ==========
-    private void onPickupPipe(Pipe pipe, Point mapPos) {
-        Player player = model.getTurnManager().getCurrentPlayer();
-        if (!(player instanceof Plumber plumber)) return;
-
-        if (plumber.getInventory().isFull()) {
-            System.out.println("Inventory is full! Cannot pick up pipe.");
-            return;
-        }
-
-        // Disconnect pipe from both ends
-        PipeEnd end1 = pipe.getEnd1();
-        PipeEnd end2 = pipe.getEnd2();
-
-        if (end1 != null && end1.connectedTo != null) {
-            end1.disconnect();
-        }
-        if (end2 != null && end2.connectedTo != null) {
-            end2.disconnect();
-        }
-
-        // Remove from map
-        model.getGameMap().removeElement(pipe);
-
-        // Add to inventory
-        plumber.getInventory().add(pipe);
-
-    public boolean isDragging() {
-        return dragging;
-    }
-
-    public ICarriable getDraggedItem() {
-        return draggedItem;
-    }
-
-    public Point getCurrentDragPos() {
-        return currentDragPos;
-    }
-
-        System.out.println("Picked up pipe " + pipe.getId() + " at (" + mapPos.x + ", " + mapPos.y + ")");
-    }
-
-    public void togglePickupMode() {
-        if (pickupElement.isActive()) {
-            pickupElement.deactivate();
-            connectMode.deactivate();
-        } else {
-            // Deactivate other modes first
-            connectMode.deactivate();
-            pickupElement.activatePickupMode();
-        }
-    }
-
-    // ========== Drag Start ==========
-    private void onDragStart(ICarriable item, int slot, Point screenPos) {
-        dragging = true;
-        draggedItem = item;
-        draggedSlot = slot;
-        currentDragPos = screenPos;
-        draggedOrientation = PipeOrientation.VERTICAL;
-
-        if (item instanceof Pipe) {
-            // Get standing pipe orientation if applicable
-            Player player = model.getTurnManager().getCurrentPlayer();
-            Element current = player.getCurrentPosition();
-            if (current instanceof Pipe pipe) {
-                draggedOrientation = pipe.getOrientation();
-            }
-            // Deactivate pickup mode if active
-            pickupElement.deactivate();
-            connectMode.activatePipeMode();  // Shows green squares
-        } else if (item instanceof Pump) {
-            pickupElement.deactivate();
-            connectMode.activatePumpMode();  // Shows blue squares
-        }
-    }
-
-    public void resetDrag() {
-        dragging = false;
-        draggedItem = null;
-        draggedSlot = -1;
-        currentDragPos = null;
-        draggedOrientation = PipeOrientation.VERTICAL;
-        connectMode.deactivate();
-        // Don't deactivate pickup mode here - it's separate
-    }
 
     public boolean isDragging() { return dragging; }
     public ICarriable getDraggedItem() { return draggedItem; }
     public Point getCurrentDragPos() { return currentDragPos; }
 
+    public void resetDrag() {
+        dragging = false;
+        draggedItem = null;
+        draggedSlot = -1;
+        dragStart = null;
+        currentDragPos = null;
+        connectMode.deactivate();
+        pickupElement.deactivate();
+    }
+
+    /**
+     * Rotates the currently dragged pipe between vertical and horizontal orientation.
+     */
     public void rotateDraggedItem() {
         if (dragging && draggedItem instanceof Pipe) {
             draggedOrientation = (draggedOrientation == PipeOrientation.VERTICAL)
-                ? PipeOrientation.HORIZONTAL : PipeOrientation.VERTICAL;
-            // No need to call anything on connectMode - orientation is only for rendering
+                ? PipeOrientation.HORIZONTAL
+                : PipeOrientation.VERTICAL;
+            System.out.println("Pipe orientation rotated to: " + draggedOrientation);
         }
     }
-
-    public PipeOrientation getDraggedPipeOrientation() { return draggedOrientation; }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
             resetDrag();
-            pickupElement.deactivate();
-            connectMode.deactivate();
         }
     }
 
     /**
      * Creates a HUD layer bound to the provided game model.
-     *
-     * @param model active game model used for scores, timers, and player state
      */
     public HudLayer(GameModel model) {
         super(false, false);
@@ -241,12 +149,51 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
         timerBanner = new Banner(timerSprite, TIMER_BANNER_SCALE, BitmapFonts.FONT_MAIN, "T0000", TIMER_TEXT_SCALE);
         plumberScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "P0/XXX",
-                SCORE_TEXT_SCALE);
+                                        SCORE_TEXT_SCALE);
         saboteurScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "S0/XXX",
-                SCORE_TEXT_SCALE);
+                                         SCORE_TEXT_SCALE);
         hudFont = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
+
+        // Initialize component-based elements
+        this.connectMode = new ConnectionsElement(model);
+        this.pickupElement = new PickupElement(model);
+        this.pickupElement.setPickupListener(this::onPickupPipe);
+
         this.model.getTurnManager().addPropertyChangeListener(this);
         recomputeLayout();
+    }
+
+    // ========== Pipe Pickup ==========
+    private void onPickupPipe(Pipe pipe, Point mapPos) {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (!(player instanceof Plumber plumber)) return;
+
+        if (plumber.getInventory().isFull()) {
+            System.out.println("Inventory is full! Cannot pick up pipe.");
+            return;
+        }
+
+        // Disconnect pipe from both ends
+        if (pipe.getEnd1() != null && pipe.getEnd1().connectedTo != null) {
+            pipe.getEnd1().disconnect();
+        }
+        if (pipe.getEnd2() != null && pipe.getEnd2().connectedTo != null) {
+            pipe.getEnd2().disconnect();
+        }
+
+        model.getGameMap().removeElement(pipe);
+        plumber.getInventory().add(pipe);
+        System.out.println("Picked up pipe " + pipe.getId());
+    }
+
+    public void togglePickupMode() {
+        if (pickupElement.isActive()) {
+            pickupElement.deactivate();
+            connectMode.deactivate();
+        } else {
+            connectMode.deactivate();
+            pickupElement.activatePickupMode();
+        }
     }
 
     /**
@@ -257,16 +204,34 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         recomputeLayout();
     }
 
+    /**
+     * Updates banner text and inventory layout based on current game state.
+     */
     @Override
     public void update(float deltaTime) {
-        for (HudElement e : elements) e.update(deltaTime);
-        Grid.getInstance().update(model.getGameMap());
+        int timeLeft = model.getTurnManager().getTimeLeft();
+        timerBanner.setText(formatTime(timeLeft));
+
+        int plumberScore = model.getPlumbersTeam() == null ? 0 : model.getPlumbersTeam().getScore();
+        int saboteurScore = model.getSaboteursTeam() == null ? 0 : model.getSaboteursTeam().getScore();
+        plumberScoreBanner.setText("P" + plumberScore + "/" + goalScore);
+        saboteurScoreBanner.setText("S" + saboteurScore + "/" + goalScore);
+
+        Player current = model.getTurnManager().getCurrentPlayer();
+        if (current instanceof Plumber plumber) {
+            updateInventoryLayout(plumber.getInventory());
+        }
+
+        // Update component-based elements
+        connectMode.update(deltaTime);
+        pickupElement.update(deltaTime);
     }
 
+    /**
+     * Draws HUD elements in a fixed screen-space overlay.
+     */
     @Override
     public void render(Graphics2D g) {
-        for (HudElement e : elements) e.draw(g);
-        drawDragging(g);
         timerBanner.draw(g);
         drawScoreBackdrop(g, plumberScoreBanner, PLUMBER_COLOR);
         drawScoreBackdrop(g, saboteurScoreBanner, SABOTEUR_COLOR);
@@ -279,15 +244,18 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
         drawActionHints(g, current);
         drawActionStatus(g);
-        grid = new Grid();
-        grid.computeFromMap(model.getGameMap());
+
+        // Use Grid.getInstance() and update with map
+        Grid grid = Grid.getInstance();
+        grid.update(model.getGameMap());
+
+        // Draw component-based elements (placement highlights, pickup highlights)
+        connectMode.draw(g);
+        pickupElement.draw(g);
+
         drawDragging(g, grid);
     }
 
-    private void drawDragging(Graphics2D g) {
-        if (!dragging || draggedItem == null || currentDragPos == null) return;
-        Sprite sprite = (draggedItem instanceof Pipe) ? pipeSprite : pumpSprite;
-        if (sprite == null) return;
     /**
      * Highlights grid cells where a carried pump can be placed.
      */
@@ -295,12 +263,11 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         List<Pipe> pipes = model.getGameMap().getAllPipes();
         for (Pipe pipe : pipes) {
             List<Point> points = model.getGameMap()
-                    .getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
+                                      .getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
             Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
             if (freePoint == null)
                 continue;
 
-            // Draw highlight on that tile
             Rectangle tileRect = grid.getCellBounds(freePoint.x, freePoint.y);
             if (tileRect != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -315,10 +282,6 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
     }
 
-        // Get the direction for the hovered tile (if any)
-        Directions dir = null;
-        if (draggedItem instanceof Pipe) {
-            dir = connectMode.getDirectionForHoveredTile(currentDragPos);
     /**
      * Renders the dragged inventory item and its placement hints.
      */
@@ -330,20 +293,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
                 sprite.drawCentered(g, currentDragPos.x, currentDragPos.y, grid.getTileSize(), 0);
             }
-            if(draggedItem instanceof Pump){
+            if (draggedItem instanceof Pump) {
                 drawPossiblePumpConnections(g, grid);
             }
         }
+    }
 
-        // Calculate rotation angle based on direction
-        double angle = 0;
-        if (draggedItem instanceof Pipe) {
-            if (dir != null) {
-                // When snapping, rotate based on direction to the target
-                angle = (dir == Directions.NORTH || dir == Directions.SOUTH) ? 0 : 90;
-            } else {
-                // When not snapping, use the dragged orientation (for rotation key)
-                angle = (draggedOrientation == PipeOrientation.VERTICAL) ? 0 : 90;
     private Sprite getSpriteForItem(ICarriable item) {
         if (item instanceof Pump)
             return pumpSprite;
@@ -413,15 +368,15 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private void drawInventory(Graphics2D g, Inventory inventory) {
         if (inventoryPanelSprite != null) {
             inventoryPanelSprite.draw(g, inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height);
+                                      inventoryPanelBounds.height);
         } else {
             g.setColor(new Color(10, 10, 10, 140));
             g.fillRoundRect(inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height, 12, 12);
+                            inventoryPanelBounds.height, 12, 12);
             g.setColor(new Color(230, 210, 160, 180));
             g.setStroke(new BasicStroke(2f));
             g.drawRoundRect(inventoryPanelBounds.x, inventoryPanelBounds.y, inventoryPanelBounds.width,
-                    inventoryPanelBounds.height, 12, 12);
+                            inventoryPanelBounds.height, 12, 12);
         }
 
         for (int i = 0; i < slotBounds.length; i++) {
@@ -444,7 +399,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         if (sprite == null) {
             return;
         }
-        int centerX = slot.x + slot.width / 2 + 1; // +1 for a slight right adjustment
+        int centerX = slot.x + slot.width / 2 + 1;
         int centerY = slot.y + slot.height / 2;
         sprite.drawCentered(g, centerX, centerY, ICON_SIZE, 0);
     }
@@ -558,25 +513,29 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             if (position instanceof Pipe pipe && ((Plumber) current).canSplit(pipe) != null) {
                 hints.add(new ActionHint("m", "split pipe", teamColor));
             }
+            if (!pickupElement.isActive()) {
+                hints.add(new ActionHint("e", "pickup mode", teamColor));
+            } else {
+                hints.add(new ActionHint("e", "exit pickup", teamColor));
+            }
             return hints;
         }
 
-        // Snapping
-        Point drawPos = currentDragPos;
-        Rectangle snapRect = connectMode.getHoveredTileBounds(currentDragPos);
-        if (snapRect != null) {
-            drawPos = new Point(snapRect.x + snapRect.width/2, snapRect.y + snapRect.height/2);
+        if (isSaboteur) {
+            if (position instanceof Pipe pipe && !pipe.isBroken()) {
+                hints.add(new ActionHint("f", "sabotage", teamColor));
+            }
+            if (position instanceof Pump pump) {
+                hints.add(new ActionHint("d", "direction", teamColor));
+                if (!pump.isBroken()) {
+                    hints.add(new ActionHint("f", "sabotage", teamColor));
+                }
+            }
         }
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        sprite.drawCentered(g, drawPos.x, drawPos.y, Grid.getInstance().getTileSize(), angle);
+
+        return hints;
     }
 
-    @Override
-    public void onResolutionChanged(int newWidth, int newHeight) {
-        for (HudElement e : elements) e.onResolutionChanged(newWidth, newHeight);
-    }
-
-    // Input forwarding
     /**
      * Draws a bottom-right summary of remaining small and big actions.
      */
@@ -588,7 +547,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         boolean smallLeft = model.getTurnManager().canUseSmallAction();
         boolean bigLeft = model.getTurnManager().canUseBigAction();
         String text = "Move is " + (smallLeft ? "available" : "used")
-                + "  Action is " + (bigLeft ? "available" : "used");
+            + "  Action is " + (bigLeft ? "available" : "used");
 
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -605,74 +564,93 @@ public class HudLayer extends Layer implements PropertyChangeListener {
      */
     @Override
     public boolean mousePressed(MouseEvent e) {
-        // Check pickup mode first - if active, it should consume the event
+        // Check pickup mode first
         if (pickupElement.isActive()) {
-            // Let pickup element handle and consume the event
-            for (HudElement el : elements) {
-                if (el.mousePressed(e)) {
-                    return true;  // Consumed, don't pass to renderer
-                }
-            }
-            // Even if no specific element was clicked, pickup mode should block movement
+            pickupElement.mousePressed(e);
             return true;
         }
 
-        // Then check other elements
-        for (HudElement el : elements) {
-            if (el.mousePressed(e)) return true;
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (inventorySlots > 0 && slotBounds != null && player instanceof Plumber plumber) {
+            for (int i = 0; i < slotBounds.length; i++) {
+                if (slotBounds[i].contains(e.getPoint())) {
+                    ICarriable item = plumber.getInventory().get(i);
+                    if (item == null)
+                        continue;
+                    dragging = true;
+                    draggedItem = item;
+                    draggedSlot = i;
+                    dragStart = e.getPoint();
+                    currentDragPos = e.getPoint();
+
+                    if (item instanceof Pipe) {
+                        Element current = player.getCurrentPosition();
+                        if (current instanceof Pipe pipe) {
+                            // Start pipe placement mode
+                            connectMode.activatePipeMode();
+                        }
+                    } else if (item instanceof Pump) {
+                        connectMode.activatePumpMode();
+                    }
+                    return true;
+                }
+            }
         }
         return false;
     }
 
+    /**
+     * Updates drag position for the inventory item.
+     */
     @Override
     public boolean mouseDragged(MouseEvent e) {
         if (dragging) {
             currentDragPos = e.getPoint();
             return true;
         }
-        for (HudElement el : elements) {
-            if (el.mouseDragged(e)) return true;
-        }
         return false;
     }
 
+    /**
+     * Ends drag state and attempts to place the item.
+     */
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        // Handle pickup mode first
+        // Handle pickup mode
         if (pickupElement.isActive()) {
-            boolean pickedUp = pickupElement.tryPickupPipe(e.getPoint());
-            pickupElement.deactivate();
-            if (pickedUp) {
-                return true;  // Consumed
-            }
-            return true;  // Consumed even if no pickup (prevents movement)
+            pickupElement.mouseReleased(e);
+            return true;
         }
 
-        // Handle dragging placement
+        // Handle placement
         if (dragging) {
-            boolean success = false;
-            if (draggedItem instanceof Pipe) {
-                success = connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), draggedOrientation);
-            } else if (draggedItem instanceof Pump) {
-                success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
+            Player player = model.getTurnManager().getCurrentPlayer();
+            if (player instanceof Plumber plumber) {
+                if (draggedItem instanceof Pipe) {
+                    connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), null);
+                } else if (draggedItem instanceof Pump) {
+                    connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
+                }
             }
             resetDrag();
-            if (success) {
-                return true;
-            }
-        }
-
-        for (HudElement el : elements) {
-            if (el.mouseReleased(e)) return true;
+            return true;
         }
         return false;
     }
 
-    @Override
-    public boolean mouseMoved(MouseEvent e) {
-        for (HudElement el : elements) {
-            if (el.mouseMoved(e)) return true;
+    public Rectangle[] getSlotBounds() {
+        return slotBounds;
+    }
+
+    private static final class ActionHint {
+        private final String key;
+        private final String action;
+        private final Color teamColor;
+
+        private ActionHint(String key, String action, Color teamColor) {
+            this.key = key;
+            this.action = action;
+            this.teamColor = teamColor;
         }
-        return false;
     }
 }

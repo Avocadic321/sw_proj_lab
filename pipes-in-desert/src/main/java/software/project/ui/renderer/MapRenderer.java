@@ -41,7 +41,7 @@ public class MapRenderer {
 
     public MapRenderer(GameModel model) {
         this.model = model;
-        this.grid = new Grid();
+        this.grid = Grid.getInstance();
         this.background = new BackgroundRenderer();
         this.elements = new ElementRenderer();
         this.players = new PlayerRenderer();
