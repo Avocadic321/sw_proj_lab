@@ -96,20 +96,27 @@ public class MapRenderer {
             return null;
     }
     public boolean tryPlaceItem(ICarriable item, Plumber player, Pipe pipe, Point p) {
-        if(item instanceof Pump pump) {
-           Point gridPoints = grid.screenToGrid(p.x,p.y);
+        if (item instanceof Pump pump) {
+            Point gridPoints = grid.screenToGrid(p.x, p.y);
+            // Guard against clicks outside the grid
+            if (gridPoints == null) return false;
 
-            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(),pipe.getY()));
-           Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-           if(freePoint == null || gridPoints.x != freePoint.x || gridPoints.y != freePoint.y) return false;
-        boolean response = player.placePump(pipe,pump,freePoint);
-        if(response) {
-            model.getGameMap().addElement(pump);
-            player.getInventory().removeItem(pump);
-        }
+            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(
+                model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
+            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+            if (freePoint == null || gridPoints.x != freePoint.x || gridPoints.y != freePoint.y)
+                return false;
+
+            boolean response = player.placePump(pipe, pump, freePoint);
+            if (response) {
+                model.getGameMap().addElement(pump);
+                player.getInventory().removeItem(pump);
+            }
+            return response;
         }
         return false;
     }
+
     public void draw(Graphics2D g) {
         GameMap map = model.getGameMap();
         grid.update(model.getGameMap());

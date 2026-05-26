@@ -25,6 +25,10 @@ public class GameMap {
 
     public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
         buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
+
+        for (Pipe pipe : getAllPipes()) {
+            pipe.determineOrientationFromConnections();
+        }
     }
 
     public boolean addElement(Element element) {
@@ -268,6 +272,23 @@ public class GameMap {
         if (dx == -1 && dy == 0) return Directions.WEST;
         return null;
     }
+
+    public int getMinX() {
+        return minX;
+    }
+
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMinY() {
+        return minY;
+    }
+
+    public int getMaxY() {
+        return maxY;
+    }
+
 
     public List<Spring> getAllSprings() {
         return getElementsByType(Spring.class);

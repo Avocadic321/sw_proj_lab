@@ -21,6 +21,10 @@ public class Grid {
     private int offsetX;
     private int offsetY;
 
+    // Map bounds (absolute coordinates)
+    private int mapMinX = 0;
+    private int mapMinY = 0;
+
     private Grid() {}
 
     public static Grid getInstance() {
@@ -50,13 +54,19 @@ public class Grid {
         if (!hasElements || maxX < minX || maxY < minY) {
             gridWidth = DEFAULT_GRID_WIDTH;
             gridHeight = DEFAULT_GRID_HEIGHT;
+            mapMinX = 0;
+            mapMinY = 0;
         } else {
             gridWidth = maxX - minX + 1;
             gridHeight = maxY - minY + 1;
+            mapMinX = minX;
+            mapMinY = minY;
         }
         if (gridWidth <= 0 || gridHeight <= 0) {
             gridWidth = DEFAULT_GRID_WIDTH;
             gridHeight = DEFAULT_GRID_HEIGHT;
+            mapMinX = 0;
+            mapMinY = 0;
         }
     }
 
@@ -77,12 +87,32 @@ public class Grid {
         offsetY = areaY + TOP_BORDER_TILES * tileSize;
     }
 
+    // ----- Getters -----
     public int getTileSize() { return tileSize; }
     public int getOffsetX() { return offsetX; }
     public int getOffsetY() { return offsetY; }
     public int getGridWidth() { return gridWidth; }
     public int getGridHeight() { return gridHeight; }
+    public int getMapMinX() { return mapMinX; }
+    public int getMapMinY() { return mapMinY; }
 
+    /**
+     * Convert absolute map coordinates to grid indices (0..width-1).
+     * Returns null if coordinates are outside the map bounds.
+     */
+    public Point mapToGrid(int mapX, int mapY) {
+        int gridX = mapX - mapMinX;
+        int gridY = mapY - mapMinY;
+        if (gridX < 0 || gridX >= gridWidth || gridY < 0 || gridY >= gridHeight)
+            return null;
+        return new Point(gridX, gridY);
+    }
+
+    /**
+     * Returns the centre point of a cell in screen coordinates.
+     * @param gridX grid index (0..width-1)
+     * @param gridY grid index (0..height-1)
+     */
     public Point getCellCenter(int gridX, int gridY) {
         return new Point(
             offsetX + gridX * tileSize + tileSize / 2,
@@ -90,7 +120,13 @@ public class Grid {
         );
     }
 
+    /**
+     * Returns the bounding rectangle of a cell in screen coordinates.
+     * Returns null if grid indices are out of bounds.
+     */
     public Rectangle getCellBounds(int gridX, int gridY) {
+        if (gridX < 0 || gridX >= gridWidth || gridY < 0 || gridY >= gridHeight)
+            return null;
         return new Rectangle(
             offsetX + gridX * tileSize,
             offsetY + gridY * tileSize,
@@ -98,6 +134,10 @@ public class Grid {
         );
     }
 
+    /**
+     * Convert screen coordinates to grid indices.
+     * Returns null if the point is outside the grid area.
+     */
     public Point screenToGrid(int screenX, int screenY) {
         if (screenX < offsetX || screenY < offsetY) return null;
         int cellX = (screenX - offsetX) / tileSize;

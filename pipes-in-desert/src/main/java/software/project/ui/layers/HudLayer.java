@@ -6,10 +6,12 @@ import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
+import software.project.map.Element;
 import software.project.map.Pipe;
 import software.project.map.PipeOrientation;
+import software.project.map.Pump;
 import software.project.map.interfaces.ICarriable;
-import software.project.ui.ScreenManager;
+import software.project.models.Player;
 import software.project.ui.hud.*;
 import software.project.ui.renderer.Grid;
 import software.project.utils.Constants;
@@ -60,7 +62,18 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         draggedSlot = slot;
         currentDragPos = screenPos;
         draggedOrientation = PipeOrientation.VERTICAL;
-        if (item instanceof Pipe) connectMode.setActive(true);
+
+        if (item instanceof Pipe) {
+            // Determine initial orientation from current pipe if standing on one
+            Player player = model.getTurnManager().getCurrentPlayer();
+            Element current = player.getCurrentPosition();
+            if (current instanceof Pipe pipe) {
+                draggedOrientation = pipe.getOrientation();
+            }
+            connectMode.setPipeMode(true, draggedOrientation);
+        } else if (item instanceof Pump) {
+            connectMode.setPumpMode(true);
+        }
     }
 
     public void resetDrag() {
@@ -78,6 +91,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         if (dragging && draggedItem instanceof Pipe) {
             draggedOrientation = (draggedOrientation == PipeOrientation.VERTICAL)
                 ? PipeOrientation.HORIZONTAL : PipeOrientation.VERTICAL;
+            connectMode.setDraggedOrientation(draggedOrientation);
         }
     }
     public PipeOrientation getDraggedPipeOrientation() { return draggedOrientation; }
@@ -107,11 +121,18 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         if (!dragging || draggedItem == null || currentDragPos == null) return;
         Sprite sprite = (draggedItem instanceof Pipe) ? pipeSprite : pumpSprite;
         if (sprite == null) return;
+
+        // Rotation: 0 for vertical, 90° for horizontal
         double angle = (draggedOrientation == PipeOrientation.VERTICAL) ? 0 : 90;
+
+        // Snapping
+        Point drawPos = currentDragPos;
+        Rectangle snapRect = connectMode.getHoveredTileBounds(currentDragPos);
+        if (snapRect != null) {
+            drawPos = new Point(snapRect.x + snapRect.width/2, snapRect.y + snapRect.height/2);
+        }
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        sprite.drawCentered(g, currentDragPos.x, currentDragPos.y,
-                            Grid.getInstance().getTileSize(), angle);
-        connectMode.drawPossiblePumpConnections(g);
+        sprite.drawCentered(g, drawPos.x, drawPos.y, Grid.getInstance().getTileSize(), angle);
     }
 
     @Override
@@ -142,8 +163,14 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        if (dragging && connectMode.isActive() && draggedItem instanceof Pipe) {
-            if (connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), draggedOrientation)) {
+        if (dragging) {
+            boolean success = false;
+            if (draggedItem instanceof Pipe && connectMode.isPipeMode()) {
+                success = connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), draggedOrientation);
+            } else if (draggedItem instanceof Pump && connectMode.isPumpMode()) {
+                success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
+            }
+            if (success) {
                 resetDrag();
                 return true;
             }
@@ -162,4 +189,6 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
         return false;
     }
+
+
 }

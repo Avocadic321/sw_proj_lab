@@ -1,6 +1,7 @@
 package software.project.map;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 
 import software.project.core.GameConfig;
@@ -314,4 +315,73 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
             end2State,
             occupant);
     }
+
+    public void determineOrientationFromConnections() {
+        List<Directions> dirs = new ArrayList<>();
+        if (end1.connectedTo != null) {
+            Directions dir = getDirectionTo(end1.connectedTo);
+            if (dir != null) {
+                dirs.add(dir);
+            }
+        }
+        if (end2.connectedTo != null) {
+            Directions dir = getDirectionTo(end2.connectedTo);
+            if (dir != null) {
+                dirs.add(dir);
+            }
+        }
+
+        if (dirs.isEmpty()) {
+            // No connections – keep current orientation
+            return;
+        }
+
+        if (dirs.size() == 1) {
+            // Single connection
+            Directions d = dirs.getFirst();
+            if (d == Directions.NORTH || d == Directions.SOUTH) {
+                orientation = PipeOrientation.VERTICAL;
+            } else {
+                orientation = PipeOrientation.HORIZONTAL;
+            }
+        } else if (dirs.size() == 2) {
+            Directions d1 = dirs.get(0);
+            Directions d2 = dirs.get(1);
+            boolean opposite = (d1 == Directions.NORTH && d2 == Directions.SOUTH) ||
+                (d1 == Directions.SOUTH && d2 == Directions.NORTH) ||
+                (d1 == Directions.EAST && d2 == Directions.WEST) ||
+                (d1 == Directions.WEST && d2 == Directions.EAST);
+            if (opposite) {
+                // Straight pipe
+                if (d1 == Directions.NORTH || d1 == Directions.SOUTH) {
+                    orientation = PipeOrientation.VERTICAL;
+                } else {
+                    orientation = PipeOrientation.HORIZONTAL;
+                }
+            } else {
+                // Corner – not supported now, set default vertical
+                orientation = PipeOrientation.VERTICAL;
+            }
+        }
+    }
+
+    private Directions getDirectionTo(ActiveElement target) {
+        int dx = target.getX() - getX();
+        int dy = target.getY() - getY();
+        if (dx == 0 && dy == -1) {
+            return Directions.NORTH;
+        }
+        if (dx == 1 && dy == 0) {
+            return Directions.EAST;
+        }
+        if (dx == 0 && dy == 1) {
+            return Directions.SOUTH;
+        }
+        if (dx == -1 && dy == 0) {
+            return Directions.WEST;
+        }
+        return null;
+    }
+
+
 }
