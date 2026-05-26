@@ -3,7 +3,6 @@ package software.project.ui.layers;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ import software.project.map.Element;
 import software.project.map.Pipe;
 import software.project.map.PipeEnd;
 import software.project.map.Pump;
-import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
@@ -68,31 +66,30 @@ public class PlayingLayer extends Layer {
         keyBindings.put(KeyEvent.VK_Q, this::openCisternOverlay);
 
         // split pipe into a pump
-        keyBindings.put(KeyEvent.VK_M,this::splitPipeIntoPump);
+        keyBindings.put(KeyEvent.VK_M, this::splitPipeIntoPump);
 
+        // Rotate dragged pipe
+        keyBindings.put(KeyEvent.VK_R, () -> hudLayer.rotateDraggedItem());
     }
 
     private void splitPipeIntoPump() {
         Player player = model.getTurnManager().getCurrentPlayer();
         Element element = player.getCurrentPosition();
-        if(player instanceof Plumber plumber && element instanceof Pipe p) {
-            // must be current element a pipe and element behind a pipe and element infront pipe
-            // crazy if statement
-
+        if (player instanceof Plumber plumber && element instanceof Pipe p) {
             var payload = plumber.canSplit(p);
-            if(payload == null) return;
+            if (payload == null) return;
             Pipe pipeLeft = payload.pipeLeft();
             Pipe pipeRight = payload.pipeRight();
             Pump pump = payload.pump();
-                PipeEnd leftEnd = pipeLeft.getEnd1().connectedTo == p ? pipeLeft.getEnd1() : pipeLeft.getEnd2().connectedTo == p ? pipeLeft.getEnd2() : null;
-                PipeEnd rightEnd = pipeRight.getEnd1().connectedTo  == p? pipeRight.getEnd1() : pipeRight.getEnd2().connectedTo == p ? pipeRight.getEnd2() : null;
-                if(leftEnd == null || rightEnd == null) return;
-                plumber.insertPumpIntoPipe(pump,p,pipeLeft,pipeRight,leftEnd,rightEnd);
-                model.getGameMap().addElement(pump);
-                model.getGameMap().removeElement(p);
-
+            PipeEnd leftEnd = pipeLeft.getEnd1().connectedTo == p ? pipeLeft.getEnd1() : pipeLeft.getEnd2().connectedTo == p ? pipeLeft.getEnd2() : null;
+            PipeEnd rightEnd = pipeRight.getEnd1().connectedTo == p ? pipeRight.getEnd1() : pipeRight.getEnd2().connectedTo == p ? pipeRight.getEnd2() : null;
+            if (leftEnd == null || rightEnd == null) return;
+            plumber.insertPumpIntoPipe(pump, p, pipeLeft, pipeRight, leftEnd, rightEnd);
+            model.getGameMap().addElement(pump);
+            model.getGameMap().removeElement(p);
         }
     }
+
     private void togglePause() {
         if (model.getState() == GameState.RUNNING) {
             model.pauseGame();
@@ -105,7 +102,7 @@ public class PlayingLayer extends Layer {
             overlay.setQuitAction(() -> {
                 model.endGame();
                 app.clearLayers();
-                model.getTurnManager().removePropertyChangeListener(this.hudLayer);
+                model.getTurnManager().removePropertyChangeListener(hudLayer);
                 app.pushLayer(new MainMenuLayer(app));
             });
             app.pushLayer(overlay);
@@ -144,7 +141,7 @@ public class PlayingLayer extends Layer {
             public void onConfirm(boolean tookPump, boolean tookPipe) {
                 if (tookPump) plumber.pickUpPump(cistern);
                 if (tookPipe) plumber.pickUpPipe(cistern);
-                if(tookPipe || tookPump) {
+                if (tookPipe || tookPump) {
                     AudioPlayer.getInstance().playEffect("item_equip");
                 }
                 app.popLayer();
@@ -204,35 +201,16 @@ public class PlayingLayer extends Layer {
 
     @Override
     public boolean mouseDragged(MouseEvent e) {
-        if(hudLayer.isDragging()) {
-            hudLayer.mouseDragged(e);
-            return true;
-        }
-        return false;
+        return hudLayer.mouseDragged(e);
     }
+
     @Override
     public boolean mouseReleased(MouseEvent e) {
-        if(hudLayer.isDragging()) {
-
-            Player player = model.getTurnManager().getCurrentPlayer();
-            Element element = player.getCurrentPosition();
-            Point screenPoint = e.getPoint();
-            if(player instanceof Plumber plumber && element instanceof Pipe pipe){
-                ICarriable draggedItem = hudLayer.getDraggedItem();
-                if(draggedItem != null) {
-                    renderer.tryPlaceItem(draggedItem,plumber,pipe,screenPoint);
-                }
-            }
-            hudLayer.resetDrag();
-            return true;
-        }
-        hudLayer.mouseReleased(e);
-
-        return true;
+        return hudLayer.mouseReleased(e);
     }
+
     @Override
     public boolean mousePressed(MouseEvent e) {
         return hudLayer.mousePressed(e) || renderer.mousePressed(e);
-
     }
 }

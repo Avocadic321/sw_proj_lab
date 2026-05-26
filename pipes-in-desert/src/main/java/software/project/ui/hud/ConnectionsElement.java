@@ -12,7 +12,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-public class ConnectModeElement extends HudElement {
+public class ConnectionsElement extends HudElement {
     private final GameModel model;
     private final Grid grid = Grid.getInstance();
 
@@ -20,7 +20,7 @@ public class ConnectModeElement extends HudElement {
     private List<HighlightTile> pipeTiles = new ArrayList<>();
     private List<HighlightTile> pumpTiles = new ArrayList<>();
 
-    public ConnectModeElement(GameModel model) {
+    public ConnectionsElement(GameModel model) {
         super(0, 0, 0, 0);
         this.model = model;
     }
@@ -69,21 +69,35 @@ public class ConnectModeElement extends HudElement {
 
         for (HighlightTile tile : pipeTiles) {
             if (tile.bounds.contains(screenPos)) {
-                Pipe newPipe = new Pipe(tile.mapPos.x, tile.mapPos.y);
-                // Set orientation based on direction
-                if (tile.direction == Directions.NORTH || tile.direction == Directions.SOUTH) {
-                    newPipe.setOrientation(PipeOrientation.VERTICAL);
-                } else {
-                    newPipe.setOrientation(PipeOrientation.HORIZONTAL);
-                }
+                Pipe pipeToPlace = (Pipe) item;
                 Element currentPos = player.getCurrentPosition();
-                if (currentPos instanceof ActiveElement activeElem) {
-                    PipeEnd freeEnd = newPipe.getFreeEnd();
-                    if (freeEnd != null) freeEnd.connectsTo(activeElem);
-                    else newPipe.getEnd1().connectsTo(activeElem);
+
+                // Set position
+                pipeToPlace.setPosition(tile.mapPos.x, tile.mapPos.y);
+
+                // Set orientation
+                if (tile.direction == Directions.NORTH || tile.direction == Directions.SOUTH) {
+                    pipeToPlace.setOrientation(PipeOrientation.VERTICAL);
+                } else {
+                    pipeToPlace.setOrientation(PipeOrientation.HORIZONTAL);
                 }
-                model.getGameMap().addElement(newPipe);
-                plumber.getInventory().remove(slotIndex);
+
+                // Connect to current position (player's standing element)
+                if (currentPos instanceof ActiveElement activeElem) {
+                    PipeEnd freeEnd = pipeToPlace.getFreeEnd();
+                    if (freeEnd != null) {
+                        freeEnd.connectsTo(activeElem);
+                    } else {
+                        pipeToPlace.getEnd1().connectsTo(activeElem);
+                    }
+                }
+
+                // Add to map
+                model.getGameMap().addElement(pipeToPlace);
+
+                // Remove from inventory by ID
+                plumber.getInventory().removeById(pipeToPlace.getId());
+
                 deactivate();
                 return true;
             }
@@ -95,21 +109,26 @@ public class ConnectModeElement extends HudElement {
         if (!active || !(item instanceof Pump)) return false;
         Player player = model.getTurnManager().getCurrentPlayer();
         if (!(player instanceof Plumber plumber)) return false;
+        if (!(player.getCurrentPosition() instanceof Pipe standingPipe)) return false;
 
         for (HighlightTile tile : pumpTiles) {
             if (tile.bounds.contains(screenPos)) {
-                Pipe pipe = (Pipe) model.getGameMap().getElementAt(tile.mapPos.x, tile.mapPos.y);
-                if (pipe == null) return false;
-                List<Point> points = model.getGameMap().getAdjacentEmptyPositions(pipe);
-                Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-                if (freePoint == null || freePoint.x != tile.mapPos.x || freePoint.y != tile.mapPos.y) return false;
-                boolean success = plumber.placePump(pipe, (Pump) item, freePoint);
-                if (success) {
-                    model.getGameMap().addElement((Pump) item);
-                    plumber.getInventory().remove(slotIndex);
-                    deactivate();
-                    return true;
-                }
+                Pump pump = (Pump) item;
+
+                // Set pump position
+                pump.setPosition(tile.mapPos.x, tile.mapPos.y);
+
+                // Connect to the standing pipe (just connect, no orientation)
+                standingPipe.getFreeEnd().connectsTo(pump);
+
+                // Add to map
+                model.getGameMap().addElement(pump);
+
+                // Remove from inventory
+                plumber.getInventory().removeById(pump.getId());
+
+                deactivate();
+                return true;
             }
         }
         return false;
@@ -171,49 +190,60 @@ public class ConnectModeElement extends HudElement {
         Player player = model.getTurnManager().getCurrentPlayer();
         if (player == null) return;
         Element standing = player.getCurrentPosition();
-        if (standing == null) return;
+        if (!(standing instanceof Pipe standingPipe)) return;
 
         grid.update(model.getGameMap());
         pumpTiles.clear();
 
-        // Get all empty tiles adjacent to the player
-        List<Point> emptyAdjacentToPlayer = model.getGameMap().getAdjacentEmptyPositions(standing);
+        // Get the two directions based on pipe orientation
+        Directions dir1, dir2;
+        if (standingPipe.getOrientation() == PipeOrientation.VERTICAL) {
+            dir1 = Directions.NORTH;
+            dir2 = Directions.SOUTH;
+        } else {
+            dir1 = Directions.EAST;
+            dir2 = Directions.WEST;
+        }
 
-        // For each empty adjacent tile, check if it's a free end of any pipe
-        for (Point emptyPos : emptyAdjacentToPlayer) {
-            // Check if this empty position is adjacent to a pipe's free end
-            // Actually, the empty position itself is where the pump would go
-            // We need to find if there's a pipe adjacent to this empty position that has a free end
+        // Check both directions
+        Point pos1 = getPositionInDirection(standing, dir1);
+        Point pos2 = getPositionInDirection(standing, dir2);
 
-            // Get all adjacent elements to this empty position
-            Element north = model.getGameMap().getElementAt(emptyPos.x, emptyPos.y - 1);
-            Element south = model.getGameMap().getElementAt(emptyPos.x, emptyPos.y + 1);
-            Element east = model.getGameMap().getElementAt(emptyPos.x + 1, emptyPos.y);
-            Element west = model.getGameMap().getElementAt(emptyPos.x - 1, emptyPos.y);
-
-            boolean hasPipeWithFreeEnd = false;
-
-            // Check each adjacent element
-            for (Element adj : new Element[]{north, south, east, west}) {
-                if (adj instanceof Pipe pipe) {
-                    // Check if this pipe has a free end
-                    List<Point> points = model.getGameMap().getAdjacentEmptyPositions(pipe);
-                    Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-                    if (freePoint != null && freePoint.x == emptyPos.x && freePoint.y == emptyPos.y) {
-                        hasPipeWithFreeEnd = true;
-                        break;
-                    }
-                }
-            }
-
-            if (hasPipeWithFreeEnd) {
-                Point gridPos = grid.mapToGrid(emptyPos.x, emptyPos.y);
-                if (gridPos == null) continue;
+        // Check if position is empty (no element) and add highlight
+        if (pos1 != null && model.getGameMap().isEmpty(pos1.x, pos1.y)) {
+            Point gridPos = grid.mapToGrid(pos1.x, pos1.y);
+            if (gridPos != null) {
                 Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
                 if (bounds != null) {
-                    pumpTiles.add(new HighlightTile(bounds, emptyPos, null));
+                    pumpTiles.add(new HighlightTile(bounds, pos1, dir1));
+                    System.out.println("Added pump tile at " + pos1);
                 }
             }
+        }
+
+        if (pos2 != null && model.getGameMap().isEmpty(pos2.x, pos2.y)) {
+            Point gridPos = grid.mapToGrid(pos2.x, pos2.y);
+            if (gridPos != null) {
+                Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
+                if (bounds != null) {
+                    pumpTiles.add(new HighlightTile(bounds, pos2, dir2));
+                    System.out.println("Added pump tile at " + pos2);
+                }
+            }
+        }
+
+        System.out.println("Total pumpTiles: " + pumpTiles.size());
+    }
+
+    private Point getPositionInDirection(Element element, Directions dir) {
+        int x = element.getX();
+        int y = element.getY();
+        switch (dir) {
+            case NORTH: return new Point(x, y - 1);
+            case SOUTH: return new Point(x, y + 1);
+            case EAST:  return new Point(x + 1, y);
+            case WEST:  return new Point(x - 1, y);
+            default: return null;
         }
     }
 

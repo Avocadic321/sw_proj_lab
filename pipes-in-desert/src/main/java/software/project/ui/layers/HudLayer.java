@@ -26,7 +26,7 @@ import java.util.List;
 public class HudLayer extends Layer implements PropertyChangeListener {
     private final GameModel model;
     private final List<HudElement> elements = new ArrayList<>();
-    private final ConnectModeElement connectMode;
+    private final ConnectionsElement connectMode;
     private final InventoryElement inventory;
 
     // Drag state
@@ -41,7 +41,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     public HudLayer(GameModel model) {
         super(false, false);
         this.model = model;
-        this.connectMode = new ConnectModeElement(model);
+        this.connectMode = new ConnectionsElement(model);
         this.inventory = new InventoryElement(model, this::onDragStart);
         elements.add(new TimerElement(model));
         elements.add(new ScoreElement(model));
@@ -187,7 +187,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             } else if (draggedItem instanceof Pump) {
                 success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
             }
-            resetDrag();
+            resetDrag();  // Only call resetDrag ONCE here
             if (success) {
                 return true;
             }
