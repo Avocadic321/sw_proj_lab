@@ -6,6 +6,7 @@ import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
+import software.project.map.Directions;
 import software.project.map.Element;
 import software.project.map.Pipe;
 import software.project.map.PipeOrientation;
@@ -64,15 +65,15 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         draggedOrientation = PipeOrientation.VERTICAL;
 
         if (item instanceof Pipe) {
-            // Determine initial orientation from current pipe if standing on one
+            // Get standing pipe orientation if applicable
             Player player = model.getTurnManager().getCurrentPlayer();
             Element current = player.getCurrentPosition();
             if (current instanceof Pipe pipe) {
                 draggedOrientation = pipe.getOrientation();
             }
-            connectMode.setPipeMode(true, draggedOrientation);
+            connectMode.activatePipeMode();  // Shows green squares
         } else if (item instanceof Pump) {
-            connectMode.setPumpMode(true);
+            connectMode.activatePumpMode();  // Shows blue squares
         }
     }
 
@@ -82,33 +83,34 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         draggedSlot = -1;
         currentDragPos = null;
         draggedOrientation = PipeOrientation.VERTICAL;
+        connectMode.deactivate();  // Clears all squares
     }
 
     public boolean isDragging() { return dragging; }
     public ICarriable getDraggedItem() { return draggedItem; }
     public Point getCurrentDragPos() { return currentDragPos; }
+
     public void rotateDraggedItem() {
         if (dragging && draggedItem instanceof Pipe) {
             draggedOrientation = (draggedOrientation == PipeOrientation.VERTICAL)
                 ? PipeOrientation.HORIZONTAL : PipeOrientation.VERTICAL;
-            connectMode.setDraggedOrientation(draggedOrientation);
+            // No need to call anything on connectMode - orientation is only for rendering
         }
     }
+
     public PipeOrientation getDraggedPipeOrientation() { return draggedOrientation; }
-    public void toggleConnectMode() { connectMode.setActive(!connectMode.isActive()); }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
             resetDrag();
-            connectMode.setActive(false);
         }
     }
 
     @Override
     public void update(float deltaTime) {
         for (HudElement e : elements) e.update(deltaTime);
-        Grid.getInstance().update(model.getGameMap()); // for dragging placement
+        Grid.getInstance().update(model.getGameMap());
     }
 
     @Override
@@ -122,8 +124,23 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         Sprite sprite = (draggedItem instanceof Pipe) ? pipeSprite : pumpSprite;
         if (sprite == null) return;
 
-        // Rotation: 0 for vertical, 90° for horizontal
-        double angle = (draggedOrientation == PipeOrientation.VERTICAL) ? 0 : 90;
+        // Get the direction for the hovered tile (if any)
+        Directions dir = null;
+        if (draggedItem instanceof Pipe) {
+            dir = connectMode.getDirectionForHoveredTile(currentDragPos);
+        }
+
+        // Calculate rotation angle based on direction
+        double angle = 0;
+        if (draggedItem instanceof Pipe) {
+            if (dir != null) {
+                // When snapping, rotate based on direction to the target
+                angle = (dir == Directions.NORTH || dir == Directions.SOUTH) ? 0 : 90;
+            } else {
+                // When not snapping, use the dragged orientation (for rotation key)
+                angle = (draggedOrientation == PipeOrientation.VERTICAL) ? 0 : 90;
+            }
+        }
 
         // Snapping
         Point drawPos = currentDragPos;
@@ -165,17 +182,16 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     public boolean mouseReleased(MouseEvent e) {
         if (dragging) {
             boolean success = false;
-            if (draggedItem instanceof Pipe && connectMode.isPipeMode()) {
+            if (draggedItem instanceof Pipe) {
                 success = connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), draggedOrientation);
-            } else if (draggedItem instanceof Pump && connectMode.isPumpMode()) {
+            } else if (draggedItem instanceof Pump) {
                 success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
             }
+            resetDrag();
             if (success) {
-                resetDrag();
                 return true;
             }
         }
-        resetDrag();
         for (HudElement el : elements) {
             if (el.mouseReleased(e)) return true;
         }
@@ -189,6 +205,4 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         }
         return false;
     }
-
-
 }

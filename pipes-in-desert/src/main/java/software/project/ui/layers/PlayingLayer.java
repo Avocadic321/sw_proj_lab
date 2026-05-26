@@ -70,8 +70,6 @@ public class PlayingLayer extends Layer {
         // split pipe into a pump
         keyBindings.put(KeyEvent.VK_M,this::splitPipeIntoPump);
 
-        // Connect mode highlight
-        keyBindings.put(KeyEvent.VK_C, hudLayer::toggleConnectMode);
     }
 
     private void splitPipeIntoPump() {

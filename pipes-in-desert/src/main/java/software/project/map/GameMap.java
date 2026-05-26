@@ -26,6 +26,18 @@ public class GameMap {
     public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
         buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
 
+    }
+
+    public void updateAllDirections() {
+        for (Pump pump : getAllPumps()) {
+            pump.updateConnectedDirections();
+        }
+        for (Cistern cistern : getAllCisterns()) {
+            cistern.updateConnectedDirections();
+        }
+        for (Spring spring : getAllSprings()) {
+            spring.updateConnectedDirections();
+        }
         for (Pipe pipe : getAllPipes()) {
             pipe.determineOrientationFromConnections();
         }
@@ -506,6 +518,8 @@ public class GameMap {
         addElements(all);
 
         spawnPoint = pumps.isEmpty() ? null : pumps.get(0);
+
+        updateAllDirections();
     }
 
     private void addSideBranch(

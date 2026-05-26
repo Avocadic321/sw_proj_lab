@@ -4,7 +4,10 @@ import software.project.core.GameConfig;
 import software.project.map.interfaces.IConnectable;
 import software.project.utils.Debug;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Storage element that receives water and can produce new components.
@@ -138,6 +141,7 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public void connect(PipeEnd end) {
         super.connect(end);
+        updateConnectedDirections();
     }
 
     /**
@@ -148,6 +152,7 @@ public class Cistern extends ActiveElement implements IConnectable {
     @Override
     public void disconnect(PipeEnd end) {
         super.disconnect(end);
+        updateConnectedDirections();
     }
 
     /**
@@ -178,4 +183,32 @@ public class Cistern extends ActiveElement implements IConnectable {
             pumpId,
             getConnections().size());
     }
+
+    private Set<Directions> connectedDirections = EnumSet.noneOf(Directions.class);
+
+    private Directions getDirectionFromPipe(Pipe pipe) {
+        int dx = pipe.getX() - getX();
+        int dy = pipe.getY() - getY();
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 1 && dy == 0)  return Directions.EAST;
+        if (dx == 0 && dy == 1)  return Directions.SOUTH;
+        if (dx == -1 && dy == 0) return Directions.WEST;
+        return null;
+    }
+
+    public void updateConnectedDirections() {
+        connectedDirections.clear();
+        for (PipeEnd end : connections) {
+            if (end.pipe != null) {
+                Directions dir = getDirectionFromPipe(end.pipe);
+                if (dir != null) connectedDirections.add(dir);
+            }
+        }
+    }
+
+    public Set<Directions> getAvailableDirections() {
+        return Collections.unmodifiableSet(connectedDirections);
+    }
+
+
 }

@@ -17,10 +17,6 @@ public class ConnectModeElement extends HudElement {
     private final Grid grid = Grid.getInstance();
 
     private boolean active = false;
-    private boolean pipeModeActive = false;
-    private boolean pumpModeActive = false;
-
-    private PipeOrientation draggedOrientation = PipeOrientation.VERTICAL;
     private List<HighlightTile> pipeTiles = new ArrayList<>();
     private List<HighlightTile> pumpTiles = new ArrayList<>();
 
@@ -29,40 +25,25 @@ public class ConnectModeElement extends HudElement {
         this.model = model;
     }
 
-    // Legacy
-    public void setActive(boolean active) {
-        this.active = active;
-        if (active) setPipeMode(true, PipeOrientation.VERTICAL);
-        else { setPipeMode(false, PipeOrientation.VERTICAL); setPumpMode(false); }
+    // Called when dragging a PIPE
+    public void activatePipeMode() {
+        this.active = true;
+        refreshPipeHighlights();
     }
+
+    // Called when dragging a PUMP
+    public void activatePumpMode() {
+        this.active = true;
+        refreshPumpHighlights();
+    }
+
+    public void deactivate() {
+        this.active = false;
+        pipeTiles.clear();
+        pumpTiles.clear();
+    }
+
     public boolean isActive() { return active; }
-
-    // Pipe mode
-    public void setPipeMode(boolean enabled, PipeOrientation orientation) {
-        this.pipeModeActive = enabled;
-        this.active = enabled;
-        if (enabled) {
-            this.pumpModeActive = false;
-            this.draggedOrientation = orientation;
-            refreshPipeHighlights();
-        } else pipeTiles.clear();
-    }
-    public boolean isPipeMode() { return pipeModeActive; }
-    public void setDraggedOrientation(PipeOrientation orientation) {
-        this.draggedOrientation = orientation;
-        if (pipeModeActive) refreshPipeHighlights();
-    }
-
-    // Pump mode
-    public void setPumpMode(boolean enabled) {
-        this.pumpModeActive = enabled;
-        this.active = enabled;
-        if (enabled) {
-            this.pipeModeActive = false;
-            refreshPumpHighlights();
-        } else pumpTiles.clear();
-    }
-    public boolean isPumpMode() { return pumpModeActive; }
 
     public Rectangle getHoveredTileBounds(Point screenPos) {
         for (HighlightTile tile : pipeTiles)
@@ -72,15 +53,29 @@ public class ConnectModeElement extends HudElement {
         return null;
     }
 
+    public Directions getDirectionForHoveredTile(Point screenPos) {
+        for (HighlightTile tile : pipeTiles) {
+            if (tile.bounds.contains(screenPos)) {
+                return tile.direction;
+            }
+        }
+        return null;
+    }
+
     public boolean tryPlacePipe(ICarriable item, int slotIndex, Point screenPos, PipeOrientation orientation) {
-        if (!pipeModeActive || !(item instanceof Pipe)) return false;
+        if (!active || !(item instanceof Pipe)) return false;
         Player player = model.getTurnManager().getCurrentPlayer();
         if (!(player instanceof Plumber plumber)) return false;
 
         for (HighlightTile tile : pipeTiles) {
             if (tile.bounds.contains(screenPos)) {
                 Pipe newPipe = new Pipe(tile.mapPos.x, tile.mapPos.y);
-                newPipe.setOrientation(orientation);
+                // Set orientation based on direction
+                if (tile.direction == Directions.NORTH || tile.direction == Directions.SOUTH) {
+                    newPipe.setOrientation(PipeOrientation.VERTICAL);
+                } else {
+                    newPipe.setOrientation(PipeOrientation.HORIZONTAL);
+                }
                 Element currentPos = player.getCurrentPosition();
                 if (currentPos instanceof ActiveElement activeElem) {
                     PipeEnd freeEnd = newPipe.getFreeEnd();
@@ -89,7 +84,7 @@ public class ConnectModeElement extends HudElement {
                 }
                 model.getGameMap().addElement(newPipe);
                 plumber.getInventory().remove(slotIndex);
-                setPipeMode(false, orientation);
+                deactivate();
                 return true;
             }
         }
@@ -97,9 +92,10 @@ public class ConnectModeElement extends HudElement {
     }
 
     public boolean tryPlacePump(ICarriable item, int slotIndex, Point screenPos) {
-        if (!pumpModeActive || !(item instanceof Pump)) return false;
+        if (!active || !(item instanceof Pump)) return false;
         Player player = model.getTurnManager().getCurrentPlayer();
         if (!(player instanceof Plumber plumber)) return false;
+
         for (HighlightTile tile : pumpTiles) {
             if (tile.bounds.contains(screenPos)) {
                 Pipe pipe = (Pipe) model.getGameMap().getElementAt(tile.mapPos.x, tile.mapPos.y);
@@ -111,7 +107,7 @@ public class ConnectModeElement extends HudElement {
                 if (success) {
                     model.getGameMap().addElement((Pump) item);
                     plumber.getInventory().remove(slotIndex);
-                    setPumpMode(false);
+                    deactivate();
                     return true;
                 }
             }
@@ -119,73 +115,105 @@ public class ConnectModeElement extends HudElement {
         return false;
     }
 
+    // SIMPLE ALGORITHM for PIPE placement squares
     private void refreshPipeHighlights() {
         Player player = model.getTurnManager().getCurrentPlayer();
         if (player == null) return;
-        Element current = player.getCurrentPosition();
-        if (current == null) return;
+        Element standing = player.getCurrentPosition();
+        if (standing == null) return;
 
         grid.update(model.getGameMap());
-
-        // Determine allowed directions based on current element and dragged orientation
-        Set<Directions> allowed = getAllowedPipeDirections(current, draggedOrientation);
-        if (allowed.isEmpty()) { pipeTiles.clear(); return; }
-
-        List<Point> emptyAdjacent = model.getGameMap().getAdjacentEmptyPositions(current);
         pipeTiles.clear();
-        for (Point mapPos : emptyAdjacent) {
-            Directions dir = model.getGameMap().getDirection(current, mapPos);
-            if (dir == null || !allowed.contains(dir)) continue;
-            Point gridPos = grid.mapToGrid(mapPos.x, mapPos.y);
+
+        // Get all empty adjacent positions
+        List<Point> emptyAdjacent = model.getGameMap().getAdjacentEmptyPositions(standing);
+
+        for (Point emptyPos : emptyAdjacent) {
+            // Calculate direction from standing element to empty square
+            Directions dir = model.getGameMap().getDirection(standing, emptyPos);
+            if (dir == null) continue;
+
+            // Check if this direction is allowed
+            if (!isDirectionAllowed(standing, dir)) continue;
+
+            // Get screen bounds for this tile
+            Point gridPos = grid.mapToGrid(emptyPos.x, emptyPos.y);
             if (gridPos == null) continue;
             Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
-            if (bounds != null) pipeTiles.add(new HighlightTile(bounds, mapPos));
+            if (bounds != null) {
+                pipeTiles.add(new HighlightTile(bounds, emptyPos, dir));
+            }
         }
     }
 
-    private Set<Directions> getAllowedPipeDirections(Element element, PipeOrientation orientation) {
-        // For a pipe: use its orientation directly
-        if (element instanceof Pipe pipe) {
-            PipeOrientation currentOri = pipe.getOrientation();
-            if (currentOri == PipeOrientation.VERTICAL)
-                return EnumSet.of(Directions.NORTH, Directions.SOUTH);
-            else
-                return EnumSet.of(Directions.EAST, Directions.WEST);
-        }
-        // For pump: filter its available directions by orientation
-        else if (element instanceof Pump pump) {
-            Set<Directions> available = pump.getAvailableDirections();
-            Set<Directions> result = EnumSet.noneOf(Directions.class);
-            for (Directions dir : available) {
-                if (orientation == PipeOrientation.VERTICAL && (dir == Directions.NORTH || dir == Directions.SOUTH))
-                    result.add(dir);
-                else if (orientation == PipeOrientation.HORIZONTAL && (dir == Directions.EAST || dir == Directions.WEST))
-                    result.add(dir);
+    private boolean isDirectionAllowed(Element standing, Directions dir) {
+        if (standing instanceof Pipe pipe) {
+            // Pipe: only same orientation
+            if (pipe.getOrientation() == PipeOrientation.VERTICAL) {
+                return dir == Directions.NORTH || dir == Directions.SOUTH;
+            } else {
+                return dir == Directions.EAST || dir == Directions.WEST;
             }
-            return result;
         }
-        // Cistern / Spring: all directions matching orientation
-        else if (element instanceof Cistern || element instanceof Spring) {
-            if (orientation == PipeOrientation.VERTICAL)
-                return EnumSet.of(Directions.NORTH, Directions.SOUTH);
-            else
-                return EnumSet.of(Directions.EAST, Directions.WEST);
+        else if (standing instanceof Pump pump) {
+            // Pump: only directions that are NOT already connected
+            Set<Directions> occupied = pump.getAvailableDirections();
+            return !occupied.contains(dir);
         }
-        return Set.of();
+        else if (standing instanceof Cistern || standing instanceof Spring) {
+            // Cistern/Spring: all directions allowed
+            return true;
+        }
+        return false;
     }
 
     private void refreshPumpHighlights() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (player == null) return;
+        Element standing = player.getCurrentPosition();
+        if (standing == null) return;
+
         grid.update(model.getGameMap());
-        List<Pipe> pipes = model.getGameMap().getAllPipes();
         pumpTiles.clear();
-        for (Pipe pipe : pipes) {
-            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(pipe);
-            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-            if (freePoint == null) continue;
-            Point gridPos = grid.mapToGrid(freePoint.x, freePoint.y);
-            if (gridPos == null) continue;
-            Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
-            if (bounds != null) pumpTiles.add(new HighlightTile(bounds, freePoint));
+
+        // Get all empty tiles adjacent to the player
+        List<Point> emptyAdjacentToPlayer = model.getGameMap().getAdjacentEmptyPositions(standing);
+
+        // For each empty adjacent tile, check if it's a free end of any pipe
+        for (Point emptyPos : emptyAdjacentToPlayer) {
+            // Check if this empty position is adjacent to a pipe's free end
+            // Actually, the empty position itself is where the pump would go
+            // We need to find if there's a pipe adjacent to this empty position that has a free end
+
+            // Get all adjacent elements to this empty position
+            Element north = model.getGameMap().getElementAt(emptyPos.x, emptyPos.y - 1);
+            Element south = model.getGameMap().getElementAt(emptyPos.x, emptyPos.y + 1);
+            Element east = model.getGameMap().getElementAt(emptyPos.x + 1, emptyPos.y);
+            Element west = model.getGameMap().getElementAt(emptyPos.x - 1, emptyPos.y);
+
+            boolean hasPipeWithFreeEnd = false;
+
+            // Check each adjacent element
+            for (Element adj : new Element[]{north, south, east, west}) {
+                if (adj instanceof Pipe pipe) {
+                    // Check if this pipe has a free end
+                    List<Point> points = model.getGameMap().getAdjacentEmptyPositions(pipe);
+                    Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+                    if (freePoint != null && freePoint.x == emptyPos.x && freePoint.y == emptyPos.y) {
+                        hasPipeWithFreeEnd = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hasPipeWithFreeEnd) {
+                Point gridPos = grid.mapToGrid(emptyPos.x, emptyPos.y);
+                if (gridPos == null) continue;
+                Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
+                if (bounds != null) {
+                    pumpTiles.add(new HighlightTile(bounds, emptyPos, null));
+                }
+            }
         }
     }
 
@@ -215,10 +243,7 @@ public class ConnectModeElement extends HudElement {
     }
 
     @Override
-    public void onResolutionChanged(int newWidth, int newHeight) {
-        if (pipeModeActive) refreshPipeHighlights();
-        if (pumpModeActive) refreshPumpHighlights();
-    }
+    public void onResolutionChanged(int newWidth, int newHeight) {}
 
-    private record HighlightTile(Rectangle bounds, Point mapPos) {}
+    private record HighlightTile(Rectangle bounds, Point mapPos, Directions direction) {}
 }

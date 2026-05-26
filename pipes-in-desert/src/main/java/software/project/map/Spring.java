@@ -5,7 +5,10 @@ import software.project.map.interfaces.IConnectable;
 import software.project.utils.Debug;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Water source that can connect to pipe ends and produce water each turn.
@@ -55,6 +58,7 @@ public class Spring extends ActiveElement implements IConnectable {
         if (end.pipe != null && !attachedPipes.contains(end.pipe)) {
             attachedPipes.add(end.pipe);
         }
+        updateConnectedDirections();
     }
 
     @Override
@@ -68,6 +72,7 @@ public class Spring extends ActiveElement implements IConnectable {
         if (end.pipe != null) {
             attachedPipes.remove(end.pipe);
         }
+        updateConnectedDirections();
     }
 
     @Override
@@ -143,4 +148,29 @@ public class Spring extends ActiveElement implements IConnectable {
             getConnections().size());
     }
 
+    private Set<Directions> connectedDirections = EnumSet.noneOf(Directions.class);
+
+    private Directions getDirectionFromPipe(Pipe pipe) {
+        int dx = pipe.getX() - getX();
+        int dy = pipe.getY() - getY();
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 1 && dy == 0)  return Directions.EAST;
+        if (dx == 0 && dy == 1)  return Directions.SOUTH;
+        if (dx == -1 && dy == 0) return Directions.WEST;
+        return null;
+    }
+
+    public void updateConnectedDirections() {
+        connectedDirections.clear();
+        for (PipeEnd end : getConnections()) {
+            if (end.pipe != null) {
+                Directions dir = getDirectionFromPipe(end.pipe);
+                if (dir != null) connectedDirections.add(dir);
+            }
+        }
+    }
+
+    public Set<Directions> getAvailableDirections() {
+        return Collections.unmodifiableSet(connectedDirections);
+    }
 }
