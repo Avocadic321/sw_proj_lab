@@ -69,10 +69,10 @@ public class PlayingLayer extends Layer {
         keyBindings.put(KeyEvent.VK_M, this::splitPipeIntoPump);
 
         // Rotate dragged pipe
-        keyBindings.put(KeyEvent.VK_R, () -> hudLayer.rotateDraggedItem());
+        keyBindings.put(KeyEvent.VK_R, hudLayer::rotateDraggedItem);
 
         // Pickup mode
-        keyBindings.put(KeyEvent.VK_E, () -> hudLayer.togglePickupMode());
+        keyBindings.put(KeyEvent.VK_E, hudLayer::togglePickupMode);
     }
 
     private void splitPipeIntoPump() {

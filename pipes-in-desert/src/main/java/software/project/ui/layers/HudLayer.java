@@ -187,6 +187,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     }
 
     public void togglePickupMode() {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (!(player instanceof Plumber)) {
+            System.out.println("Only plumbers can pick up pipes!");
+            return;
+        }
+
         if (pickupElement.isActive()) {
             pickupElement.deactivate();
             connectMode.deactivate();
