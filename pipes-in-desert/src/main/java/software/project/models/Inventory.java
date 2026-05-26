@@ -1,5 +1,6 @@
 package software.project.models;
 
+import software.project.map.Element;
 import software.project.map.interfaces.ICarriable;
 
 public class Inventory {
@@ -68,12 +69,69 @@ public class Inventory {
     public int getSize() {
         return size;
     }
-    public void removeItem(ICarriable item) {
-        for(int i = 0; i< inventory.length;i++) {
-            if(item == inventory[i]) {
+    public boolean removeItem(ICarriable item) {
+        for (int i = 0; i < inventory.length; i++) {
+            if (inventory[i] == item) {
                 inventory[i] = null;
-                break;
+                size--;
+                return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Removes an item from inventory by its unique ID.
+     * @param id the unique identifier of the item to remove
+     * @return the removed item, or null if not found
+     */
+    public ICarriable removeById(String id) {
+        for (int i = 0; i < inventory.length; i++) {
+            ICarriable item = inventory[i];
+            if (item instanceof Element element && element.getId().equals(id)) {
+                inventory[i] = null;
+                size--;
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes an item from inventory by object reference.
+     * @param item the item to remove
+     * @return true if removed, false if not found
+     */
+
+
+    /**
+     * Removes an item from inventory by slot index.
+     * @param index the slot index to remove
+     * @return the removed item, or null if invalid index or empty slot
+     */
+    public ICarriable removeByIndex(int index) {
+        if (index < 0 || index >= inventory.length) {
+            return null;
+        }
+        ICarriable item = inventory[index];
+        if (item != null) {
+            inventory[index] = null;
+            size--;
+        }
+        return item;
+    }
+
+    /**
+     * Finds an item in inventory by its unique ID.
+     * @param id the unique identifier to search for
+     * @return the item if found, null otherwise
+     */
+    public ICarriable findById(String id) {
+        for (ICarriable item : inventory) {
+            if (item instanceof Element element && element.getId().equals(id)) {
+                return item;
+            }
+        }
+        return null;
     }
 }

@@ -41,7 +41,7 @@ public class MapRenderer {
 
     public MapRenderer(GameModel model) {
         this.model = model;
-        this.grid = new Grid();
+        this.grid = Grid.getInstance();
         this.background = new BackgroundRenderer();
         this.elements = new ElementRenderer();
         this.players = new PlayerRenderer();
@@ -57,7 +57,7 @@ public class MapRenderer {
 
         // Update fan angles for all pumps every frame
         elements.updateFanAngles(deltaTime, model.getGameMap().getAllPumps());
-        elements.updateCisternItemAngles(deltaTime,model.getGameMap().getAllCisterns());
+        elements.updateCisternItemAngles(deltaTime, model.getGameMap().getAllCisterns());
 
         // Arrow tick pauses during movement (optional)
         if (!moving) {
@@ -91,12 +91,12 @@ public class MapRenderer {
     }
 
     public Element getElementAt(int screenX, int screenY) {
-        for(ClickableElement ce : clickableElements) {
-            if(ce.bounds.contains(screenX, screenY)) {
+        for (ClickableElement ce : clickableElements) {
+            if (ce.bounds.contains(screenX, screenY)) {
                 return ce.element();
             }
         }
-            return null;
+        return null;
     }
     public boolean tryPlaceItem(ICarriable item, Plumber player, Pipe pipe, Point p) {
         if (!model.getTurnManager().canUseBigAction()) {
@@ -113,15 +113,13 @@ public class MapRenderer {
         if(response) {
             model.getGameMap().addElement(pump);
             player.getInventory().removeItem(pump);
-            model.getTurnManager().useBigAction();
-            return true;
         }
         }
         return false;
     }
     public void draw(Graphics2D g) {
         GameMap map = model.getGameMap();
-        grid.computeFromMap(map);
+        grid.update(model.getGameMap());
         background.drawSand(g, grid);
         background.drawGridLines(g, grid);
         elements.drawSprings(g, map.getAllSprings(), grid);
@@ -144,7 +142,7 @@ public class MapRenderer {
             players.drawPlayerAt(g, movingPlayer, new Point(x, y), grid.getTileSize());
             // Draw arrow over the moving player (optional)
             if (movingPlayer == current) {
-                players.drawArrow(g, new Point(x, y), (int)(grid.getTileSize() * PlayerRenderer.PLAYER_SCALE), arrowTick);
+                players.drawArrow(g, new Point(x, y), (int) (grid.getTileSize() * PlayerRenderer.PLAYER_SCALE), arrowTick);
             }
         } else if (current != null && !moving) {
             players.drawCurrentPlayer(g, current, grid, arrowTick);
@@ -169,8 +167,7 @@ public class MapRenderer {
         for (ClickableElement ce : clickableElements) {
             if (ce.bounds().contains(e.getX(), e.getY())) {
                 Element target = ce.element();
-                List<Element> path = model.getGameMap().buildPathToDestination(
-                    player.getCurrentPosition(), target);
+                List<Element> path = model.getGameMap().buildPathToDestination(player.getCurrentPosition(), target);
                 if (path.size() <= 1) return false;
 
                 for (Element el : path) el.lockElement(player);
@@ -192,9 +189,18 @@ public class MapRenderer {
 
     private void rebuildClickTargets(GameMap map) {
         clickableElements.clear();
+
+        // CRITICAL: Update grid bounds before converting coordinates
+        grid.update(map);
+
         for (Element e : map.getElements()) {
-            Rectangle bounds = grid.getCellBounds(e.getX(), e.getY());
-            clickableElements.add(new ClickableElement(e, bounds));
+            // Convert map coordinates to grid indices
+            Point gridPos = grid.mapToGrid(e.getX(), e.getY());
+            if (gridPos == null) continue;
+            Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
+            if (bounds != null) {
+                clickableElements.add(new ClickableElement(e, bounds));
+            }
         }
     }
 

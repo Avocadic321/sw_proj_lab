@@ -13,8 +13,12 @@ import software.project.audio.AudioPlayer;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
+import software.project.ui.components.GeneralButton;
 
 /**
  * Options screen overlay for audio settings and music selection.
@@ -35,13 +39,6 @@ public class OptionsLayer extends Layer {
     private static final int SLIDER_GAP = 70;
 
     private static final int LABEL_OFFSET_Y = -28;
-    private static final int BACK_BUTTON_HEIGHT = 40;
-    private static final int BACK_BUTTON_WIDTH = 120;
-    private static final int PICK_BUTTON_HEIGHT = 36;
-    private static final int PICK_BUTTON_WIDTH = 180;
-    private static final int RESET_BUTTON_HEIGHT = 34;
-    private static final int RESET_BUTTON_WIDTH = 180;
-
     private static final float TEXT_SCALE = 1.0f;
     private static final float VALUE_SCALE = 0.9f;
     private static final float TITLE_SCALE = 1.2f;
@@ -57,13 +54,15 @@ public class OptionsLayer extends Layer {
     private final GameApplication app;
     private final AudioPlayer audioPlayer;
     private final BitmapFont font;
+    private final SpriteSheet buttonSheet;
 
     private final Rectangle panelBounds = new Rectangle();
     private final Rectangle musicTrack = new Rectangle();
     private final Rectangle effectTrack = new Rectangle();
-    private final Rectangle pickButton = new Rectangle();
-    private final Rectangle backButton = new Rectangle();
-    private final Rectangle resetButton = new Rectangle();
+
+    private GeneralButton pickButton;
+    private GeneralButton resetButton;
+    private GeneralButton backButton;
 
     private DragTarget dragTarget = DragTarget.NONE;
     private String selectedMusicLabel = "default";
@@ -78,6 +77,12 @@ public class OptionsLayer extends Layer {
         this.app = app;
         this.audioPlayer = AudioPlayer.getInstance();
         this.font = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
+        this.buttonSheet = SpriteManager.getInstance().getSpriteSheet(SpriteSheets.GENERAL_BUTTONS);
+
+        if (buttonSheet == null) {
+            throw new IllegalStateException("GENERAL_BUTTON sheet missing");
+        }
+
         recomputeLayout();
     }
 
@@ -87,6 +92,40 @@ public class OptionsLayer extends Layer {
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
+    }
+
+    /**
+     * Dynamically creates or updates buttons based on current layout.
+     */
+    private void createButtons() {
+        int centerX = panelBounds.x + panelBounds.width / 2;
+        int buttonGap = 20;
+
+        // CHOOSE button - centered above
+        int chooseWidth = 160;
+        int chooseHeight = 40;
+        int chooseX = centerX - chooseWidth / 2;
+        int chooseY = effectTrack.y + 60;
+        pickButton = new GeneralButton(buttonSheet, 0, chooseX, chooseY, "CHOOSE", 1.0f);
+
+        // RESET button - left side
+        int resetWidth = 120;
+        int resetHeight = 40;
+        int resetX = centerX - resetWidth - buttonGap;
+        int resetY = chooseY + chooseHeight + 20;
+        resetButton = new GeneralButton(buttonSheet, 0, resetX, resetY, "RESET", 1.0f);
+
+        // BACK button - right side
+        int backWidth = 120;
+        int backHeight = 40;
+        int backX = centerX + buttonGap;
+        int backY = chooseY + chooseHeight + 20;
+        backButton = new GeneralButton(buttonSheet, 0, backX, backY, "BACK", 1.0f);
+
+        // Set actions
+        pickButton.setAction(this::pickMusicFile);
+        resetButton.setAction(this::resetToDefaultMusic);
+        backButton.setAction(() -> app.popLayer());
     }
 
     /**
@@ -101,24 +140,35 @@ public class OptionsLayer extends Layer {
 
         g.setColor(PANEL_SHADOW);
         g.fillRoundRect(panelBounds.x + 6, panelBounds.y + 8, panelBounds.width, panelBounds.height,
-                PANEL_RADIUS, PANEL_RADIUS);
+                        PANEL_RADIUS, PANEL_RADIUS);
         g.setColor(PANEL_FILL);
         g.fillRoundRect(panelBounds.x, panelBounds.y, panelBounds.width, panelBounds.height, PANEL_RADIUS,
-                PANEL_RADIUS);
+                        PANEL_RADIUS);
         g.setColor(PANEL_STROKE);
         g.setStroke(new BasicStroke(2f));
         g.drawRoundRect(panelBounds.x, panelBounds.y, panelBounds.width, panelBounds.height, PANEL_RADIUS,
-                PANEL_RADIUS);
+                        PANEL_RADIUS);
 
         drawTitle(g);
 
         drawSlider(g, musicTrack, audioPlayer.getSongVolume(), MUSIC_COLOR, "MUSIC");
         drawSlider(g, effectTrack, audioPlayer.getEffectVolume(), EFFECT_COLOR, "EFFECTS");
-        drawPickButton(g);
 
-        drawResetButton(g);
+        if (pickButton != null && resetButton != null && backButton != null) {
+            pickButton.draw(g);
+            resetButton.draw(g);
+            backButton.draw(g);
+        }
 
-        drawBackButton(g);
+        // Draw music selection label centered below CHOOSE button
+        if (font != null && selectedMusicLabel != null) {
+            String labelText = selectedMusicLabel;
+            float labelScale = 0.8f;
+            int labelWidth = (int)(labelText.length() * font.getCharWidth() * labelScale);
+            int labelX = pickButton.getX() + (pickButton.getWidth() - labelWidth) / 2;
+            int labelY = pickButton.getY() + pickButton.getHeight() + 15;
+            drawText(g, labelText, labelX, labelY, labelScale);
+        }
     }
 
     /**
@@ -126,18 +176,10 @@ public class OptionsLayer extends Layer {
      */
     @Override
     public boolean mousePressed(MouseEvent e) {
-        if (backButton.contains(e.getPoint())) {
-            app.popLayer();
-            return true;
-        }
-        if (pickButton.contains(e.getPoint())) {
-            pickMusicFile();
-            return true;
-        }
-        if (resetButton.contains(e.getPoint())) {
-            resetToDefaultMusic();
-            return true;
-        }
+        // Let buttons process the press first
+        if (pickButton != null) pickButton.mousePressed(e);
+        if (resetButton != null) resetButton.mousePressed(e);
+        if (backButton != null) backButton.mousePressed(e);
 
         if (hitSlider(musicTrack, e)) {
             dragTarget = DragTarget.MUSIC;
@@ -169,11 +211,25 @@ public class OptionsLayer extends Layer {
     }
 
     /**
-     * Resets drag tracking on mouse release.
+     * Resets drag tracking on mouse release and forwards to buttons.
      */
     @Override
     public boolean mouseReleased(MouseEvent e) {
+        if (pickButton != null) pickButton.mouseReleased(e);
+        if (resetButton != null) resetButton.mouseReleased(e);
+        if (backButton != null) backButton.mouseReleased(e);
         dragTarget = DragTarget.NONE;
+        return true;
+    }
+
+    /**
+     * Forwards mouse movement to buttons.
+     */
+    @Override
+    public boolean mouseMoved(MouseEvent e) {
+        if (pickButton != null) pickButton.mouseMoved(e);
+        if (resetButton != null) resetButton.mouseMoved(e);
+        if (backButton != null) backButton.mouseMoved(e);
         return true;
     }
 
@@ -228,71 +284,6 @@ public class OptionsLayer extends Layer {
         drawText(g, text, x, y, VALUE_SCALE);
     }
 
-    /**
-     * Draws the back button.
-     */
-    private void drawBackButton(Graphics2D g) {
-        g.setColor(new Color(50, 60, 80));
-        g.fillRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
-        g.setColor(new Color(230, 220, 190));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
-
-        if (font != null) {
-            String text = "BACK";
-            int textW = (int) (font.getCharWidth() * TEXT_SCALE) * text.length();
-            int textH = (int) (font.getCharHeight() * TEXT_SCALE);
-            int textX = backButton.x + (backButton.width - textW) / 2;
-            int textY = backButton.y + (backButton.height - textH) / 2;
-            font.draw(g, text, textX, textY, TEXT_SCALE);
-        }
-    }
-
-    /**
-     * Draws the reset music button.
-     */
-    private void drawResetButton(Graphics2D g) {
-        g.setColor(new Color(50, 60, 80));
-        g.fillRoundRect(resetButton.x, resetButton.y, resetButton.width, resetButton.height, 10, 10);
-        g.setColor(new Color(230, 220, 190));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(resetButton.x, resetButton.y, resetButton.width, resetButton.height, 10, 10);
-
-        if (font != null) {
-            String text = "RESET";
-            int textW = (int) (font.getCharWidth() * TEXT_SCALE) * text.length();
-            int textH = (int) (font.getCharHeight() * TEXT_SCALE);
-            int textX = resetButton.x + (resetButton.width - textW) / 2;
-            int textY = resetButton.y + (resetButton.height - textH) / 2;
-            font.draw(g, text, textX, textY, TEXT_SCALE);
-        }
-    }
-
-    /**
-     * Draws the custom music picker button and label.
-     */
-    private void drawPickButton(Graphics2D g) {
-        g.setColor(new Color(60, 70, 95));
-        g.fillRoundRect(pickButton.x, pickButton.y, pickButton.width, pickButton.height, 10, 10);
-        g.setColor(new Color(230, 220, 190));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(pickButton.x, pickButton.y, pickButton.width, pickButton.height, 10, 10);
-
-        if (font != null) {
-            String text = "choose";
-            int textW = (int) (font.getCharWidth() * TEXT_SCALE) * text.length();
-            int textH = (int) (font.getCharHeight() * TEXT_SCALE);
-            int textX = pickButton.x + (pickButton.width - textW) / 2;
-            int textY = pickButton.y + (pickButton.height - textH) / 2;
-            font.draw(g, text, textX, textY, TEXT_SCALE);
-
-            if (selectedMusicLabel != null && !selectedMusicLabel.isEmpty()) {
-                int labelY = pickButton.y + pickButton.height + 18;
-                drawText(g, selectedMusicLabel, pickButton.x, labelY, 0.8f);
-            }
-        }
-    }
-
     private void drawTitle(Graphics2D g) {
         int titleX = panelBounds.x + 24;
         int titleY = panelBounds.y + 24;
@@ -314,7 +305,7 @@ public class OptionsLayer extends Layer {
     }
 
     /**
-     * Computes control rectangles based on virtual resolution.
+     * Computes control rectangles based on virtual resolution and creates buttons.
      */
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
@@ -330,17 +321,8 @@ public class OptionsLayer extends Layer {
         musicTrack.setBounds(sliderX, musicY, SLIDER_WIDTH, SLIDER_HEIGHT);
         effectTrack.setBounds(sliderX, effectY, SLIDER_WIDTH, SLIDER_HEIGHT);
 
-        int pickX = panelX + (PANEL_WIDTH - PICK_BUTTON_WIDTH) / 2;
-        int pickY = effectY + 60;
-        pickButton.setBounds(pickX, pickY, PICK_BUTTON_WIDTH, PICK_BUTTON_HEIGHT);
-
-        int backX = panelX + (PANEL_WIDTH - BACK_BUTTON_WIDTH) / 2;
-        int backY = panelY + PANEL_HEIGHT - BACK_BUTTON_HEIGHT - 20;
-        backButton.setBounds(backX, backY, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT);
-
-        int resetX = panelX + (PANEL_WIDTH - RESET_BUTTON_WIDTH) / 2;
-        int resetY = pickY + PICK_BUTTON_HEIGHT + 40;
-        resetButton.setBounds(resetX, resetY, RESET_BUTTON_WIDTH, RESET_BUTTON_HEIGHT);
+        // Create buttons dynamically based on new layout
+        createButtons();
     }
 
     /**
@@ -379,10 +361,10 @@ public class OptionsLayer extends Layer {
      */
     private boolean hitSlider(Rectangle track, MouseEvent e) {
         Rectangle hitBox = new Rectangle(
-                track.x - KNOB_SIZE / 2,
-                track.y - KNOB_SIZE / 2,
-                track.width + KNOB_SIZE,
-                track.height + KNOB_SIZE);
+            track.x - KNOB_SIZE / 2,
+            track.y - KNOB_SIZE / 2,
+            track.width + KNOB_SIZE,
+            track.height + KNOB_SIZE);
         return hitBox.contains(e.getPoint());
     }
 

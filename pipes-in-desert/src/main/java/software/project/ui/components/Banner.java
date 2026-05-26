@@ -16,6 +16,10 @@ public class Banner extends Component {
     private float textScale;
     private float spriteScale;
 
+    // Text offset for fine-tuning position inside the banner
+    private int textOffsetX = 0;
+    private int textOffsetY = 0;
+
     // For centering with offsets
     private boolean centeredHorizontally = false;
     private boolean centeredVertically = false;
@@ -37,6 +41,15 @@ public class Banner extends Component {
 
     public Banner(Sprite sprite, float spriteScale, String text, float textScale) {
         this(sprite, spriteScale, BitmapFonts.FONT_MONO, text, textScale);
+    }
+
+    /**
+     * Sets the text offset inside the banner (pixels).
+     * Positive X moves right, positive Y moves down.
+     */
+    public void setTextOffset(int x, int y) {
+        this.textOffsetX = x;
+        this.textOffsetY = y;
     }
 
     // ----- Centering methods (use these instead of manual x,y) -----
@@ -115,9 +128,9 @@ public class Banner extends Component {
             int scaledCharW = (int)(charW * textScale);
             int scaledCharH = (int)(charH * textScale);
             int textWidth = text.length() * scaledCharW;
-            int drawX = x + (width - textWidth) / 2;
-            float verticalAdjustFactor = 0.15f; // your working fix
-            int drawY = y + (height - scaledCharH) / 2 + (int)(scaledCharH * verticalAdjustFactor);
+            int drawX = x + (width - textWidth) / 2 + textOffsetX;
+            float verticalAdjustFactor = 0.15f;
+            int drawY = y + (height - scaledCharH) / 2 + (int)(scaledCharH * verticalAdjustFactor) + textOffsetY;
             font.draw(g, text, drawX, drawY, textScale);
         }
     }

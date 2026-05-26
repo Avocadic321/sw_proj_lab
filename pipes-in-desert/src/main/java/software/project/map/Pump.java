@@ -305,4 +305,69 @@ public class Pump extends ActiveElement implements IBreakable, IRepairable, ICon
         if (end.pipe.getEnd2() == end) return end.pipe.getId() + "_END2";
         return end.pipe.getId();
     }
+
+    /**
+     * Automatically connects this pump to adjacent pipes.
+     * Should be called after the pump is placed on the map.
+     *
+     * @param map the game map to check adjacent elements
+     */
+    /**
+     * Automatically connects this pump to adjacent pipes and adds to map.
+     * Should be called after the pump's position is set.
+     *
+     * @param map the game map to check adjacent elements and add to
+     * @return true if added successfully
+     */
+    public boolean onConnect(GameMap map) {
+        int x = getX();
+        int y = getY();
+
+        // First add to map
+        map.addElement(this);
+
+        // Get all four adjacent elements
+        Element north = map.getElementAt(x, y - 1);
+        Element south = map.getElementAt(x, y + 1);
+        Element east = map.getElementAt(x + 1, y);
+        Element west = map.getElementAt(x - 1, y);
+
+        // Connect to any adjacent pipes
+        if (north instanceof Pipe pipeNorth) {
+            PipeEnd freeEnd = pipeNorth.getFreeEnd();
+            if (freeEnd != null) {
+                freeEnd.connectsTo(this);
+                System.out.println("[PUMP] Connected north to pipe " + pipeNorth.getId());
+            }
+        }
+
+        if (south instanceof Pipe pipeSouth) {
+            PipeEnd freeEnd = pipeSouth.getFreeEnd();
+            if (freeEnd != null) {
+                freeEnd.connectsTo(this);
+                System.out.println("[PUMP] Connected south to pipe " + pipeSouth.getId());
+            }
+        }
+
+        if (east instanceof Pipe pipeEast) {
+            PipeEnd freeEnd = pipeEast.getFreeEnd();
+            if (freeEnd != null) {
+                freeEnd.connectsTo(this);
+                System.out.println("[PUMP] Connected east to pipe " + pipeEast.getId());
+            }
+        }
+
+        if (west instanceof Pipe pipeWest) {
+            PipeEnd freeEnd = pipeWest.getFreeEnd();
+            if (freeEnd != null) {
+                freeEnd.connectsTo(this);
+                System.out.println("[PUMP] Connected west to pipe " + pipeWest.getId());
+            }
+        }
+
+        // Update connected directions
+        updateConnectedDirections();
+
+        return true;
+    }
 }

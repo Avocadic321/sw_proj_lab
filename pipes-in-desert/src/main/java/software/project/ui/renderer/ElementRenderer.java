@@ -65,37 +65,30 @@ public class ElementRenderer {
         if (normalSheet == null || brokenSheet == null) {
             return;
         }
+
         for (Pipe pipe : pipes) {
-            var dirs = new ArrayList<Point>();
-            for (var end : new PipeEnd[]{pipe.getEnd1(), pipe.getEnd2()}) {
-                if (end.connectedTo != null) {
-                    int dx = end.connectedTo.getX() - pipe.getX();
-                    int dy = end.connectedTo.getY() - pipe.getY();
-                    dirs.add(new Point(dx, dy));
-                }
-            }
-            if (dirs.isEmpty()) {
+            PipeOrientation orientation = pipe.getOrientation();
+            if (orientation == null) {
+                // Fallback: compute from connections (should not happen)
                 continue;
             }
+
             boolean isCorner;
             double baseAngle;
-            if (dirs.size() == 1) {
-                isCorner = false;
-                baseAngle = directionToAngle(dirs.get(0));
-            } else if (dirs.size() == 2) {
-                var d1 = dirs.get(0);
-                var d2 = dirs.get(1);
-                boolean opposite = (d1.x == -d2.x && d1.y == -d2.y);
-                if (opposite) {
+
+            switch (orientation) {
+                case VERTICAL:
                     isCorner = false;
-                    baseAngle = directionToAngle(d1);
-                } else {
-                    isCorner = true;
-                    baseAngle = cornerAngle(d1, d2);
-                }
-            } else {
-                continue;
+                    baseAngle = 0;
+                    break;
+                case HORIZONTAL:
+                    isCorner = false;
+                    baseAngle = 90;
+                    break;
+                default:
+                    continue;
             }
+
             int col = 0;
             if (!pipe.isBroken()) {
                 int percent = (pipe.getCurrentFlowingWater() * 100);

@@ -27,6 +27,11 @@ public class GameMap {
     private final List<Element> elements = new ArrayList<>();
     private Element spawnPoint;
 
+    private int minX = Integer.MAX_VALUE;
+    private int maxX = Integer.MIN_VALUE;
+    private int minY = Integer.MAX_VALUE;
+    private int maxY = Integer.MIN_VALUE;
+
     /**
      * Creates a new game map sized for the provided team sizes.
      *
@@ -35,28 +40,40 @@ public class GameMap {
      */
     public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
         buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
+
     }
 
-    /**
-     * Adds a single element to the map.
-     *
-     * @param element element to add
-     * @return true if the element was added
-     */
+    public void updateAllDirections() {
+        for (Pump pump : getAllPumps()) {
+            pump.updateConnectedDirections();
+        }
+        for (Cistern cistern : getAllCisterns()) {
+            cistern.updateConnectedDirections();
+        }
+        for (Spring spring : getAllSprings()) {
+            spring.updateConnectedDirections();
+        }
+        for (Pipe pipe : getAllPipes()) {
+            pipe.determineOrientationFromConnections();
+        }
+    }
+
     public boolean addElement(Element element) {
         if (element != null) {
             elements.add(element);
+            int x = element.getX();
+            int y = element.getY();
+
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+
             return true;
         }
         return false;
     }
 
-    /**
-     * Adds all elements from the provided list.
-     *
-     * @param elements elements to add
-     * @return true when the list is processed
-     */
     public boolean addElements(List<Element> elements) {
         for (Element element : elements) {
             addElement(element);
@@ -64,11 +81,8 @@ public class GameMap {
         return true;
     }
 
-    /**
-     * Checks whether a coordinate is already occupied by an element.
-     */
     public boolean isPositionOccupied(int x, int y) {
-        if (x < 0 || y < 0) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
             return false;
         }
         for (Element e : elements) {
@@ -79,23 +93,14 @@ public class GameMap {
         return false;
     }
 
-    /**
-     * Removes an element from the map.
-     */
     public void removeElement(Element element) {
         elements.remove(element);
     }
 
-    /**
-     * Returns the designated spawn point for players.
-     */
     public Element getSpawnPoint() {
         return spawnPoint;
     }
 
-    /**
-     * Finds an element by id.
-     */
     public Element getElement(String id) {
         for (Element element : elements) {
             if (element.getId().equals(id)) {
@@ -105,9 +110,6 @@ public class GameMap {
         return null;
     }
 
-    /**
-     * Finds an element by id and type.
-     */
     public <T extends Element> T getElement(String id, Class<T> type) {
         Element element = getElement(id);
         if (type.isInstance(element)) {
@@ -116,16 +118,10 @@ public class GameMap {
         return null;
     }
 
-    /**
-     * Returns the full element list.
-     */
     public List<Element> getElements() {
         return elements;
     }
 
-    /**
-     * Returns elements of the requested type.
-     */
     public <T extends Element> List<T> getElementsByType(Class<T> type) {
         List<T> result = new ArrayList<>();
         for (Element element : elements) {
@@ -136,10 +132,10 @@ public class GameMap {
         return result;
     }
 
-    /**
-     * Returns the element located at the given coordinates, if any.
-     */
     public Element getElementAt(int x, int y) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
+            return null;
+        }
         for (Element element : elements) {
             if (element.getX() == x && element.getY() == y) {
                 return element;
@@ -148,17 +144,14 @@ public class GameMap {
         return null;
     }
 
-    /**
-     * Returns true when the given coordinate is empty.
-     */
     public boolean isEmpty(int x, int y) {
+        if (x < minX || x > maxX || y < minY || y > maxY) {
+            return false; // outside map – not considered empty for placement
+        }
         return getElementAt(x, y) == null;
     }
 
     // ---------- Adjacency helpers ----------
-    /**
-     * Returns the element immediately north of the given element.
-     */
     public Element getNorthOf(Element e) {
         if (e == null) {
             return null;
@@ -166,9 +159,6 @@ public class GameMap {
         return getElementAt(e.getX(), e.getY() - 1);
     }
 
-    /**
-     * Returns the element immediately south of the given element.
-     */
     public Element getSouthOf(Element e) {
         if (e == null) {
             return null;
@@ -176,9 +166,6 @@ public class GameMap {
         return getElementAt(e.getX(), e.getY() + 1);
     }
 
-    /**
-     * Returns the element immediately east of the given element.
-     */
     public Element getEastOf(Element e) {
         if (e == null) {
             return null;
@@ -186,9 +173,6 @@ public class GameMap {
         return getElementAt(e.getX() + 1, e.getY());
     }
 
-    /**
-     * Returns the element immediately west of the given element.
-     */
     public Element getWestOf(Element e) {
         if (e == null) {
             return null;
@@ -196,9 +180,6 @@ public class GameMap {
         return getElementAt(e.getX() - 1, e.getY());
     }
 
-    /**
-     * Returns the orthogonally adjacent elements around the given element.
-     */
     public List<Element> getAdjacentElements(Element e) {
         List<Element> adj = new ArrayList<>();
         Element north = getNorthOf(e);
@@ -220,32 +201,28 @@ public class GameMap {
         return adj;
     }
 
-    /**
-     * Returns directions around the element that are unoccupied.
-     */
     public List<Directions> getAdjacentEmptyDirections(Element e) {
         if (e == null) {
             return new ArrayList<>();
         }
         List<Directions> empty = new ArrayList<>();
-        if (isEmpty(e.getX(), e.getY() - 1)) {
+        int x = e.getX();
+        int y = e.getY();
+        if (y - 1 >= 0 && isEmpty(x, y - 1)) {
             empty.add(Directions.NORTH);
         }
-        if (isEmpty(e.getX(), e.getY() + 1)) {
+        if (y + 1 >= 0 && isEmpty(x, y + 1)) {
             empty.add(Directions.SOUTH);
         }
-        if (isEmpty(e.getX() + 1, e.getY())) {
+        if (x + 1 >= 0 && isEmpty(x + 1, y)) {
             empty.add(Directions.EAST);
         }
-        if (isEmpty(e.getX() - 1, e.getY())) {
+        if (x - 1 >= 0 && isEmpty(x - 1, y)) {
             empty.add(Directions.WEST);
         }
         return empty;
     }
 
-    /**
-     * Returns coordinates adjacent to the element that are unoccupied.
-     */
     public List<Point> getAdjacentEmptyPositions(Element e) {
         if (e == null) {
             return new ArrayList<>();
@@ -253,24 +230,21 @@ public class GameMap {
         List<Point> empty = new ArrayList<>();
         int x = e.getX();
         int y = e.getY();
-        if (isEmpty(x, y - 1)) {
+        if (y - 1 >= 0 && isEmpty(x, y - 1)) {
             empty.add(new Point(x, y - 1));
         }
-        if (isEmpty(x, y + 1)) {
+        if (y + 1 >= 0 && isEmpty(x, y + 1)) {
             empty.add(new Point(x, y + 1));
         }
-        if (isEmpty(x + 1, y)) {
+        if (x + 1 >= 0 && isEmpty(x + 1, y)) {
             empty.add(new Point(x + 1, y));
         }
-        if (isEmpty(x - 1, y)) {
+        if (x - 1 >= 0 && isEmpty(x - 1, y)) {
             empty.add(new Point(x - 1, y));
         }
         return empty;
     }
 
-    /**
-     * Returns the cardinal direction from one element to another if adjacent.
-     */
     public Directions getDirection(Element from, Element to) {
         if (from == null || to == null) {
             return null;
@@ -293,37 +267,72 @@ public class GameMap {
     }
 
     /**
-     * Returns all springs in the map.
+     * Returns the direction from an element to a grid point.
+     * @param from the source element
+     * @param to the target point (grid coordinates)
+     * @return the direction, or null if not adjacent or any parameter is null
      */
+    public Directions getDirection(Element from, Point to) {
+        if (from == null || to == null) return null;
+        int dx = to.x - from.getX();
+        int dy = to.y - from.getY();
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 0 && dy == 1) return Directions.SOUTH;
+        if (dx == 1 && dy == 0) return Directions.EAST;
+        if (dx == -1 && dy == 0) return Directions.WEST;
+        return null;
+    }
+
+    /**
+     * Returns the direction from one grid point to another.
+     * @param from the source point (grid coordinates)
+     * @param to the target point (grid coordinates)
+     * @return the direction, or null if not adjacent or any parameter is null
+     */
+    public Directions getDirection(Point from, Point to) {
+        if (from == null || to == null) return null;
+        int dx = to.x - from.x;
+        int dy = to.y - from.y;
+        if (dx == 0 && dy == -1) return Directions.NORTH;
+        if (dx == 0 && dy == 1) return Directions.SOUTH;
+        if (dx == 1 && dy == 0) return Directions.EAST;
+        if (dx == -1 && dy == 0) return Directions.WEST;
+        return null;
+    }
+
+    public int getMinX() {
+        return minX;
+    }
+
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMinY() {
+        return minY;
+    }
+
+    public int getMaxY() {
+        return maxY;
+    }
+
+
     public List<Spring> getAllSprings() {
         return getElementsByType(Spring.class);
     }
 
-    /**
-     * Returns all cisterns in the map.
-     */
     public List<Cistern> getAllCisterns() {
         return getElementsByType(Cistern.class);
     }
 
-    /**
-     * Returns all pumps in the map.
-     */
     public List<Pump> getAllPumps() {
         return getElementsByType(Pump.class);
     }
 
-    /**
-     * Returns all pipes in the map.
-     */
     public List<Pipe> getAllPipes() {
         return getElementsByType(Pipe.class);
     }
 
-    /**
-     * Returns all active elements (pumps, cisterns, springs, pipes that can
-     * connect).
-     */
     public List<ActiveElement> getActiveElements() {
         List<ActiveElement> result = new ArrayList<>();
         for (Element element : elements) {
@@ -433,9 +442,6 @@ public class GameMap {
         spawnPoint = pump1;
     }
 
-    /**
-     * Generates the default map layout based on cistern count.
-     */
     private void buildMapWithCisterns(int cisternCount) {
         IdGenerator.reset();
         elements.clear();
@@ -524,11 +530,10 @@ public class GameMap {
         addElements(all);
 
         spawnPoint = pumps.isEmpty() ? null : pumps.get(0);
+
+        updateAllDirections();
     }
 
-    /**
-     * Adds a small spring or cistern branch off a junction pump.
-     */
     private void addSideBranch(
             int index,
             Pump junction,
@@ -552,9 +557,6 @@ public class GameMap {
         }
     }
 
-    /**
-     * Optionally adds a single free pipe adjacent to the source.
-     */
     private void addRandomFreePipeFrom(
             ActiveElement source,
             double probability,
@@ -589,9 +591,6 @@ public class GameMap {
         }
     }
 
-    /**
-     * Marks occupied coordinates for all provided element lists.
-     */
     private void addOccupiedPositions(
             Set<Point> occupied,
             List<Spring> springs,
@@ -620,9 +619,6 @@ public class GameMap {
         }
     }
 
-    /**
-     * Creates a straight chain of pipes between two active elements.
-     */
     private List<Pipe> createPipeChainBetween(
             ActiveElement start,
             ActiveElement end,
@@ -699,9 +695,6 @@ public class GameMap {
     private record GraphNode(Element element, List<Element> neighbors) {
     }
 
-    /**
-     * Builds a graph node for pathfinding from a map element.
-     */
     private GraphNode buildNode(Element element) {
         List<Element> neighbors = new ArrayList<>();
 
@@ -723,9 +716,6 @@ public class GameMap {
         return new GraphNode(element, neighbors);
     }
 
-    /**
-     * Builds a path between two elements using BFS.
-     */
     public List<Element> buildPathToDestination(Element src, Element dest) {
         List<Element> path = new ArrayList<>();
 
