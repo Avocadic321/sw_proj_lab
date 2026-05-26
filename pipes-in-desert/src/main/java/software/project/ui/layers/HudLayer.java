@@ -9,10 +9,12 @@ import software.project.graphics.Sprites;
 import software.project.map.Directions;
 import software.project.map.Element;
 import software.project.map.Pipe;
+import software.project.map.PipeEnd;
 import software.project.map.PipeOrientation;
 import software.project.map.Pump;
 import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
+import software.project.models.Plumber;
 import software.project.ui.hud.*;
 import software.project.ui.renderer.Grid;
 import software.project.utils.Constants;
@@ -28,6 +30,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private final List<HudElement> elements = new ArrayList<>();
     private final ConnectionsElement connectMode;
     private final InventoryElement inventory;
+    private final PickupElement pickupElement;
 
     // Drag state
     private boolean dragging = false;
@@ -43,10 +46,14 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         this.model = model;
         this.connectMode = new ConnectionsElement(model);
         this.inventory = new InventoryElement(model, this::onDragStart);
+        this.pickupElement = new PickupElement(model);
+        this.pickupElement.setPickupListener(this::onPickupPipe);
+
         elements.add(new TimerElement(model));
         elements.add(new ScoreElement(model));
         elements.add(inventory);
         elements.add(connectMode);
+        elements.add(pickupElement);
         elements.add(new ActionHintElement(model));
 
         var sm = SpriteManager.getInstance();
@@ -57,6 +64,48 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         model.getTurnManager().addPropertyChangeListener(this);
     }
 
+    // ========== Pipe Pickup ==========
+    private void onPickupPipe(Pipe pipe, Point mapPos) {
+        Player player = model.getTurnManager().getCurrentPlayer();
+        if (!(player instanceof Plumber plumber)) return;
+
+        if (plumber.getInventory().isFull()) {
+            System.out.println("Inventory is full! Cannot pick up pipe.");
+            return;
+        }
+
+        // Disconnect pipe from both ends
+        PipeEnd end1 = pipe.getEnd1();
+        PipeEnd end2 = pipe.getEnd2();
+
+        if (end1 != null && end1.connectedTo != null) {
+            end1.disconnect();
+        }
+        if (end2 != null && end2.connectedTo != null) {
+            end2.disconnect();
+        }
+
+        // Remove from map
+        model.getGameMap().removeElement(pipe);
+
+        // Add to inventory
+        plumber.getInventory().add(pipe);
+
+        System.out.println("Picked up pipe " + pipe.getId() + " at (" + mapPos.x + ", " + mapPos.y + ")");
+    }
+
+    public void togglePickupMode() {
+        if (pickupElement.isActive()) {
+            pickupElement.deactivate();
+            connectMode.deactivate();
+        } else {
+            // Deactivate other modes first
+            connectMode.deactivate();
+            pickupElement.activatePickupMode();
+        }
+    }
+
+    // ========== Drag Start ==========
     private void onDragStart(ICarriable item, int slot, Point screenPos) {
         dragging = true;
         draggedItem = item;
@@ -71,8 +120,11 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             if (current instanceof Pipe pipe) {
                 draggedOrientation = pipe.getOrientation();
             }
+            // Deactivate pickup mode if active
+            pickupElement.deactivate();
             connectMode.activatePipeMode();  // Shows green squares
         } else if (item instanceof Pump) {
+            pickupElement.deactivate();
             connectMode.activatePumpMode();  // Shows blue squares
         }
     }
@@ -83,7 +135,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         draggedSlot = -1;
         currentDragPos = null;
         draggedOrientation = PipeOrientation.VERTICAL;
-        connectMode.deactivate();  // Clears all squares
+        connectMode.deactivate();
+        // Don't deactivate pickup mode here - it's separate
     }
 
     public boolean isDragging() { return dragging; }
@@ -104,6 +157,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Constants.PLAYER_ADVANCED)) {
             resetDrag();
+            pickupElement.deactivate();
+            connectMode.deactivate();
         }
     }
 
@@ -160,6 +215,19 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     // Input forwarding
     @Override
     public boolean mousePressed(MouseEvent e) {
+        // Check pickup mode first - if active, it should consume the event
+        if (pickupElement.isActive()) {
+            // Let pickup element handle and consume the event
+            for (HudElement el : elements) {
+                if (el.mousePressed(e)) {
+                    return true;  // Consumed, don't pass to renderer
+                }
+            }
+            // Even if no specific element was clicked, pickup mode should block movement
+            return true;
+        }
+
+        // Then check other elements
         for (HudElement el : elements) {
             if (el.mousePressed(e)) return true;
         }
@@ -180,6 +248,17 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     @Override
     public boolean mouseReleased(MouseEvent e) {
+        // Handle pickup mode first
+        if (pickupElement.isActive()) {
+            boolean pickedUp = pickupElement.tryPickupPipe(e.getPoint());
+            pickupElement.deactivate();
+            if (pickedUp) {
+                return true;  // Consumed
+            }
+            return true;  // Consumed even if no pickup (prevents movement)
+        }
+
+        // Handle dragging placement
         if (dragging) {
             boolean success = false;
             if (draggedItem instanceof Pipe) {
@@ -187,11 +266,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             } else if (draggedItem instanceof Pump) {
                 success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
             }
-            resetDrag();  // Only call resetDrag ONCE here
+            resetDrag();
             if (success) {
                 return true;
             }
         }
+
         for (HudElement el : elements) {
             if (el.mouseReleased(e)) return true;
         }

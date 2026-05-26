@@ -70,6 +70,8 @@ public class PlayingLayer extends Layer {
 
         // Rotate dragged pipe
         keyBindings.put(KeyEvent.VK_R, () -> hudLayer.rotateDraggedItem());
+
+        keyBindings.put(KeyEvent.VK_E, () -> hudLayer.togglePickupMode());
     }
 
     private void splitPipeIntoPump() {
@@ -211,6 +213,9 @@ public class PlayingLayer extends Layer {
 
     @Override
     public boolean mousePressed(MouseEvent e) {
-        return hudLayer.mousePressed(e) || renderer.mousePressed(e);
+        if (hudLayer.mousePressed(e)) {
+            return true;
+        }
+        return renderer.mousePressed(e);
     }
 }
