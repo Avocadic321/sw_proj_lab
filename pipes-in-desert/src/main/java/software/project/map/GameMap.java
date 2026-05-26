@@ -510,9 +510,6 @@ public class GameMap {
         for (Spring spring : springs) {
             addRandomFreePipeFrom(spring, 0.3, pipes, occupied, rng);
         }
-        for (Cistern cistern : cisterns) {
-            addRandomFreePipeFrom(cistern, 0.3, pipes, occupied, rng);
-        }
         for (Pump pump : chainPumps) {
             addRandomFreePipeFrom(pump, 0.3, pipes, occupied, rng);
         }
