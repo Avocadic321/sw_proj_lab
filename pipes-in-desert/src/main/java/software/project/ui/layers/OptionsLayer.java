@@ -16,6 +16,14 @@ import software.project.graphics.ResourceManager;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 
+/**
+ * Options screen overlay for audio settings and music selection.
+ *
+ * <p>
+ * Provides sliders for music and effect volumes, a file picker for custom
+ * music, and reset/back controls.
+ * </p>
+ */
 public class OptionsLayer extends Layer {
     private static final int PANEL_WIDTH = 500;
     private static final int PANEL_HEIGHT = 410;
@@ -60,6 +68,11 @@ public class OptionsLayer extends Layer {
     private DragTarget dragTarget = DragTarget.NONE;
     private String selectedMusicLabel = "default";
 
+    /**
+     * Creates an options overlay for the provided application.
+     *
+     * @param app game application instance
+     */
     public OptionsLayer(GameApplication app) {
         super(true, true);
         this.app = app;
@@ -68,11 +81,17 @@ public class OptionsLayer extends Layer {
         recomputeLayout();
     }
 
+    /**
+     * Recomputes layout when the virtual resolution changes.
+     */
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
     }
 
+    /**
+     * Renders the options panel and all controls.
+     */
     @Override
     public void render(Graphics2D g) {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
@@ -102,6 +121,9 @@ public class OptionsLayer extends Layer {
         drawBackButton(g);
     }
 
+    /**
+     * Handles clicks on buttons and slider tracks.
+     */
     @Override
     public boolean mousePressed(MouseEvent e) {
         if (backButton.contains(e.getPoint())) {
@@ -130,6 +152,9 @@ public class OptionsLayer extends Layer {
         return true;
     }
 
+    /**
+     * Updates slider values while dragging.
+     */
     @Override
     public boolean mouseDragged(MouseEvent e) {
         if (dragTarget == DragTarget.MUSIC) {
@@ -143,12 +168,18 @@ public class OptionsLayer extends Layer {
         return false;
     }
 
+    /**
+     * Resets drag tracking on mouse release.
+     */
     @Override
     public boolean mouseReleased(MouseEvent e) {
         dragTarget = DragTarget.NONE;
         return true;
     }
 
+    /**
+     * Closes the overlay on ESC.
+     */
     @Override
     public boolean keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -158,6 +189,9 @@ public class OptionsLayer extends Layer {
         return false;
     }
 
+    /**
+     * Draws a labeled slider with a filled track and knob.
+     */
     private void drawSlider(Graphics2D g, Rectangle track, float value, Color accent, String label) {
         g.setColor(SLIDER_GROOVE);
         g.fillRoundRect(track.x, track.y, track.width, track.height, 8, 8);
@@ -194,6 +228,9 @@ public class OptionsLayer extends Layer {
         drawText(g, text, x, y, VALUE_SCALE);
     }
 
+    /**
+     * Draws the back button.
+     */
     private void drawBackButton(Graphics2D g) {
         g.setColor(new Color(50, 60, 80));
         g.fillRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
@@ -211,6 +248,9 @@ public class OptionsLayer extends Layer {
         }
     }
 
+    /**
+     * Draws the reset music button.
+     */
     private void drawResetButton(Graphics2D g) {
         g.setColor(new Color(50, 60, 80));
         g.fillRoundRect(resetButton.x, resetButton.y, resetButton.width, resetButton.height, 10, 10);
@@ -228,6 +268,9 @@ public class OptionsLayer extends Layer {
         }
     }
 
+    /**
+     * Draws the custom music picker button and label.
+     */
     private void drawPickButton(Graphics2D g) {
         g.setColor(new Color(60, 70, 95));
         g.fillRoundRect(pickButton.x, pickButton.y, pickButton.width, pickButton.height, 10, 10);
@@ -270,6 +313,9 @@ public class OptionsLayer extends Layer {
         font.draw(g, text.toLowerCase(), x, drawY, scale);
     }
 
+    /**
+     * Computes control rectangles based on virtual resolution.
+     */
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -297,6 +343,9 @@ public class OptionsLayer extends Layer {
         resetButton.setBounds(resetX, resetY, RESET_BUTTON_WIDTH, RESET_BUTTON_HEIGHT);
     }
 
+    /**
+     * Opens a file chooser to select a custom music track.
+     */
     private void pickMusicFile() {
         FileDialog dialog = new FileDialog(ScreenManager.getInstance().getFrame(), "Select Music", FileDialog.LOAD);
         dialog.setFile("*.wav;*.mp3");
@@ -317,11 +366,17 @@ public class OptionsLayer extends Layer {
         }
     }
 
+    /**
+     * Restores the default soundtrack.
+     */
     private void resetToDefaultMusic() {
         audioPlayer.playSong("main_theme");
         selectedMusicLabel = "default";
     }
 
+    /**
+     * Returns true if the mouse event intersects the slider hit box.
+     */
     private boolean hitSlider(Rectangle track, MouseEvent e) {
         Rectangle hitBox = new Rectangle(
                 track.x - KNOB_SIZE / 2,
@@ -331,6 +386,9 @@ public class OptionsLayer extends Layer {
         return hitBox.contains(e.getPoint());
     }
 
+    /**
+     * Converts a mouse x-coordinate into a volume value and applies it.
+     */
     private void updateSliderValue(Rectangle track, int mouseX) {
         float value = (mouseX - track.x) / (float) track.width;
         value = Math.clamp(value, 0.0f, 1.0f);

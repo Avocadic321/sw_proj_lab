@@ -1,5 +1,6 @@
 package software.project.core;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import software.project.map.ActiveElement;
 import software.project.map.Cistern;
 import software.project.map.GameMap;
+import software.project.map.Pipe;
 import software.project.map.Pump;
 import software.project.models.Plumber;
 import software.project.models.Saboteur;
@@ -323,16 +325,13 @@ public class GameModel {
 
         Cistern c = cisterns.get(random.nextInt(cisterns.size()));
         boolean producePipe = random.nextBoolean();
-
         if (producePipe && c.getStoredPipe() == null) {
-            c.producePipe();
+             c.producePipe();
             System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
         } else if (!producePipe && c.getStoredPump() == null) {
             c.producePump();
             System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
         }
-
-        // TODO: Add logic later for placing the produced component
     }
 
     /**

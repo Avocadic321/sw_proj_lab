@@ -1,13 +1,13 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
 import software.project.map.ActiveElement;
 import software.project.map.Pipe;
 import software.project.map.PipeEnd;
 import software.project.models.Player;
 import software.project.models.Plumber;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Connects a pipe end to an active element (pump or cistern).
@@ -67,6 +67,11 @@ public class ConnectCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] CONNECT NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         if (!(p instanceof Plumber)) {
             System.out.println("[ERROR] CONNECT NOT_A_PLUMBER");
             return;
@@ -74,6 +79,7 @@ public class ConnectCommand implements ICommand {
 
         try {
             ((Plumber) p).connect(end, target);
+            gameModel.getTurnManager().useBigAction();
         } catch (IllegalArgumentException | IllegalStateException ex) {
             System.out.println("[ERROR] CONNECT " + ex.getMessage());
         }

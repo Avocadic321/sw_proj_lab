@@ -14,6 +14,10 @@ import software.project.graphics.ResourceManager;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
 
+/**
+ * Configuration overlay for choosing player counts and match settings before
+ * starting a new game.
+ */
 public class ConfigLayer extends Layer {
     private static final int PANEL_WIDTH = 560;
     private static final int PANEL_HEIGHT = 550;
@@ -72,6 +76,12 @@ public class ConfigLayer extends Layer {
     private int turnDuration = 30;
     private int harshnessIndex = 1;
 
+    /**
+     * Creates the configuration layer for the provided application.
+     *
+     * @param app game application instance used to launch or leave the setup
+     *            screen
+     */
     public ConfigLayer(GameApplication app) {
         super(true, true);
         this.app = app;
@@ -79,11 +89,23 @@ public class ConfigLayer extends Layer {
         recomputeLayout();
     }
 
+    /**
+     * Recomputes the panel and control layout when the virtual resolution
+     * changes.
+     *
+     * @param newWidth  new virtual width
+     * @param newHeight new virtual height
+     */
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
     }
 
+    /**
+     * Renders the configuration panel, sliders, and action buttons.
+     *
+     * @param g graphics context used for drawing the layer
+     */
     @Override
     public void render(Graphics2D g) {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
@@ -119,6 +141,13 @@ public class ConfigLayer extends Layer {
         drawBackButton(g);
     }
 
+    /**
+     * Handles mouse presses on buttons and slider tracks.
+     *
+     * @param e mouse press event from the UI system
+     * @return always {@code true} because the configuration overlay consumes
+     *         the press
+     */
     @Override
     public boolean mousePressed(MouseEvent e) {
         if (startButton.contains(e.getPoint())) {
@@ -159,6 +188,13 @@ public class ConfigLayer extends Layer {
         return true;
     }
 
+    /**
+     * Updates the currently dragged slider while the mouse is moving.
+     *
+     * @param e mouse drag event from the UI system
+     * @return {@code true} when a slider is being adjusted; otherwise
+     *         {@code false}
+     */
     @Override
     public boolean mouseDragged(MouseEvent e) {
         if (dragTarget != DragTarget.NONE) {
@@ -178,12 +214,25 @@ public class ConfigLayer extends Layer {
         return false;
     }
 
+    /**
+     * Clears the current slider drag target when the mouse button is released.
+     *
+     * @param e mouse release event from the UI system
+     * @return always {@code true} because the overlay consumes the release
+     */
     @Override
     public boolean mouseReleased(MouseEvent e) {
         dragTarget = DragTarget.NONE;
         return true;
     }
 
+    /**
+     * Handles keyboard shortcuts for leaving the configuration screen.
+     *
+     * @param e key press event from the UI system
+     * @return {@code true} when the escape key is handled; otherwise
+     *         {@code false}
+     */
     @Override
     public boolean keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -193,6 +242,16 @@ public class ConfigLayer extends Layer {
         return false;
     }
 
+    /**
+     * Draws a slider track, its fill, knob, label, and current value.
+     *
+     * @param g       graphics context used for drawing
+     * @param track   slider bounds
+     * @param value   normalized slider value in the range {@code [0, 1]}
+     * @param accent  accent color used for the fill and knob
+     * @param label   slider label text
+     * @param display formatted value text shown on the right side
+     */
     private void drawSlider(Graphics2D g, Rectangle track, float value, Color accent, String label, String display) {
         g.setColor(SLIDER_GROOVE);
         g.fillRoundRect(track.x, track.y, track.width, track.height, 8, 8);
@@ -215,10 +274,25 @@ public class ConfigLayer extends Layer {
         drawValue(g, display, track);
     }
 
+    /**
+     * Draws a lowercase label above a slider.
+     *
+     * @param g    graphics context used for drawing
+     * @param text label text
+     * @param x    x-coordinate of the label anchor
+     * @param y    y-coordinate of the label anchor
+     */
     private void drawLabel(Graphics2D g, String text, int x, int y) {
         drawText(g, text.toLowerCase(), x, y, TEXT_SCALE);
     }
 
+    /**
+     * Draws the current slider value aligned to the right edge of the track.
+     *
+     * @param g     graphics context used for drawing
+     * @param text  value text to render
+     * @param track slider bounds used for alignment
+     */
     private void drawValue(Graphics2D g, String text, Rectangle track) {
         int charW = (int) (font.getCharWidth() * VALUE_SCALE);
         int textW = charW * text.length();
@@ -227,6 +301,11 @@ public class ConfigLayer extends Layer {
         drawText(g, text, x, y, VALUE_SCALE);
     }
 
+    /**
+     * Draws the back button used to return to the main menu.
+     *
+     * @param g graphics context used for drawing
+     */
     private void drawBackButton(Graphics2D g) {
         g.setColor(new Color(50, 60, 80));
         g.fillRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
@@ -244,6 +323,11 @@ public class ConfigLayer extends Layer {
         }
     }
 
+    /**
+     * Draws the start button used to launch the configured game.
+     *
+     * @param g graphics context used for drawing
+     */
     private void drawStartButton(Graphics2D g) {
         g.setColor(new Color(70, 85, 115));
         g.fillRoundRect(startButton.x, startButton.y, startButton.width, startButton.height, 12, 12);
@@ -261,6 +345,11 @@ public class ConfigLayer extends Layer {
         }
     }
 
+    /**
+     * Draws the panel title and separator line.
+     *
+     * @param g graphics context used for drawing
+     */
     private void drawTitle(Graphics2D g) {
         int titleX = panelBounds.x + 24;
         int titleY = panelBounds.y + 24;
@@ -272,6 +361,15 @@ public class ConfigLayer extends Layer {
         g.drawLine(panelBounds.x + 20, lineY, panelBounds.x + panelBounds.width - 20, lineY);
     }
 
+    /**
+     * Draws text using the configured bitmap font and scale.
+     *
+     * @param g     graphics context used for drawing
+     * @param text  text to render
+     * @param x     left anchor for the text
+     * @param y     vertical anchor for the text
+     * @param scale font scale to apply while drawing
+     */
     private void drawText(Graphics2D g, String text, int x, int y, float scale) {
         if (font == null || text == null) {
             return;
@@ -281,6 +379,9 @@ public class ConfigLayer extends Layer {
         font.draw(g, text.toLowerCase(), x, drawY, scale);
     }
 
+    /**
+     * Recomputes all bounds used by the overlay controls.
+     */
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
         int screenH = ScreenManager.getInstance().getVirtualHeight();
@@ -310,6 +411,13 @@ public class ConfigLayer extends Layer {
         backButton.setBounds(backX, backY, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT);
     }
 
+    /**
+     * Tests whether the mouse event is close enough to a slider for dragging.
+     *
+     * @param track slider bounds to test
+     * @param e     mouse event to evaluate
+     * @return {@code true} when the event falls within the slider hit box
+     */
     private boolean hitSlider(Rectangle track, MouseEvent e) {
         Rectangle hitBox = new Rectangle(
                 track.x - KNOB_SIZE / 2,
@@ -319,6 +427,12 @@ public class ConfigLayer extends Layer {
         return hitBox.contains(e.getPoint());
     }
 
+    /**
+     * Updates the active slider value based on the mouse x-position.
+     *
+     * @param track  slider bounds
+     * @param mouseX horizontal mouse position in panel coordinates
+     */
     private void updateSliderValue(Rectangle track, int mouseX) {
         float value = (mouseX - track.x) / (float) track.width;
         value = Math.clamp(value, 0.0f, 1.0f);
@@ -334,6 +448,15 @@ public class ConfigLayer extends Layer {
         }
     }
 
+    /**
+     * Converts a normalized ratio into a stepped integer value.
+     *
+     * @param ratio normalized value in the range {@code [0, 1]}
+     * @param min   minimum allowed value
+     * @param max   maximum allowed value
+     * @param step  snapping increment
+     * @return clamped and snapped integer within the configured bounds
+     */
     private int clampStepValue(float ratio, int min, int max, int step) {
         int raw = min + Math.round(ratio * (max - min));
         int clamped = Math.clamp(raw, min, max);
@@ -341,6 +464,14 @@ public class ConfigLayer extends Layer {
         return Math.clamp(snapped, min, max);
     }
 
+    /**
+     * Normalizes an integer value to the range {@code [0, 1]}.
+     *
+     * @param value current value
+     * @param min   minimum bound of the value range
+     * @param max   maximum bound of the value range
+     * @return normalized ratio, or zero when the range is degenerate
+     */
     private float normalize(int value, int min, int max) {
         if (max <= min) {
             return 0f;
@@ -348,6 +479,11 @@ public class ConfigLayer extends Layer {
         return (value - min) / (float) (max - min);
     }
 
+    /**
+     * Returns the display label for the currently selected harshness.
+     *
+     * @return light, medium, or heavy depending on the harshness index
+     */
     private String getHarshnessLabel() {
         return switch (harshnessIndex) {
             case 0 -> "light";
@@ -356,6 +492,11 @@ public class ConfigLayer extends Layer {
         };
     }
 
+    /**
+     * Converts the current harshness index into a configuration enum value.
+     *
+     * @return configured harshness level for the new game
+     */
     private GameConfig.Harshness getHarshnessValue() {
         return switch (harshnessIndex) {
             case 0 -> GameConfig.Harshness.LIGHT;
@@ -364,6 +505,9 @@ public class ConfigLayer extends Layer {
         };
     }
 
+    /**
+     * Builds a game configuration from the selected options and starts play.
+     */
     private void startGame() {
         GameConfig config = new GameConfig();
         config.setPlumberCount(plumbersCount);

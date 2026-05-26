@@ -14,6 +14,15 @@ import java.util.Set;
 
 import software.project.utils.IdGenerator;
 
+/**
+ * Holds all map elements and provides lookup, adjacency, and pathfinding
+ * helpers.
+ *
+ * <p>
+ * The map owns element placement and is responsible for generating the initial
+ * layout based on player counts.
+ * </p>
+ */
 public class GameMap {
     private final List<Element> elements = new ArrayList<>();
     private Element spawnPoint;
@@ -23,6 +32,12 @@ public class GameMap {
     private int minY = Integer.MAX_VALUE;
     private int maxY = Integer.MIN_VALUE;
 
+    /**
+     * Creates a new game map sized for the provided team sizes.
+     *
+     * @param numberOfPlumbers  number of plumbers in the match
+     * @param numberOfSaboteurs number of saboteurs in the match
+     */
     public GameMap(int numberOfPlumbers, int numberOfSaboteurs) {
         buildMapWithCisterns(Math.max(numberOfSaboteurs, numberOfPlumbers));
 
@@ -500,9 +515,6 @@ public class GameMap {
 
         for (Spring spring : springs) {
             addRandomFreePipeFrom(spring, 0.3, pipes, occupied, rng);
-        }
-        for (Cistern cistern : cisterns) {
-            addRandomFreePipeFrom(cistern, 0.3, pipes, occupied, rng);
         }
         for (Pump pump : chainPumps) {
             addRandomFreePipeFrom(pump, 0.3, pipes, occupied, rng);

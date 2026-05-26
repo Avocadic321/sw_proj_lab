@@ -1,11 +1,11 @@
 package software.project.parser.commands;
 
 import software.project.core.GameModel;
+import software.project.core.GameState;
+import software.project.map.Pump;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.map.Pump;
 import software.project.parser.ICommand;
-import software.project.core.GameState;
 
 /**
  * Repairs a broken pump.
@@ -52,12 +52,18 @@ public class RepairPumpCommand implements ICommand {
             return;
         }
 
+        if (!gameModel.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] REPAIR_PUMP NO_BIG_ACTIONS_LEFT");
+            return;
+        }
+
         if (p.getCurrentPosition() != pump) {
             System.out.println("[ERROR] REPAIR_PUMP NOT_AT_PUMP");
             return;
         }
 
         ((Plumber) p).repair(pump);
+        gameModel.getTurnManager().useBigAction();
         System.out.println("[OK] REPAIR_PUMP " + pumpId);
     }
 }

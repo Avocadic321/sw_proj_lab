@@ -22,7 +22,7 @@ public class MapRenderer {
     private final PlayerRenderer players;
     private final LeakRenderer leakRenderer;
 
-    // Animation timers
+    // Animation timers (paused automatically when update not called)
     private float gameTime = 0f;
     private float arrowTick = 0f;
 
@@ -31,7 +31,7 @@ public class MapRenderer {
     private Point moveStartCenter;
     private Point moveEndCenter;
     private float moveTimer = 0f;
-    private float moveDuration = 0.2f;
+    private float moveDuration = 0.2f; // seconds per tile
     private Player movingPlayer;
     private List<Element> movePath;
     private int moveStepIndex;
@@ -41,7 +41,7 @@ public class MapRenderer {
 
     public MapRenderer(GameModel model) {
         this.model = model;
-        this.grid = Grid.getInstance();
+        this.grid = new Grid();
         this.background = new BackgroundRenderer();
         this.elements = new ElementRenderer();
         this.players = new PlayerRenderer();
@@ -49,23 +49,34 @@ public class MapRenderer {
     }
 
     public void update(float deltaTime) {
+        // Always advance game time for other uses
         gameTime += deltaTime;
+
+        // Update leak particles
         leakRenderer.update(deltaTime, model.getGameMap().getAllPipes(), grid);
+
+        // Update fan angles for all pumps every frame
         elements.updateFanAngles(deltaTime, model.getGameMap().getAllPumps());
         elements.updateCisternItemAngles(deltaTime, model.getGameMap().getAllCisterns());
 
+        // Arrow tick pauses during movement (optional)
         if (!moving) {
             arrowTick += deltaTime;
         }
 
+        // Handle movement animation
         if (moving) {
             moveTimer += deltaTime;
             if (moveTimer >= moveDuration) {
                 moveTimer = 0f;
                 moveStepIndex++;
                 if (moveStepIndex >= movePath.size()) {
+                    // Animation finished
                     moving = false;
-                    movingPlayer.moveTo(movePath.get(movePath.size() - 1));
+                    boolean moved = movingPlayer.moveTo(movePath.get(movePath.size() - 1));
+                    if (moved) {
+                        model.getTurnManager().useSmallAction();
+                    }
                     for (Element el : movePath) el.unlockElement();
                     movePath.clear();
                     movingPlayer = null;
@@ -87,7 +98,25 @@ public class MapRenderer {
         }
         return null;
     }
+    public boolean tryPlaceItem(ICarriable item, Plumber player, Pipe pipe, Point p) {
+        if (!model.getTurnManager().canUseBigAction()) {
+            System.out.println("[ERROR] ACTION NO_BIG_ACTIONS_LEFT");
+            return false;
+        }
+        if(item instanceof Pump pump) {
+           Point gridPoints = grid.screenToGrid(p.x,p.y);
 
+            List<Point> points = model.getGameMap().getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(),pipe.getY()));
+           Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
+           if(freePoint == null || gridPoints.x != freePoint.x || gridPoints.y != freePoint.y) return false;
+        boolean response = player.placePump(pipe,pump,freePoint);
+        if(response) {
+            model.getGameMap().addElement(pump);
+            player.getInventory().removeItem(pump);
+        }
+        }
+        return false;
+    }
     public void draw(Graphics2D g) {
         GameMap map = model.getGameMap();
         grid.update(model.getGameMap());
@@ -95,6 +124,7 @@ public class MapRenderer {
         background.drawGridLines(g, grid);
         elements.drawSprings(g, map.getAllSprings(), grid);
 
+        // Draw leaks before pipes so they appear behind/under the pipes
         leakRenderer.draw(g, map.getAllPipes());
         elements.drawPipes(g, map.getAllPipes(), grid);
         elements.drawPumps(g, map.getAllPumps(), grid);
@@ -102,6 +132,7 @@ public class MapRenderer {
 
         Player current = model.getTurnManager().getCurrentPlayer();
 
+        // Draw non‑moving players
         players.drawPlayers(g, model.getSaboteursTeam(), model.getPlumbersTeam(), current, grid);
 
         if (moving && movingPlayer != null && moveStartCenter != null && moveEndCenter != null) {
@@ -109,6 +140,7 @@ public class MapRenderer {
             int x = (int) (moveStartCenter.x + (moveEndCenter.x - moveStartCenter.x) * t);
             int y = (int) (moveStartCenter.y + (moveEndCenter.y - moveStartCenter.y) * t);
             players.drawPlayerAt(g, movingPlayer, new Point(x, y), grid.getTileSize());
+            // Draw arrow over the moving player (optional)
             if (movingPlayer == current) {
                 players.drawArrow(g, new Point(x, y), (int) (grid.getTileSize() * PlayerRenderer.PLAYER_SCALE), arrowTick);
             }
@@ -127,6 +159,10 @@ public class MapRenderer {
         if (moving) return false;
         Player player = model.getTurnManager().getCurrentPlayer();
         if (player == null) return false;
+        if (!model.getTurnManager().canUseSmallAction()) {
+            System.out.println("[ERROR] MOVE NO_SMALL_ACTIONS_LEFT");
+            return false;
+        }
 
         for (ClickableElement ce : clickableElements) {
             if (ce.bounds().contains(e.getX(), e.getY())) {

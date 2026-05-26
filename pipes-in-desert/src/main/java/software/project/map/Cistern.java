@@ -27,6 +27,20 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     private Pipe storedPipe;
 
+    public void setStoredPipe(Pipe storedPipe) {
+        this.storedPipe = storedPipe;
+    }
+
+    private boolean pipeConnected;
+
+    public boolean isPipeConnected() {
+        return pipeConnected;
+    }
+
+    public void setPipeConnected(boolean pipeConnected) {
+        this.pipeConnected = pipeConnected;
+    }
+
     /**
      * Currently stored pump
      */
@@ -104,8 +118,8 @@ public class Cistern extends ActiveElement implements IConnectable {
         if (storedPipe != null)
             return;
         System.out.println("[Cistern] producePipe()");
-        Pipe pipe = new Pipe();
-        this.storedPipe = pipe;
+        this.storedPipe = new Pipe();
+
     }
 
     public Pipe pickUpPipe() {
