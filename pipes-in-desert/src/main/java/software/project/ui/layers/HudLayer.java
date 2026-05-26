@@ -22,6 +22,7 @@ import software.project.graphics.SpriteSheet;
 import software.project.graphics.SpriteSheets;
 import software.project.graphics.Sprites;
 import software.project.map.Cistern;
+import software.project.map.Directions;
 import software.project.map.Element;
 import software.project.map.Pipe;
 import software.project.map.PipeEnd;
@@ -108,6 +109,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         draggedSlot = -1;
         dragStart = null;
         currentDragPos = null;
+        draggedOrientation = PipeOrientation.VERTICAL;
         connectMode.deactivate();
         pickupElement.deactivate();
     }
@@ -115,14 +117,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     /**
      * Rotates the currently dragged pipe between vertical and horizontal orientation.
      */
-    public void rotateDraggedItem() {
-        if (dragging && draggedItem instanceof Pipe) {
-            draggedOrientation = (draggedOrientation == PipeOrientation.VERTICAL)
-                ? PipeOrientation.HORIZONTAL
-                : PipeOrientation.VERTICAL;
-            System.out.println("Pipe orientation rotated to: " + draggedOrientation);
-        }
-    }
+
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -263,32 +258,6 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     }
 
     /**
-     * Highlights grid cells where a carried pump can be placed.
-     */
-    private void drawPossiblePumpConnections(Graphics2D g, Grid grid) {
-        List<Pipe> pipes = model.getGameMap().getAllPipes();
-        for (Pipe pipe : pipes) {
-            List<Point> points = model.getGameMap()
-                                      .getAdjacentEmptyPositions(model.getGameMap().getElementAt(pipe.getX(), pipe.getY()));
-            Point freePoint = pipe.getFreeEndConnectionCoordinates(points);
-            if (freePoint == null)
-                continue;
-
-            Rectangle tileRect = grid.getCellBounds(freePoint.x, freePoint.y);
-            if (tileRect != null) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-                g2.setColor(new Color(0, 200, 0, 100));
-                g2.fillRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
-                g2.setColor(Color.GREEN);
-                g2.setStroke(new BasicStroke(2));
-                g2.drawRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
-                g2.dispose();
-            }
-        }
-    }
-
-    /**
      * Renders the dragged inventory item and its placement hints.
      */
     private void drawDragging(Graphics2D g, Grid grid) {
@@ -296,11 +265,28 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         if (dragging && draggedItem != null && currentDragPos != null && player instanceof Plumber) {
             Sprite sprite = getSpriteForItem(draggedItem);
             if (sprite != null) {
+                // Calculate rotation angle based on hovered tile direction
+                double angle = 0;
+                if (draggedItem instanceof Pipe) {
+                    Directions dir = connectMode.getDirectionForHoveredTile(currentDragPos);
+                    if (dir != null) {
+                        // If hovering over a valid tile, rotate based on direction
+                        angle = (dir == Directions.NORTH || dir == Directions.SOUTH) ? 0 : 90;
+                    } else {
+                        // Not hovering, use dragged orientation (from R key)
+                        angle = (draggedOrientation == PipeOrientation.VERTICAL) ? 0 : 90;
+                    }
+                }
+
+                // Snapping - center on hovered tile if any
+                Point drawPos = currentDragPos;
+                Rectangle snapRect = connectMode.getHoveredTileBounds(currentDragPos);
+                if (snapRect != null) {
+                    drawPos = new Point(snapRect.x + snapRect.width/2, snapRect.y + snapRect.height/2);
+                }
+
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-                sprite.drawCentered(g, currentDragPos.x, currentDragPos.y, grid.getTileSize(), 0);
-            }
-            if (draggedItem instanceof Pump) {
-                drawPossiblePumpConnections(g, grid);
+                sprite.drawCentered(g, drawPos.x, drawPos.y, grid.getTileSize(), angle);
             }
         }
     }
@@ -572,8 +558,7 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     public boolean mousePressed(MouseEvent e) {
         // Check pickup mode first
         if (pickupElement.isActive()) {
-            pickupElement.mousePressed(e);
-            return true;
+            return true; // Consume event, let mouseReleased handle pickup
         }
 
         Player player = model.getTurnManager().getCurrentPlayer();
@@ -581,20 +566,14 @@ public class HudLayer extends Layer implements PropertyChangeListener {
             for (int i = 0; i < slotBounds.length; i++) {
                 if (slotBounds[i].contains(e.getPoint())) {
                     ICarriable item = plumber.getInventory().get(i);
-                    if (item == null)
-                        continue;
+                    if (item == null) continue;
                     dragging = true;
                     draggedItem = item;
                     draggedSlot = i;
-                    dragStart = e.getPoint();
                     currentDragPos = e.getPoint();
 
                     if (item instanceof Pipe) {
-                        Element current = player.getCurrentPosition();
-                        if (current instanceof Pipe pipe) {
-                            // Start pipe placement mode
-                            connectMode.activatePipeMode();
-                        }
+                        connectMode.activatePipeMode();
                     } else if (item instanceof Pump) {
                         connectMode.activatePumpMode();
                     }
@@ -624,19 +603,23 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     public boolean mouseReleased(MouseEvent e) {
         // Handle pickup mode
         if (pickupElement.isActive()) {
-            pickupElement.mouseReleased(e);
-            return true;
+            boolean pickedUp = pickupElement.tryPickupPipe(e.getPoint());
+            pickupElement.deactivate();
+            return pickedUp;
         }
 
         // Handle placement
         if (dragging) {
             Player player = model.getTurnManager().getCurrentPlayer();
             if (player instanceof Plumber plumber) {
+                boolean success = false;
                 if (draggedItem instanceof Pipe) {
-                    connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), null);
+                    success = connectMode.tryPlacePipe(draggedItem, draggedSlot, e.getPoint(), draggedOrientation);
                 } else if (draggedItem instanceof Pump) {
-                    connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
+                    success = connectMode.tryPlacePump(draggedItem, draggedSlot, e.getPoint());
                 }
+                resetDrag();
+                return success;
             }
             resetDrag();
             return true;
