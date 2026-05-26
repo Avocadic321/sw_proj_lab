@@ -216,7 +216,7 @@ public class ElementRenderer {
             sprite.drawCentered(g, center.x, center.y, grid.getTileSize(), 0);
 
             // Draw stored items
-            boolean hasPipe = cistern.getStoredPipe() != null && cistern.isPipeConnected();
+            boolean hasPipe = cistern.getStoredPipe() != null;
             boolean hasPump = cistern.getStoredPump() != null;
             int itemCount = (hasPipe ? 1 : 0) + (hasPump ? 1 : 0);
             if (itemCount == 0) {

@@ -189,7 +189,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.8f));
                 sprite.drawCentered(g,currentDragPos.x,currentDragPos.y,grid.getTileSize(),0);
             }
-            drawPossiblePumpConnections(g, grid);
+            if(draggedItem instanceof Pump){
+                drawPossiblePumpConnections(g, grid);
+            }
         }
     }
 

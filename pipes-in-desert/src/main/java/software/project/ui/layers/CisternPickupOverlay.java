@@ -171,7 +171,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         backgroundPanel.draw(g);
 
         boolean hasPump = cistern.getStoredPump() != null;
-        boolean hasPipe = cistern.getStoredPipe() != null && cistern.isPipeConnected();
+        boolean hasPipe = cistern.getStoredPipe() != null;
 
         int centreX = ScreenManager.getInstance().getVirtualWidth() / 2;
         int centreY = ScreenManager.getInstance().getVirtualHeight() / 2;
@@ -303,7 +303,7 @@ public class CisternPickupOverlay extends Layer implements PropertyChangeListene
         int screenH = ScreenManager.getInstance().getVirtualHeight();
 
         boolean hasPump = cistern.getStoredPump() != null;
-        boolean hasPipe = cistern.getStoredPipe() != null && cistern.isPipeConnected();
+        boolean hasPipe = cistern.getStoredPipe() != null;
         int itemCount = (hasPump ? 1 : 0) + (hasPipe ? 1 : 0);
 
         if (itemCount == 0) {
