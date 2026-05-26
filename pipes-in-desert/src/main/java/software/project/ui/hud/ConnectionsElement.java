@@ -280,4 +280,11 @@ public class ConnectionsElement extends HudElement {
     public void onResolutionChanged(int newWidth, int newHeight) {}
 
     private record HighlightTile(Rectangle bounds, Point mapPos, Directions direction) {}
+
+    private PipeOrientation draggedOrientation = PipeOrientation.VERTICAL;
+
+    public void setDraggedOrientation(PipeOrientation orientation) {
+        this.draggedOrientation = orientation;
+        if (active) refreshPipeHighlights();
+    }
 }
