@@ -13,11 +13,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LeakRenderer {
     // ========== LEAK EFFECT CONFIGURATION ==========
-    private static final int NOZZLE_WIDTH = 48;
+    private static final int NOZZLE_WIDTH = 40;
     private static final int PARTICLE_SPACING = 3;
-    private static final float WATER_VELOCITY = 60f;
+    private static final float WATER_VELOCITY = 50f;
     private static final float SPREAD_ANGLE = 0.5f;
-    private static final int PARTICLES_PER_SOURCE = 4;
+    private static final int PARTICLES_PER_SOURCE = 2;
     private static final float SPAWN_RATE = 1.0f;
     // ================================================
 
