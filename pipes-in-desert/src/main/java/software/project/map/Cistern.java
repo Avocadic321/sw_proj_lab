@@ -4,9 +4,11 @@ import software.project.core.GameConfig;
 import software.project.map.interfaces.IConnectable;
 import software.project.utils.Debug;
 
+import java.awt.Point;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -27,24 +29,15 @@ public class Cistern extends ActiveElement implements IConnectable {
      */
     private Pipe storedPipe;
 
-    public void setStoredPipe(Pipe storedPipe) {
-        this.storedPipe = storedPipe;
-    }
-
-    private boolean pipeConnected;
-
-    public boolean isPipeConnected() {
-        return pipeConnected;
-    }
-
-    public void setPipeConnected(boolean pipeConnected) {
-        this.pipeConnected = pipeConnected;
-    }
-
     /**
      * Currently stored pump
      */
     private Pump storedPump;
+
+    /**
+     * Flag to enable/disable auto-placement of connected pipes
+     */
+    private boolean autoPlaceConnectedPipes = true;
 
     public Cistern(int x, int y) {
         this(null, x, y, GameConfig.CISTERN_DEFAULT_CAPACITY);
@@ -91,7 +84,7 @@ public class Cistern extends ActiveElement implements IConnectable {
         pendingFlowingWater = 0;
         return lost;
     }
-    
+
     /**
      * Indicates whether the cistern is full.
      *
@@ -109,33 +102,79 @@ public class Cistern extends ActiveElement implements IConnectable {
         return storedPump;
     }
 
+    // ========== Flag for auto-placement ==========
+    public boolean isAutoPlaceConnectedPipes() {
+        return autoPlaceConnectedPipes;
+    }
+
+    public void setAutoPlaceConnectedPipes(boolean autoPlaceConnectedPipes) {
+        this.autoPlaceConnectedPipes = autoPlaceConnectedPipes;
+    }
+
+    // ========== THREE PRODUCTION METHODS ==========
+
     /**
-     * Produces a new pipe component.
-     *
-     * @return new pipe instance
+     * 1. Produces a pump - ALWAYS goes to storage (never auto-placed)
+     */
+    public void producePump() {
+        System.out.println("[Cistern] producePump() - stored in cistern");
+        this.storedPump = new Pump();
+    }
+
+    /**
+     * 2. Produces a pipe - ALWAYS goes to storage (never auto-placed)
      */
     public void producePipe() {
-        if (storedPipe != null)
-            return;
-        System.out.println("[Cistern] producePipe()");
+        if (storedPipe != null) return;
+        System.out.println("[Cistern] producePipe() - stored in cistern");
         this.storedPipe = new Pipe();
+    }
 
+    /**
+     * 3. Produces a pipe and PLACES it connected on the map (auto-placed)
+     * If no space or flag is false, falls back to storage
+     *
+     * @param map the game map
+     */
+    public void produceConnectedPipe(GameMap map) {
+        // Check if auto-placement is enabled
+        if (!autoPlaceConnectedPipes) {
+            producePipe(); // fallback to storage
+            return;
+        }
+
+        // Find empty adjacent positions
+        List<Point> emptyAdjacent = map.getAdjacentEmptyPositions(this);
+        if (emptyAdjacent.isEmpty()) {
+            System.out.println("[Cistern] No empty adjacent position for connected pipe - storing instead");
+            producePipe(); // fallback to storage
+            return;
+        }
+
+        // Pick a random empty position
+        Random random = new Random();
+        Point targetPos = emptyAdjacent.get(random.nextInt(emptyAdjacent.size()));
+
+        // Create the pipe
+        Pipe newPipe = new Pipe(targetPos.x, targetPos.y);
+
+        // Set orientation based on direction to cistern
+        Directions dir = map.getDirection(this, targetPos);
+        if (dir == Directions.NORTH || dir == Directions.SOUTH) {
+            newPipe.setOrientation(PipeOrientation.VERTICAL);
+        } else {
+            newPipe.setOrientation(PipeOrientation.HORIZONTAL);
+        }
+
+        // Connect and add to map
+        newPipe.onConnect(map);
+        System.out.println("[Cistern] Connected pipe placed at (" + targetPos.x + ", " + targetPos.y + ")");
     }
 
     public Pipe pickUpPipe() {
         Pipe pipe = storedPipe;
         storedPipe = null;
         return pipe;
-    }
-
-    /**
-     * Produces a new pump component.
-     *
-     * @return new pump instance
-     */
-    public void producePump() {
-        System.out.println("[Cistern] producePump()");
-        this.storedPump = new Pump();
     }
 
     public Pump pickUpPump() {
@@ -220,6 +259,4 @@ public class Cistern extends ActiveElement implements IConnectable {
     public Set<Directions> getAvailableDirections() {
         return Collections.unmodifiableSet(connectedDirections);
     }
-
-
 }

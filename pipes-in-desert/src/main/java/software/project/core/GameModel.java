@@ -319,18 +319,24 @@ public class GameModel {
      */
     public void produceRandomComponent() {
         List<Cistern> cisterns = gameMap.getAllCisterns();
-        if (cisterns.isEmpty()) {
-            return;
-        }
+        if (cisterns.isEmpty()) return;
 
         Cistern c = cisterns.get(random.nextInt(cisterns.size()));
-        boolean producePipe = random.nextBoolean();
-        if (producePipe && c.getStoredPipe() == null) {
-             c.producePipe();
-            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
-        } else if (!producePipe && c.getStoredPump() == null) {
-            c.producePump();
-            System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
+        int type = random.nextInt(3); // 0, 1, or 2
+
+        switch (type) {
+            case 0 -> {
+                c.producePump();
+                System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
+            }
+            case 1 -> {
+                c.producePipe();
+                System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
+            }
+            case 2 -> {
+                c.produceConnectedPipe(gameMap);
+                System.out.printf("[EVENT] COMPONENT_PRODUCED %s CONNECTED_PIPE%n", c.getId());
+            }
         }
     }
 
