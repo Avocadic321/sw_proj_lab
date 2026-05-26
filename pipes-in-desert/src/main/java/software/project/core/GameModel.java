@@ -325,29 +325,12 @@ public class GameModel {
 
         Cistern c = cisterns.get(random.nextInt(cisterns.size()));
         boolean producePipe = random.nextBoolean();
-        boolean connectPipe = random.nextBoolean();
-        Pipe producedPipe = null;
         if (producePipe && c.getStoredPipe() == null) {
-            producedPipe =  c.producePipe(connectPipe);
+             c.producePipe();
             System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", c.getId());
         } else if (!producePipe && c.getStoredPump() == null) {
             c.producePump();
             System.out.printf("[EVENT] COMPONENT_PRODUCED %s PUMP%n", c.getId());
-        }
-
-
-        if(producedPipe != null && connectPipe) {
-           List<Point> points =  getGameMap().getAdjacentEmptyPositions(c);
-           if(points.isEmpty()) {
-               // no space
-               c.setPipeConnected(false);
-               c.setStoredPipe(null);
-               return;
-           };
-           int index = random.nextInt(points.size());
-           Point selectedPoint = points.get(index);
-           producedPipe.setPosition(selectedPoint.x,selectedPoint.y);
-           getGameMap().addElement(producedPipe);
         }
     }
 
@@ -408,7 +391,7 @@ public class GameModel {
             return;
         }
         if (type.equalsIgnoreCase("PIPE")) {
-            cistern.producePipe(false);
+            cistern.producePipe();
             System.out.printf("[EVENT] COMPONENT_PRODUCED %s PIPE%n", cisternId);
         } else if (type.equalsIgnoreCase("PUMP")) {
             cistern.producePump();

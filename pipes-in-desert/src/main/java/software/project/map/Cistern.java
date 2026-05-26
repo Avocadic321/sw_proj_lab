@@ -111,19 +111,11 @@ public class Cistern extends ActiveElement implements IConnectable {
      *
      * @return new pipe instance
      */
-    public Pipe producePipe(boolean pipeConnected) {
+    public void producePipe() {
         if (storedPipe != null)
-            return null;
+            return;
         System.out.println("[Cistern] producePipe()");
-        Pipe pipe = new Pipe();
-        this.connect(pipe.getEnd1());
-        this.storedPipe = pipe;
-        this.pipeConnected = pipeConnected;
-        var end = this.storedPipe.resolveEnd(pipe.getEnd1());
-        if(end != null) {
-            end.setInput(true);
-        }
-        return pipe;
+        this.storedPipe = new Pipe();
 
     }
 
