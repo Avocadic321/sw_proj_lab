@@ -14,13 +14,8 @@ import software.project.utils.Helper;
  * Pipe segment that connects two pipe ends and can carry water.
  */
 public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICarriable {
-    /**
-     * First pipe end.
-     */
+
     private final PipeEnd end1;
-    /**
-     * Second pipe end.
-     */
     private final PipeEnd end2;
 
     public static class DirectionEnd {
@@ -32,167 +27,28 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
             this.isInput = isInput;
         }
 
-        public PipeEnd getEnd() {
-            return end;
-        }
-
-        public void setEnd(PipeEnd end) {
-            this.end = end;
-        }
-
-        public boolean isInput() {
-            return isInput;
-        }
-
-        public void setInput(boolean input) {
-            isInput = input;
-        }
+        public PipeEnd getEnd() { return end; }
+        public void setEnd(PipeEnd end) { this.end = end; }
+        public boolean isInput() { return isInput; }
+        public void setInput(boolean input) { isInput = input; }
     }
-    /**
-     * Maximum water capacity.
-     */
 
-    private  DirectionEnd directionEnd1;
+    private DirectionEnd directionEnd1;
     private DirectionEnd directionEnd2;
 
-    public DirectionEnd getDirectionEnd1() {
-        return directionEnd1;
-    }
-    public boolean isMeetingAtSamePipe() {
-        return directionEnd2.isInput && directionEnd1.isInput;
-    }
-
-    public DirectionEnd resolveInputEnd() {
-        if(directionEnd1.isInput()) {
-            return directionEnd1;
-        } else if(directionEnd2.isInput()) {
-            return directionEnd2;
-        }
-        return null;
-    }
-    public DirectionEnd resolveOutputEnd() {
-        if(!directionEnd1.isInput()) {
-            return directionEnd1;
-        } else if(!directionEnd2.isInput()) {
-            return directionEnd2;
-        }
-        return null;
-    }
-
-    public DirectionEnd resolveEnd(PipeEnd end) {
-        if(end == directionEnd1.getEnd()) {
-            return directionEnd1;
-        } else if(end == directionEnd2.getEnd()) {
-            return directionEnd2;
-        }
-        return null;
-    }
-    public void setDirectionEnd1(DirectionEnd directionEnd1) {
-        this.directionEnd1 = directionEnd1;
-    }
-
-    public DirectionEnd getDirectionEnd2() {
-        return directionEnd2;
-    }
-
-    public void setDirectionEnd2(DirectionEnd directionEnd2) {
-        this.directionEnd2 = directionEnd2;
-    }
-
     private final int capacity;
-    /**
-     * Current water amount.
-     */
     private int currentWater;
-
-    /**
-     * Whether the pipe is broken.
-     */
     private boolean isBroken;
-
-    // check if the output of next pump is me then something is wrong
     private boolean isConflict;
-
-    public boolean isConflict() {
-        return isConflict;
-    }
-
-    public void setConflict(boolean conflict) {
-        isConflict = conflict;
-    }
-
     private int pendingFlowingWater;
     private int currentFlowingWater;
 
-    public int getCurrentFlowingWater() {
-        return currentFlowingWater;
-    }
+    // Orientation (only VERTICAL / HORIZONTAL for now)
+    private PipeOrientation orientation;
 
-    public void setCurrentFlowingWater(int currentFlowingWater) {
-        this.currentFlowingWater = currentFlowingWater;
-    }
-
-    @Override
-    public int moveWater() {
-        if(isBroken) return 0;
-        return currentFlowingWater;
-    }
-
-    public PipeEnd getFreeEnd() {
-        if(end1.isFree()) return end1;
-        if(end2.isFree()) return end2;
-        return null;
-    }
-    public boolean isVertical() {
-        // Check first connected end
-        if (end1 != null && !end1.isFree()) {
-            return end1.connectedTo.getX() == getX();
-        } else if (end2 != null && !end2.isFree()) {
-            return end2.connectedTo.getX() == getX();
-        }
-        // default horizontal if no connections? or return false
-        return false;
-    }
-    public Point getFreeEndConnectionCoordinates(List<Point> adjacentFreePoints) {
-        // undefined usage
-        if(end1.isFree() && end2.isFree()) return null;
-        // Atleast one end needs to be connected
-        // points can be out of bound so check
-        int x = getX();
-        int y = getY();
-        boolean isVert = isVertical();
-        return adjacentFreePoints.stream().filter(p -> !isVert ? p.y == y : p.x == x).findFirst().orElse(null);
-
-
-    }
-    @Override
-    public void receiveWater(int water) {
-        pendingFlowingWater += water;
-    }
-
-    @Override
-    public int commit() {
-        int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
-        ElementWaterState state = Helper.waterToBePumpedOut(
-                pendingFlowingWater, maxTransfer, currentWater, capacity, this::breakElement
-        );
-        currentWater = state.currentlyStoredWater();
-        int waterAmount = state.pumpedWater();
-        if (isBroken || end1.isFree() || end2.isFree()) {
-            int lost = waterAmount + currentWater;
-            currentWater = 0;
-            pendingFlowingWater = 0;
-            currentFlowingWater = waterAmount;
-            return lost;
-        }
-
-
-        currentFlowingWater = waterAmount;
-        pendingFlowingWater = 0;
-         return 0;
-    }
-
-
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
     public Pipe() {
         this(null, -1, -1, GameConfig.PIPE_DEFAULT_CAPACITY);
     }
@@ -222,16 +78,41 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
         this.end2.pipe = this;
         this.directionEnd1 = new DirectionEnd(this.end1, false);
         this.directionEnd2 = new DirectionEnd(this.end2, false);
+        this.orientation = PipeOrientation.VERTICAL; // default
     }
 
-    public PipeEnd getEnd1() {
-        return end1;
+    // ------------------------------------------------------------------------
+    // Getters / Setters for ends and orientation
+    // ------------------------------------------------------------------------
+    public PipeEnd getEnd1() { return end1; }
+    public PipeEnd getEnd2() { return end2; }
+
+    public DirectionEnd getDirectionEnd1() { return directionEnd1; }
+    public void setDirectionEnd1(DirectionEnd directionEnd1) { this.directionEnd1 = directionEnd1; }
+
+    public DirectionEnd getDirectionEnd2() { return directionEnd2; }
+    public void setDirectionEnd2(DirectionEnd directionEnd2) { this.directionEnd2 = directionEnd2; }
+
+    public PipeOrientation getOrientation() { return orientation; }
+    public void setOrientation(PipeOrientation orientation) { this.orientation = orientation; }
+
+    public Directions getOpenDirection1() { return orientation.getDirection1(); }
+    public Directions getOpenDirection2() { return orientation.getDirection2(); }
+
+    // ------------------------------------------------------------------------
+    // Orientation utilities
+    // ------------------------------------------------------------------------
+    public void rotateClockwise() {
+        this.orientation = orientation.rotateClockwise();
     }
 
-    public PipeEnd getEnd2() {
-        return end2;
+    public void rotateCounterClockwise() {
+        this.orientation = orientation.rotateCounterClockwise();
     }
 
+    // ------------------------------------------------------------------------
+    // Connection helpers
+    // ------------------------------------------------------------------------
     @Override
     public void connect(PipeEnd end) {
         if (!connections.contains(end)) {
@@ -248,11 +129,7 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
     }
 
     public void connectBothEnds(ActiveElement end1Target, ActiveElement end2Target) {
-        // At least one target must be non‑null
-        if (end1Target == null && end2Target == null) {
-            return;
-        }
-        // Reject connecting the same element to both ends
+        if (end1Target == null && end2Target == null) return;
         if (end1Target != null && end1Target == end2Target) {
             System.out.println("[ERROR] PIPE SAME_ENDS_TARGET");
             return;
@@ -264,49 +141,68 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
             end2.connectsTo(end2Target);
         }
     }
-    
-    /**
-     * Breaks the pipe, causing leakage.
-     */
+
+    public PipeEnd getFreeEnd() {
+        if (end1.isFree()) return end1;
+        if (end2.isFree()) return end2;
+        return null;
+    }
+
+    public boolean hasFreeEnd() {
+        return end1.isFree() || end2.isFree();
+    }
+
+    // ------------------------------------------------------------------------
+    // Water flow methods
+    // ------------------------------------------------------------------------
+    @Override
+    public int moveWater() {
+        if (isBroken) return 0;
+        return currentFlowingWater;
+    }
+
+    @Override
+    public void receiveWater(int water) {
+        pendingFlowingWater += water;
+    }
+
+    @Override
+    public int commit() {
+        int maxTransfer = GameConfig.PIPE_MAX_FLOW_PER_TICK;
+        ElementWaterState state = Helper.waterToBePumpedOut(
+            pendingFlowingWater, maxTransfer, currentWater, capacity, this::breakElement);
+        currentWater = state.currentlyStoredWater();
+        int waterAmount = state.pumpedWater();
+        if (isBroken || end1.isFree() || end2.isFree()) {
+            int lost = waterAmount + currentWater;
+            currentWater = 0;
+            pendingFlowingWater = 0;
+            currentFlowingWater = waterAmount;
+            return lost;
+        }
+        currentFlowingWater = waterAmount;
+        pendingFlowingWater = 0;
+        return 0;
+    }
+
+    // ------------------------------------------------------------------------
+    // Break / Repair
+    // ------------------------------------------------------------------------
     @Override
     public void breakElement() {
         this.isBroken = true;
         currentFlowingWater = 0;
     }
 
-    /**
-     * Indicates whether the pipe is broken.
-     *
-     * @return true if broken
-     */
     @Override
-    public boolean isBroken() {
-        return this.isBroken;
-    }
+    public boolean isBroken() { return isBroken; }
 
-    /**
-     * Repairs the pipe.
-     */
     @Override
-    public void repair() {
-        this.isBroken = false;
-    }
+    public void repair() { this.isBroken = false; }
 
-    /**
-     * Checks whether either end is free.
-     *
-     * @return true if any end is free
-     */
-    public boolean hasFreeEnd() {
-        return end1.isFree() || end2.isFree();
-    }
-
-    /**
-     * Splits the pipe into two segments around a pump.
-     *
-     * @param carriedPump pump inserted into the split
-     * @return array containing left and right pipe segments
-     */
+    // ------------------------------------------------------------------------
+    // Pipe splitting (for pump insertion)
+    // ------------------------------------------------------------------------
     public Pipe[] splitForPump(Pump carriedPump) {
         Pipe leftPipe = new Pipe(getId() == null ? "PIPE_LEFT" : getId() + "_LEFT");
         Pipe rightPipe = new Pipe(getId() == null ? "PIPE_RIGHT" : getId() + "_RIGHT");
@@ -327,11 +223,6 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
         return new Pipe[]{leftPipe, rightPipe};
     }
 
-    /**
-     * Returns the pump connected to end2 if present.
-     *
-     * @return next pump or null
-     */
     public Pump getNextPump() {
         if (end2.connectedTo instanceof Pump) {
             return (Pump) end2.connectedTo;
@@ -339,25 +230,74 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
         return null;
     }
 
-    /**
-     * Pipes allow only one occupant at a time.
-     *
-     * @return true if unoccupied
-     */
+    // ------------------------------------------------------------------------
+    // Occupancy
+    // ------------------------------------------------------------------------
     @Override
     public boolean canOccupy() {
-        boolean can = occupants.isEmpty();
-        return can;
+        return occupants.isEmpty();
     }
 
-    public int getCapacity() {
-        return capacity;
+    // ------------------------------------------------------------------------
+    // Direction helpers (used by water simulator)
+    // ------------------------------------------------------------------------
+    public boolean isMeetingAtSamePipe() {
+        return directionEnd2.isInput && directionEnd1.isInput;
     }
 
-    public int getCurrentWater() {
-        return currentWater;
+    public DirectionEnd resolveInputEnd() {
+        if (directionEnd1.isInput()) return directionEnd1;
+        if (directionEnd2.isInput()) return directionEnd2;
+        return null;
     }
 
+    public DirectionEnd resolveOutputEnd() {
+        if (!directionEnd1.isInput()) return directionEnd1;
+        if (!directionEnd2.isInput()) return directionEnd2;
+        return null;
+    }
+
+    public DirectionEnd resolveEnd(PipeEnd end) {
+        if (end == directionEnd1.getEnd()) return directionEnd1;
+        if (end == directionEnd2.getEnd()) return directionEnd2;
+        return null;
+    }
+
+    public boolean isConflict() { return isConflict; }
+    public void setConflict(boolean conflict) { isConflict = conflict; }
+
+    public int getCurrentFlowingWater() { return currentFlowingWater; }
+    public void setCurrentFlowingWater(int currentFlowingWater) { this.currentFlowingWater = currentFlowingWater; }
+
+    public int getCapacity() { return capacity; }
+    public int getCurrentWater() { return currentWater; }
+
+    // ------------------------------------------------------------------------
+    // Legacy placement helper (used by UI)
+    // ------------------------------------------------------------------------
+    public boolean isVertical() {
+        if (end1 != null && !end1.isFree()) {
+            return end1.connectedTo.getX() == getX();
+        } else if (end2 != null && !end2.isFree()) {
+            return end2.connectedTo.getX() == getX();
+        }
+        return false;
+    }
+
+    public Point getFreeEndConnectionCoordinates(List<Point> adjacentFreePoints) {
+        if (end1.isFree() && end2.isFree()) return null;
+        int x = getX();
+        int y = getY();
+        boolean isVert = isVertical();
+        return adjacentFreePoints.stream()
+                                 .filter(p -> !isVert ? p.y == y : p.x == x)
+                                 .findFirst()
+                                 .orElse(null);
+    }
+
+    // ------------------------------------------------------------------------
+    // ToString
+    // ------------------------------------------------------------------------
     @Override
     public String toString() {
         String end1State = end1 == null || end1.connectedTo == null ? "FREE" : end1.connectedTo.getId();
@@ -365,8 +305,9 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
         String occupant = occupants.isEmpty() ? "NONE" : occupants.getFirst().getId();
 
         return String.format(
-            "[STATE] PIPE %s broken=%s currentWater=%d end1=%s end2=%s occupant=%s",
+            "[STATE] PIPE %s orientation=%s broken=%s currentWater=%d end1=%s end2=%s occupant=%s",
             getId(),
+            orientation,
             isBroken,
             currentWater,
             end1State,
