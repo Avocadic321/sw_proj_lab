@@ -19,6 +19,7 @@ public enum Sprites {
 
     PAPER_BANNER("paper_banner", "/ui/banners/paper_banner.png"),
     TIMER_BANNER("timer_banner", "/ui/banners/timer_banner.png"),
+    SCOREBOARD("scoreboard", "/ui/banners/scoreboard.png"),
 
     SIMPLE_PANEL("simple_panel", "/ui/panels/simple_panel.png");
 

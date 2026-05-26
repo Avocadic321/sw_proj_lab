@@ -1,7 +1,6 @@
 package software.project.ui.layers;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -13,9 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import software.project.core.GameModel;
-import software.project.graphics.BitmapFont;
-import software.project.graphics.BitmapFonts;
-import software.project.graphics.ResourceManager;
 import software.project.graphics.Sprite;
 import software.project.graphics.SpriteManager;
 import software.project.graphics.SpriteSheet;
@@ -29,26 +25,12 @@ import software.project.map.Pump;
 import software.project.map.interfaces.ICarriable;
 import software.project.models.Player;
 import software.project.models.Plumber;
-import software.project.ui.ScreenManager;
-import software.project.ui.components.Banner;
 import software.project.ui.hud.*;
 import software.project.ui.renderer.Grid;
 import software.project.utils.Constants;
 
 public class HudLayer extends Layer implements PropertyChangeListener {
-    private static final int MARGIN = 15;
-    private static final int SCORE_GAP = 10;
-    private static final float TIMER_BANNER_SCALE = 1f;
-    private static final float SCORE_BANNER_SCALE = 1f;
-    private static final float TIMER_TEXT_SCALE = 1.1f;
-    private static final float SCORE_TEXT_SCALE = 1.1f;
-    private static final int SCORE_OUTLINE_PADDING = 4;
-    private static final int SCORE_OUTLINE_RADIUS = 10;
-
     private final GameModel model;
-    private final Banner timerBanner;
-    private final Banner plumberScoreBanner;
-    private final Banner saboteurScoreBanner;
     private final Sprite pumpSprite;
     private final Sprite pipeSprite;
 
@@ -59,8 +41,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
     private final ActionHintElement actionHintElement;
     private final ActionStatusElement actionStatusElement;
     private final InventoryElement inventoryElement;
+    private final TimerElement timerElement;
 
-    // Drag state (directly in HudLayer)
+    // Drag state
     private boolean dragging = false;
     private ICarriable draggedItem = null;
     private int draggedSlot = -1;
@@ -72,11 +55,6 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         this.model = model;
 
         SpriteManager sm = SpriteManager.getInstance();
-        Sprite timerSprite = sm.getSprite(Sprites.TIMER_BANNER);
-        Sprite scoreSprite = sm.getSprite(Sprites.PAPER_BANNER);
-        timerBanner = new Banner(timerSprite, TIMER_BANNER_SCALE, BitmapFonts.FONT_MAIN, "T0000", TIMER_TEXT_SCALE);
-        plumberScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "P0/XXX", SCORE_TEXT_SCALE);
-        saboteurScoreBanner = new Banner(scoreSprite, SCORE_BANNER_SCALE, BitmapFonts.FONT_MONO, "S0/XXX", SCORE_TEXT_SCALE);
         pumpSprite = sm.getSprite(Sprites.PUMP_STATIC);
         SpriteSheet pipeSheet = sm.getSpriteSheet(SpriteSheets.PIPE_NORMAL);
         pipeSprite = pipeSheet != null ? pipeSheet.getSprite(0) : null;
@@ -88,9 +66,9 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         this.actionHintElement = new ActionHintElement(model);
         this.actionStatusElement = new ActionStatusElement(model);
         this.inventoryElement = new InventoryElement(model, this::onDragStart);
+        this.timerElement = new TimerElement(model);
 
-        elements.add(new TimerElement(model));
-        elements.add(new ScoreElement(model));
+        elements.add(timerElement);
         elements.add(inventoryElement);
         elements.add(connectMode);
         elements.add(pickupElement);
@@ -98,7 +76,6 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         elements.add(actionStatusElement);
 
         model.getTurnManager().addPropertyChangeListener(this);
-        recomputeLayout();
     }
 
     // ========== Callbacks ==========
@@ -180,26 +157,12 @@ public class HudLayer extends Layer implements PropertyChangeListener {
 
     @Override
     public void update(float deltaTime) {
-        int timeLeft = model.getTurnManager().getTimeLeft();
-        timerBanner.setText(String.format("T%02d%02d", timeLeft/60, timeLeft%60));
-        int plumberScore = model.getPlumbersTeam() == null ? 0 : model.getPlumbersTeam().getScore();
-        int saboteurScore = model.getSaboteursTeam() == null ? 0 : model.getSaboteursTeam().getScore();
-        int goal = model.getConfig().getGoalScore();
-        plumberScoreBanner.setText("P" + plumberScore + "/" + goal);
-        saboteurScoreBanner.setText("S" + saboteurScore + "/" + goal);
-
         for (HudElement e : elements) e.update(deltaTime);
         Grid.getInstance().update(model.getGameMap());
     }
 
     @Override
     public void render(Graphics2D g) {
-        timerBanner.draw(g);
-        drawScoreBackdrop(g, plumberScoreBanner, new Color(70, 130, 220));
-        drawScoreBackdrop(g, saboteurScoreBanner, new Color(200, 70, 70));
-        plumberScoreBanner.draw(g);
-        saboteurScoreBanner.draw(g);
-
         for (HudElement e : elements) e.draw(g);
         drawDragging(g);
     }
@@ -229,32 +192,8 @@ public class HudLayer extends Layer implements PropertyChangeListener {
         sprite.drawCentered(g, drawPos.x, drawPos.y, Grid.getInstance().getTileSize(), angle);
     }
 
-    private void drawScoreBackdrop(Graphics2D g, Banner banner, Color color) {
-        int x = banner.getX() - SCORE_OUTLINE_PADDING;
-        int y = banner.getY() - SCORE_OUTLINE_PADDING;
-        int w = banner.getWidth() + 2 * SCORE_OUTLINE_PADDING;
-        int h = banner.getHeight() + 2 * SCORE_OUTLINE_PADDING;
-        g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 70));
-        g.fillRoundRect(x, y, w, h, SCORE_OUTLINE_RADIUS, SCORE_OUTLINE_RADIUS);
-        g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 200));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(x, y, w, h, SCORE_OUTLINE_RADIUS, SCORE_OUTLINE_RADIUS);
-    }
-
-    private void recomputeLayout() {
-        int vw = ScreenManager.getInstance().getVirtualWidth();
-        int vh = ScreenManager.getInstance().getVirtualHeight();
-        timerBanner.setPosition(MARGIN, MARGIN);
-        int scoreW = plumberScoreBanner.getWidth();
-        int scoreH = plumberScoreBanner.getHeight();
-        int scoreX = vw - MARGIN - scoreW;
-        plumberScoreBanner.setPosition(scoreX, MARGIN);
-        saboteurScoreBanner.setPosition(scoreX, MARGIN + scoreH + SCORE_GAP);
-    }
-
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
-        recomputeLayout();
         for (HudElement e : elements) e.onResolutionChanged(newWidth, newHeight);
     }
 

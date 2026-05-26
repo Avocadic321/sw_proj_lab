@@ -11,8 +11,12 @@ import software.project.core.GameConfig;
 import software.project.graphics.BitmapFont;
 import software.project.graphics.BitmapFonts;
 import software.project.graphics.ResourceManager;
+import software.project.graphics.SpriteManager;
+import software.project.graphics.SpriteSheet;
+import software.project.graphics.SpriteSheets;
 import software.project.ui.GameApplication;
 import software.project.ui.ScreenManager;
+import software.project.ui.components.GeneralButton;
 
 /**
  * Configuration overlay for choosing player counts and match settings before
@@ -29,11 +33,6 @@ public class ConfigLayer extends Layer {
     private static final int SLIDER_GAP = 70;
 
     private static final int LABEL_OFFSET_Y = -28;
-    private static final int BACK_BUTTON_HEIGHT = 40;
-    private static final int BACK_BUTTON_WIDTH = 120;
-    private static final int START_BUTTON_HEIGHT = 46;
-    private static final int START_BUTTON_WIDTH = 160;
-
     private static final float TEXT_SCALE = 1.0f;
     private static final float VALUE_SCALE = 0.9f;
     private static final float TITLE_SCALE = 1.25f;
@@ -58,6 +57,7 @@ public class ConfigLayer extends Layer {
 
     private final GameApplication app;
     private final BitmapFont font;
+    private final SpriteSheet buttonSheet;
 
     private final Rectangle panelBounds = new Rectangle();
     private final Rectangle plumbersTrack = new Rectangle();
@@ -65,8 +65,9 @@ public class ConfigLayer extends Layer {
     private final Rectangle goalTrack = new Rectangle();
     private final Rectangle turnTrack = new Rectangle();
     private final Rectangle harshnessTrack = new Rectangle();
-    private final Rectangle startButton = new Rectangle();
-    private final Rectangle backButton = new Rectangle();
+
+    private GeneralButton startButton;
+    private GeneralButton backButton;
 
     private DragTarget dragTarget = DragTarget.NONE;
 
@@ -79,19 +80,23 @@ public class ConfigLayer extends Layer {
     /**
      * Creates the configuration layer for the provided application.
      *
-     * @param app game application instance used to launch or leave the setup
-     *            screen
+     * @param app game application instance used to launch or leave the setup screen
      */
     public ConfigLayer(GameApplication app) {
         super(true, true);
         this.app = app;
         this.font = ResourceManager.getInstance().getFont(BitmapFonts.FONT_MAIN);
+        this.buttonSheet = SpriteManager.getInstance().getSpriteSheet(SpriteSheets.GENERAL_BUTTONS);
+
+        if (buttonSheet == null) {
+            throw new IllegalStateException("GENERAL_BUTTON sheet missing");
+        }
+
         recomputeLayout();
     }
 
     /**
-     * Recomputes the panel and control layout when the virtual resolution
-     * changes.
+     * Recomputes the panel and control layout when the virtual resolution changes.
      *
      * @param newWidth  new virtual width
      * @param newHeight new virtual height
@@ -99,6 +104,36 @@ public class ConfigLayer extends Layer {
     @Override
     public void onResolutionChanged(int newWidth, int newHeight) {
         recomputeLayout();
+    }
+
+    /**
+     * Dynamically creates or updates buttons based on current layout.
+     * Both buttons use the same fixed size (140px width, 46px height).
+     */
+    private void createButtons() {
+        int centerX = panelBounds.x + panelBounds.width / 2;
+        int buttonGap = 20;
+        int buttonY = harshnessTrack.y + 80;
+        int buttonWidth = 140;
+        int buttonHeight = 46;
+
+        // Create both buttons with same dimensions
+        startButton = new GeneralButton(buttonSheet, 0, 0, 0, "START", 1.0f, 1.0f);
+        backButton = new GeneralButton(buttonSheet, 0, 0, 0, "BACK", 1.0f, 1.0f);
+
+        // Force same size for both buttons
+        startButton.setSize(buttonWidth, buttonHeight);
+        backButton.setSize(buttonWidth, buttonHeight);
+
+        // Position buttons side by side
+        int totalWidth = buttonWidth + buttonGap + buttonWidth;
+        int startX = centerX - totalWidth / 2;
+
+        startButton.setPosition(startX, buttonY);
+        backButton.setPosition(startX + buttonWidth + buttonGap, buttonY);
+
+        startButton.setAction(this::startGame);
+        backButton.setAction(() -> app.replaceLayer(new MainMenuLayer(app)));
     }
 
     /**
@@ -115,49 +150,45 @@ public class ConfigLayer extends Layer {
 
         g.setColor(PANEL_SHADOW);
         g.fillRoundRect(panelBounds.x + 6, panelBounds.y + 8, panelBounds.width, panelBounds.height,
-                PANEL_RADIUS, PANEL_RADIUS);
+                        PANEL_RADIUS, PANEL_RADIUS);
         g.setColor(PANEL_FILL);
         g.fillRoundRect(panelBounds.x, panelBounds.y, panelBounds.width, panelBounds.height, PANEL_RADIUS,
-                PANEL_RADIUS);
+                        PANEL_RADIUS);
         g.setColor(PANEL_STROKE);
         g.setStroke(new BasicStroke(2f));
         g.drawRoundRect(panelBounds.x, panelBounds.y, panelBounds.width, panelBounds.height, PANEL_RADIUS,
-                PANEL_RADIUS);
+                        PANEL_RADIUS);
 
         drawTitle(g);
 
         drawSlider(g, plumbersTrack, normalize(plumbersCount, MIN_TEAM, MAX_TEAM), PLUMBER_COLOR, "PLUMBERS",
-                Integer.toString(plumbersCount));
+                   Integer.toString(plumbersCount));
         drawSlider(g, saboteursTrack, normalize(saboteursCount, MIN_TEAM, MAX_TEAM), SABOTEUR_COLOR, "SABOTEURS",
-                Integer.toString(saboteursCount));
+                   Integer.toString(saboteursCount));
         drawSlider(g, goalTrack, normalize(goalScore, MIN_GOAL, MAX_GOAL), GOAL_COLOR, "GOAL SCORE",
-                Integer.toString(goalScore));
+                   Integer.toString(goalScore));
         drawSlider(g, turnTrack, normalize(turnDuration, MIN_TURN, MAX_TURN), TURN_COLOR, "TURN SECONDS",
-                Integer.toString(turnDuration));
+                   Integer.toString(turnDuration));
         drawSlider(g, harshnessTrack, normalize(harshnessIndex, 0, 2), HARSHNESS_COLOR, "HARSHNESS",
-                getHarshnessLabel());
+                   getHarshnessLabel());
 
-        drawStartButton(g);
-        drawBackButton(g);
+        if (startButton != null && backButton != null) {
+            startButton.draw(g);
+            backButton.draw(g);
+        }
     }
 
     /**
      * Handles mouse presses on buttons and slider tracks.
      *
      * @param e mouse press event from the UI system
-     * @return always {@code true} because the configuration overlay consumes
-     *         the press
+     * @return always {@code true} because the configuration overlay consumes the press
      */
     @Override
     public boolean mousePressed(MouseEvent e) {
-        if (startButton.contains(e.getPoint())) {
-            startGame();
-            return true;
-        }
-        if (backButton.contains(e.getPoint())) {
-            app.replaceLayer(new MainMenuLayer(app));
-            return true;
-        }
+        // Let buttons process the press first
+        if (startButton != null) startButton.mousePressed(e);
+        if (backButton != null) backButton.mousePressed(e);
 
         if (hitSlider(plumbersTrack, e)) {
             dragTarget = DragTarget.PLUMBERS;
@@ -192,8 +223,7 @@ public class ConfigLayer extends Layer {
      * Updates the currently dragged slider while the mouse is moving.
      *
      * @param e mouse drag event from the UI system
-     * @return {@code true} when a slider is being adjusted; otherwise
-     *         {@code false}
+     * @return {@code true} when a slider is being adjusted; otherwise {@code false}
      */
     @Override
     public boolean mouseDragged(MouseEvent e) {
@@ -216,13 +246,29 @@ public class ConfigLayer extends Layer {
 
     /**
      * Clears the current slider drag target when the mouse button is released.
+     * Also forwards the release event to the buttons.
      *
      * @param e mouse release event from the UI system
      * @return always {@code true} because the overlay consumes the release
      */
     @Override
     public boolean mouseReleased(MouseEvent e) {
+        if (startButton != null) startButton.mouseReleased(e);
+        if (backButton != null) backButton.mouseReleased(e);
         dragTarget = DragTarget.NONE;
+        return true;
+    }
+
+    /**
+     * Forwards mouse movement events to the buttons.
+     *
+     * @param e mouse moved event
+     * @return always {@code true}
+     */
+    @Override
+    public boolean mouseMoved(MouseEvent e) {
+        if (startButton != null) startButton.mouseMoved(e);
+        if (backButton != null) backButton.mouseMoved(e);
         return true;
     }
 
@@ -230,8 +276,7 @@ public class ConfigLayer extends Layer {
      * Handles keyboard shortcuts for leaving the configuration screen.
      *
      * @param e key press event from the UI system
-     * @return {@code true} when the escape key is handled; otherwise
-     *         {@code false}
+     * @return {@code true} when the escape key is handled; otherwise {@code false}
      */
     @Override
     public boolean keyPressed(KeyEvent e) {
@@ -302,50 +347,6 @@ public class ConfigLayer extends Layer {
     }
 
     /**
-     * Draws the back button used to return to the main menu.
-     *
-     * @param g graphics context used for drawing
-     */
-    private void drawBackButton(Graphics2D g) {
-        g.setColor(new Color(50, 60, 80));
-        g.fillRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
-        g.setColor(new Color(230, 220, 190));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(backButton.x, backButton.y, backButton.width, backButton.height, 10, 10);
-
-        if (font != null) {
-            String text = "BACK";
-            int textW = (int) (font.getCharWidth() * TEXT_SCALE) * text.length();
-            int textH = (int) (font.getCharHeight() * TEXT_SCALE);
-            int textX = backButton.x + (backButton.width - textW) / 2;
-            int textY = backButton.y + (backButton.height - textH) / 2;
-            font.draw(g, text, textX, textY, TEXT_SCALE);
-        }
-    }
-
-    /**
-     * Draws the start button used to launch the configured game.
-     *
-     * @param g graphics context used for drawing
-     */
-    private void drawStartButton(Graphics2D g) {
-        g.setColor(new Color(70, 85, 115));
-        g.fillRoundRect(startButton.x, startButton.y, startButton.width, startButton.height, 12, 12);
-        g.setColor(new Color(240, 225, 190));
-        g.setStroke(new BasicStroke(2f));
-        g.drawRoundRect(startButton.x, startButton.y, startButton.width, startButton.height, 12, 12);
-
-        if (font != null) {
-            String text = "START";
-            int textW = (int) (font.getCharWidth() * TEXT_SCALE) * text.length();
-            int textH = (int) (font.getCharHeight() * TEXT_SCALE);
-            int textX = startButton.x + (startButton.width - textW) / 2;
-            int textY = startButton.y + (startButton.height - textH) / 2;
-            font.draw(g, text, textX, textY, TEXT_SCALE);
-        }
-    }
-
-    /**
      * Draws the panel title and separator line.
      *
      * @param g graphics context used for drawing
@@ -380,7 +381,7 @@ public class ConfigLayer extends Layer {
     }
 
     /**
-     * Recomputes all bounds used by the overlay controls.
+     * Recomputes all bounds used by the overlay controls and creates buttons.
      */
     private void recomputeLayout() {
         int screenW = ScreenManager.getInstance().getVirtualWidth();
@@ -402,13 +403,8 @@ public class ConfigLayer extends Layer {
         turnTrack.setBounds(sliderX, turnY, SLIDER_WIDTH, SLIDER_HEIGHT);
         harshnessTrack.setBounds(sliderX, harshnessY, SLIDER_WIDTH, SLIDER_HEIGHT);
 
-        int startX = panelX + (PANEL_WIDTH - START_BUTTON_WIDTH) / 2;
-        int startY = harshnessY + 60;
-        startButton.setBounds(startX, startY, START_BUTTON_WIDTH, START_BUTTON_HEIGHT);
-
-        int backX = panelX + (PANEL_WIDTH - BACK_BUTTON_WIDTH) / 2;
-        int backY = panelY + PANEL_HEIGHT - BACK_BUTTON_HEIGHT - 18;
-        backButton.setBounds(backX, backY, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT);
+        // Create buttons dynamically based on new layout
+        createButtons();
     }
 
     /**
@@ -420,10 +416,10 @@ public class ConfigLayer extends Layer {
      */
     private boolean hitSlider(Rectangle track, MouseEvent e) {
         Rectangle hitBox = new Rectangle(
-                track.x - KNOB_SIZE / 2,
-                track.y - KNOB_SIZE / 2,
-                track.width + KNOB_SIZE,
-                track.height + KNOB_SIZE);
+            track.x - KNOB_SIZE / 2,
+            track.y - KNOB_SIZE / 2,
+            track.width + KNOB_SIZE,
+            track.height + KNOB_SIZE);
         return hitBox.contains(e.getPoint());
     }
 

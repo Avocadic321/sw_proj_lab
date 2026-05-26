@@ -16,7 +16,8 @@ public enum SpriteSheets {
     FONT_MAIN("font_main", "/ui/fonts/bitmap/font_main.png", 16, 16),
 
     ARROW_BUTTONS("buttons_dirs", "/ui/buttons/button_arrows.png", 32, 32),
-    CONFIRM_CANCEL_BUTTONS("confirm_cancel_buttons", "/ui/buttons/button_confirm_cancel.png", 32, 32);
+    CONFIRM_CANCEL_BUTTONS("confirm_cancel_buttons", "/ui/buttons/button_confirm_cancel.png", 32, 32),
+    GENERAL_BUTTONS("button_general_atlas", "/ui/buttons/button_general_atlas.png", 80, 32);
 
     private final String key;
     private final String path;
