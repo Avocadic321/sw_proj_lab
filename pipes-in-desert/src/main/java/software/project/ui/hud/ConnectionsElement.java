@@ -93,7 +93,9 @@ public class ConnectionsElement extends HudElement {
                 }
 
                 // Add to map
-                model.getGameMap().addElement(pipeToPlace);
+                // model.getGameMap().addElement(pipeToPlace);
+
+                pipeToPlace.onConnect(model.getGameMap());
 
                 // Remove from inventory by ID
                 plumber.getInventory().removeById(pipeToPlace.getId());
@@ -122,7 +124,10 @@ public class ConnectionsElement extends HudElement {
                 standingPipe.getFreeEnd().connectsTo(pump);
 
                 // Add to map
-                model.getGameMap().addElement(pump);
+                // model.getGameMap().addElement(pump);
+
+                // Auto-connect
+                pump.onConnect(model.getGameMap());
 
                 // Remove from inventory
                 plumber.getInventory().removeById(pump.getId());
@@ -134,7 +139,6 @@ public class ConnectionsElement extends HudElement {
         return false;
     }
 
-    // SIMPLE ALGORITHM for PIPE placement squares
     private void refreshPipeHighlights() {
         Player player = model.getTurnManager().getCurrentPlayer();
         if (player == null) return;

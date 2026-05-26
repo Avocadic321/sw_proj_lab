@@ -194,6 +194,9 @@ public class Plumber extends Player {
         // Add to map
         map.addElement(pipe);
 
+        // Autoc0-
+        pipe.onConnect(map);
+
         // Remove from inventory by ID (safer)
         inventory.removeById(pipe.getId());
 

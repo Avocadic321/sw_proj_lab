@@ -317,50 +317,40 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
     }
 
     public void determineOrientationFromConnections() {
-        List<Directions> dirs = new ArrayList<>();
+        List<Directions> connectedDirs = new ArrayList<>();
+
         if (end1.connectedTo != null) {
             Directions dir = getDirectionTo(end1.connectedTo);
-            if (dir != null) {
-                dirs.add(dir);
-            }
+            if (dir != null) connectedDirs.add(dir);
         }
         if (end2.connectedTo != null) {
             Directions dir = getDirectionTo(end2.connectedTo);
-            if (dir != null) {
-                dirs.add(dir);
-            }
+            if (dir != null) connectedDirs.add(dir);
         }
 
-        if (dirs.isEmpty()) {
-            // No connections – keep current orientation
-            return;
-        }
+        if (connectedDirs.isEmpty()) return;
 
-        if (dirs.size() == 1) {
-            // Single connection
-            Directions d = dirs.getFirst();
-            if (d == Directions.NORTH || d == Directions.SOUTH) {
+        if (connectedDirs.size() == 1) {
+            // Single connection - orient away from it
+            Directions dir = connectedDirs.get(0);
+            if (dir == Directions.NORTH || dir == Directions.SOUTH) {
                 orientation = PipeOrientation.VERTICAL;
             } else {
                 orientation = PipeOrientation.HORIZONTAL;
             }
-        } else if (dirs.size() == 2) {
-            Directions d1 = dirs.get(0);
-            Directions d2 = dirs.get(1);
-            boolean opposite = (d1 == Directions.NORTH && d2 == Directions.SOUTH) ||
-                (d1 == Directions.SOUTH && d2 == Directions.NORTH) ||
-                (d1 == Directions.EAST && d2 == Directions.WEST) ||
-                (d1 == Directions.WEST && d2 == Directions.EAST);
-            if (opposite) {
-                // Straight pipe
-                if (d1 == Directions.NORTH || d1 == Directions.SOUTH) {
-                    orientation = PipeOrientation.VERTICAL;
-                } else {
-                    orientation = PipeOrientation.HORIZONTAL;
-                }
-            } else {
-                // Corner – not supported now, set default vertical
+        } else if (connectedDirs.size() == 2) {
+            Directions d1 = connectedDirs.get(0);
+            Directions d2 = connectedDirs.get(1);
+
+            boolean isVertical = (d1 == Directions.NORTH || d1 == Directions.SOUTH) &&
+                (d2 == Directions.NORTH || d2 == Directions.SOUTH);
+            boolean isHorizontal = (d1 == Directions.EAST || d1 == Directions.WEST) &&
+                (d2 == Directions.EAST || d2 == Directions.WEST);
+
+            if (isVertical) {
                 orientation = PipeOrientation.VERTICAL;
+            } else if (isHorizontal) {
+                orientation = PipeOrientation.HORIZONTAL;
             }
         }
     }
@@ -381,6 +371,86 @@ public class Pipe extends ActiveElement implements IBreakable, IRepairable, ICar
             return Directions.WEST;
         }
         return null;
+    }
+
+    /**
+     * Automatically connects this pipe to adjacent elements (pipes, pumps, springs, cisterns).
+     * Should be called after the pipe is placed on the map.
+     *
+     * @param map the game map to check adjacent elements
+     */
+    /**
+     * Automatically connects this pipe to adjacent elements and adds to map.
+     * Should be called after the pipe's position is set.
+     *
+     * @param map the game map to check adjacent elements and add to
+     * @return true if added successfully
+     */
+    public boolean onConnect(GameMap map) {
+        int x = getX();
+        int y = getY();
+
+        // First add to map
+        map.addElement(this);
+
+
+        // Get all four adjacent elements
+        Element north = map.getElementAt(x, y - 1);
+        Element south = map.getElementAt(x, y + 1);
+        Element east = map.getElementAt(x + 1, y);
+        Element west = map.getElementAt(x - 1, y);
+
+        // Track which ends are used
+        boolean end1Used = false;
+        boolean end2Used = false;
+
+        // Connect to north if it's a compatible element
+        if (north instanceof ActiveElement activeNorth && !end1Used) {
+            end1.connectsTo(activeNorth);
+            end1Used = true;
+            System.out.println("[PIPE] Connected north to " + activeNorth.getId());
+        }
+
+        // Connect to south
+        if (south instanceof ActiveElement activeSouth && !end2Used) {
+            if (!end1Used) {
+                end1.connectsTo(activeSouth);
+                end1Used = true;
+            } else if (!end2Used) {
+                end2.connectsTo(activeSouth);
+                end2Used = true;
+            }
+            System.out.println("[PIPE] Connected south to " + activeSouth.getId());
+        }
+
+        // Connect to east
+        if (east instanceof ActiveElement activeEast && !end2Used) {
+            if (!end1Used) {
+                end1.connectsTo(activeEast);
+                end1Used = true;
+            } else if (!end2Used) {
+                end2.connectsTo(activeEast);
+                end2Used = true;
+            }
+            System.out.println("[PIPE] Connected east to " + activeEast.getId());
+        }
+
+        // Connect to west
+        if (west instanceof ActiveElement activeWest && !end2Used) {
+            if (!end1Used) {
+                end1.connectsTo(activeWest);
+                end1Used = true;
+            } else if (!end2Used) {
+                end2.connectsTo(activeWest);
+                end2Used = true;
+            }
+            System.out.println("[PIPE] Connected west to " + activeWest.getId());
+        }
+
+        // Update orientation after connections
+        determineOrientationFromConnections();
+
+        return true;
     }
 
 

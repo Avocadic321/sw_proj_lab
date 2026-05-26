@@ -154,6 +154,7 @@ public class MapRenderer {
     private void rebuildClickTargets(GameMap map) {
         clickableElements.clear();
         for (Element e : map.getElements()) {
+            // Convert map coordinates to grid indices
             Point gridPos = grid.mapToGrid(e.getX(), e.getY());
             if (gridPos == null) continue;
             Rectangle bounds = grid.getCellBounds(gridPos.x, gridPos.y);
