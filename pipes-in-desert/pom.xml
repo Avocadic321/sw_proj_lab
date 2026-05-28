@@ -18,7 +18,7 @@
         <javafx.version>21.0.5</javafx.version>
 
         <!-- APP SETTINGS based on README -->
-        <app.name>PipesInTheDesert</app.name>
+        <app.name>Pipes In The Desert</app.name>
         <app.vendor>Budapest University of Technology and Economics</app.vendor>
         <app.copyright>2026 Artem Monakhov, Diego Gomes, Dimitrija Krstev, Hussein Serageldin, Ruba Alkhaldi</app.copyright>
         <main.class>software.project.Main</main.class>
