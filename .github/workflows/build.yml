@@ -26,10 +26,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    defaults:
-      run:
-        working-directory: pipes-in-desert
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,9 +45,11 @@ jobs:
           echo "C:\Program Files (x86)\WiX Toolset\bin" >> $env:GITHUB_PATH
 
       - name: Build with Maven
+        working-directory: ./pipes-in-desert
         run: mvn clean package -P ${{ matrix.profile }}
 
       - name: List target/dist contents (debug)
+        working-directory: ./pipes-in-desert
         shell: bash
         run: |
           echo "=== Contents of target/dist ==="
@@ -59,16 +57,18 @@ jobs:
 
       - name: Find installer file
         id: finder
+        working-directory: ./pipes-in-desert
         shell: bash
         run: |
-          EXT="${{ matrix.installer_ext }}"
-          INSTALLER=$(find target/dist -type f -name "*.$EXT" | head -1)
-          if [ -z "$INSTALLER" ]; then
-            echo "ERROR: No installer file with extension .$EXT found in target/dist"
-            exit 1
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            INSTALLER=$(find target/dist -name "*.dmg" -type f | head -1)
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            INSTALLER=$(find target/dist -name "*.exe" -type f | head -1)
+          else
+            INSTALLER=$(find target/dist -name "*.deb" -type f | head -1)
           fi
           echo "installer_path=$INSTALLER" >> $GITHUB_OUTPUT
-          echo "installer_name=$(basename "$INSTALLER")" >> $GITHUB_OUTPUT
+          echo "installer_name=$(basename $INSTALLER)" >> $GITHUB_OUTPUT
 
       - name: Upload installer as workflow artifact
         uses: actions/upload-artifact@v4
