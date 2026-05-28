@@ -3,8 +3,8 @@ name: Build Multi-Platform Installers
 on:
   push:
     tags:
-      - 'v*'               # Run when you push a tag like v1.0.0
-  workflow_dispatch:       # Also allow manual trigger from GitHub UI
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,6 +26,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    defaults:
+      run:
+        working-directory: pipes-in-desert
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,12 +37,11 @@ jobs:
       - name: Set up JDK 21 (with JavaFX)
         uses: actions/setup-java@v4
         with:
-          distribution: 'liberica'      # Liberica JDK includes JavaFX
+          distribution: 'liberica'
           java-version: '21'
           java-package: 'jdk+fx'
           cache: 'maven'
 
-      # Windows requires WiX Toolset to build .exe installers
       - name: Install WiX Toolset (Windows only)
         if: runner.os == 'Windows'
         run: |
@@ -48,34 +51,36 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -P ${{ matrix.profile }}
 
+      - name: List target/dist contents (debug)
+        shell: bash
+        run: |
+          echo "=== Contents of target/dist ==="
+          ls -laR target/dist || echo "No target/dist directory found"
+
       - name: Find installer file
         id: finder
         shell: bash
         run: |
-          # The installer is inside target/dist/ (or target/dist/mac, etc.)
-          # We'll locate the first file matching the extension
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            INSTALLER=$(find target/dist -name "*.dmg" -type f | head -1)
-          elif [ "${{ runner.os }}" == "Windows" ]; then
-            INSTALLER=$(find target/dist -name "*.exe" -type f | head -1)
-          else
-            INSTALLER=$(find target/dist -name "*.deb" -type f | head -1)
+          EXT="${{ matrix.installer_ext }}"
+          INSTALLER=$(find target/dist -type f -name "*.$EXT" | head -1)
+          if [ -z "$INSTALLER" ]; then
+            echo "ERROR: No installer file with extension .$EXT found in target/dist"
+            exit 1
           fi
           echo "installer_path=$INSTALLER" >> $GITHUB_OUTPUT
-          echo "installer_name=$(basename $INSTALLER)" >> $GITHUB_OUTPUT
+          echo "installer_name=$(basename "$INSTALLER")" >> $GITHUB_OUTPUT
 
       - name: Upload installer as workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: ${{ steps.finder.outputs.installer_path }}
+          path: pipes-in-desert/${{ steps.finder.outputs.installer_path }}
 
-      # If this run was triggered by a tag, upload to GitHub Release
       - name: Upload to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ steps.finder.outputs.installer_path }}
+          files: pipes-in-desert/${{ steps.finder.outputs.installer_path }}
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
