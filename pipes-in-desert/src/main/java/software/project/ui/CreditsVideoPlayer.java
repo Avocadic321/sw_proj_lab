@@ -10,6 +10,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 
 import software.project.audio.AudioPlayer;
+import software.project.graphics.ResourceLoader;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -39,7 +40,7 @@ public final class CreditsVideoPlayer {
             new JFXPanel();
         }
 
-        URL resource = CreditsVideoPlayer.class.getResource("/ui/credits/credits.mp4");
+        URL resource = ResourceLoader.getResourceUrl("/ui/credits/credits.mp4");
         if (resource == null) {
             System.err.println("[ERROR] Credits video not found at /ui/credits/credits.mp4");
             return;

@@ -1,5 +1,7 @@
 package software.project.graphics;
 
+import java.awt.image.BufferedImage;
+
 public enum BitmapFonts {
     FONT_MONO(SpriteSheets.FONT_MONO, "abcdefghijklmnopqrstuvwxyz1234567890-+x/=()#@!?.,:'$"),
     FONT_MAIN(SpriteSheets.FONT_MAIN, "abcdefghijklmnopqrstuvwxyz1234567890");
@@ -20,12 +22,20 @@ public enum BitmapFonts {
         return mapping;
     }
 
-    public java.awt.image.BufferedImage loadFontImage() {
-        return sheet.loadImage();
+    /**
+     * Loads the font sheet image using ResourceLoader.
+     * @return BufferedImage or null if not found
+     */
+    public BufferedImage loadFontImage() {
+        return ResourceLoader.loadImage(sheet.getPath());
     }
 
+    /**
+     * Loads individual glyph images from the font sheet.
+     * @return array of Images, or null if the font sheet couldn't be loaded
+     */
     public java.awt.Image[] loadGlyphs() {
-        java.awt.image.BufferedImage fontImage = loadFontImage();
+        BufferedImage fontImage = loadFontImage();
         if (fontImage == null) return null;
 
         int glyphs = mapping.length();

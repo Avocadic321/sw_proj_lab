@@ -1,9 +1,7 @@
 package software.project.audio;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +11,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+
+import software.project.graphics.ResourceLoader;
 
 public class AudioPlayer {
     private static AudioPlayer instance;
@@ -61,28 +60,23 @@ public class AudioPlayer {
     }
 
     private Clip loadClip(String path) {
-        try (InputStream is = getClass().getResourceAsStream(path)) {
-            if (is == null) {
+        try (AudioInputStream audio = ResourceLoader.loadAudioStream(path);
+             AudioInputStream decoded = decodeToPcm(audio)) {
+            if (audio == null) {
                 System.err.println("Audio file not found: " + path);
                 return null;
             }
-
-            // Use BufferedInputStream for mark/reset support
-            try (BufferedInputStream bis = new BufferedInputStream(is);
-                 AudioInputStream audio = AudioSystem.getAudioInputStream(bis);
-                 AudioInputStream decoded = decodeToPcm(audio)) {
-
-                Clip clip = AudioSystem.getClip();
-                clip.open(decoded);
-                return clip;
-            }
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            Clip clip = AudioSystem.getClip();
+            clip.open(decoded);
+            return clip;
+        } catch (IOException | LineUnavailableException e) {
             System.err.println("Error loading audio " + path + ": " + e.getMessage());
             return null;
         }
     }
 
     private AudioInputStream decodeToPcm(AudioInputStream sourceStream) {
+        if (sourceStream == null) return null;
         AudioFormat sourceFormat = sourceStream.getFormat();
         if (AudioFormat.Encoding.PCM_SIGNED.equals(sourceFormat.getEncoding())) {
             return sourceStream;
@@ -302,7 +296,7 @@ public class AudioPlayer {
 
             System.out.println("[INFO] Loaded external music: " + file.getName());
 
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+        } catch (Exception e) {
             System.err.println("[ERROR] Failed to load external music: " + e.getMessage());
             e.printStackTrace();
         }
