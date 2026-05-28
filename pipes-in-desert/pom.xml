@@ -18,8 +18,8 @@
         <javafx.version>21.0.5</javafx.version>
 
         <!-- APP SETTINGS based on README -->
-        <!-- Display name with spaces (used for macOS and Windows installers) -->
-        <app.name>Pipes in the Desert</app.name>
+        <!-- Display name without spaces (fixes GitHub Actions issues) -->
+        <app.name>Pipes-in-the-Desert</app.name>
         <app.vendor>Budapest University of Technology and Economics</app.vendor>
         <app.copyright>2026 Artem Monakhov, Diego Gomes, Dimitrija Krstev, Hussein Serageldin, Ruba Alkhaldi</app.copyright>
         <main.class>software.project.Main</main.class>
@@ -181,7 +181,7 @@
 
     <!-- PLATFORM PROFILES -->
     <profiles>
-        <!-- macOS Profile (auto-detect) - uses spaced app name -->
+        <!-- macOS Profile (auto-detect) -->
         <profile>
             <id>mac</id>
             <activation>
@@ -261,7 +261,7 @@
             </build>
         </profile>
 
-        <!-- Windows Profile (auto-detect) - uses spaced app name -->
+        <!-- Windows Profile (auto-detect) -->
         <profile>
             <id>win</id>
             <activation>
@@ -340,7 +340,7 @@
             </build>
         </profile>
 
-        <!-- Linux Profile (auto-detect) - no spaces in package name -->
+        <!-- Linux Profile (auto-detect) - kept but not used in workflow -->
         <profile>
             <id>linux</id>
             <activation>
