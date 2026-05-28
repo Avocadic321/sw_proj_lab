@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Avocadic321/sw_proj_lab">
-    <img src="pipes-in-desert/docs/logo.png" alt="Logo" width="250px" height="250px">
+    <img src="pipes-in-desert/docs/icon.png" alt="Logo" width="256px" height="256px">
   </a>
 <h3 align="center">Pipes in the Desert</h3>
   <p align="center">
