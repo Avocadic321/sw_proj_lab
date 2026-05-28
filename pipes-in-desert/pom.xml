@@ -18,7 +18,8 @@
         <javafx.version>21.0.5</javafx.version>
 
         <!-- APP SETTINGS based on README -->
-        <app.name>Pipes In The Desert</app.name>
+        <!-- Display name with spaces (used for macOS and Windows installers) -->
+        <app.name>Pipes in the Desert</app.name>
         <app.vendor>Budapest University of Technology and Economics</app.vendor>
         <app.copyright>2026 Artem Monakhov, Diego Gomes, Dimitrija Krstev, Hussein Serageldin, Ruba Alkhaldi</app.copyright>
         <main.class>software.project.Main</main.class>
@@ -180,7 +181,7 @@
 
     <!-- PLATFORM PROFILES -->
     <profiles>
-        <!-- macOS Profile (auto-detect) -->
+        <!-- macOS Profile (auto-detect) - uses spaced app name -->
         <profile>
             <id>mac</id>
             <activation>
@@ -191,7 +192,7 @@
             <properties>
                 <javafx.platform>mac</javafx.platform>
                 <jpackage.type>dmg</jpackage.type>
-                <jpackage.icon>docs/icon.icns</jpackage.icon>   <!-- FIXED: use .icns for macOS -->
+                <jpackage.icon>docs/icon.icns</jpackage.icon>
             </properties>
             <dependencies>
                 <dependency>
@@ -260,7 +261,7 @@
             </build>
         </profile>
 
-        <!-- Windows Profile (auto-detect) -->
+        <!-- Windows Profile (auto-detect) - uses spaced app name -->
         <profile>
             <id>win</id>
             <activation>
@@ -339,7 +340,7 @@
             </build>
         </profile>
 
-        <!-- Linux Profile (auto-detect) -->
+        <!-- Linux Profile (auto-detect) - no spaces in package name -->
         <profile>
             <id>linux</id>
             <activation>
@@ -404,6 +405,8 @@
                                         <argument>${app.vendor}</argument>
                                         <argument>--copyright</argument>
                                         <argument>${app.copyright}</argument>
+                                        <argument>--linux-package-name</argument>
+                                        <argument>pipes-in-the-desert</argument>
                                         <argument>--linux-deb-maintainer</argument>
                                         <argument>team@pipesinthedesert.com</argument>
                                         <argument>--dest</argument>
@@ -423,7 +426,7 @@
             <properties>
                 <javafx.platform>mac</javafx.platform>
                 <jpackage.type>dmg</jpackage.type>
-                <jpackage.icon>docs/icon.icns</jpackage.icon>   <!-- FIXED: use .icns -->
+                <jpackage.icon>docs/icon.icns</jpackage.icon>
             </properties>
             <dependencies>
                 <dependency>
@@ -624,6 +627,8 @@
                                         <argument>${app.vendor}</argument>
                                         <argument>--copyright</argument>
                                         <argument>${app.copyright}</argument>
+                                        <argument>--linux-package-name</argument>
+                                        <argument>pipes-in-the-desert</argument>
                                         <argument>--linux-deb-maintainer</argument>
                                         <argument>team@pipesinthedesert.com</argument>
                                         <argument>--dest</argument>
