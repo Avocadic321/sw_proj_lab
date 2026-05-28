@@ -72,9 +72,6 @@ Choose your preferred format:
 | **Windows** | `PipesInTheDesert.exe` | Double‑click the installer, then launch from Start Menu. |
 | **macOS** | `PipesInTheDesert.dmg` | Open the DMG, drag the app to Applications. |
 | **Linux (Debian/Ubuntu)** | `pipes-in-desert_1.0_amd64.deb` | Run `sudo dpkg -i pipes-in-desert_*.deb` |
-| **Any OS with Java 21+** | `pipes-in-desert.jar` | Run `java -jar pipes-in-desert.jar` |
-
-> **Tip:** The `.jar` file works on any platform where Java 21 is installed, but the native installers provide a more integrated experience (desktop shortcuts, file associations, etc.).
 
 ### ⚙️ Build and Run
 1. Clone the repository:
