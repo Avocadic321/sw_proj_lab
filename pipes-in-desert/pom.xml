@@ -17,15 +17,22 @@
         <junit.version>5.11.0</junit.version>
         <javafx.version>21.0.5</javafx.version>
 
-        <!-- JPACKAGE SETTINGS -->
-        <app.name>PipesInDesert</app.name>
+        <!-- APP SETTINGS based on README -->
+        <app.name>PipesInTheDesert</app.name>
+        <app.vendor>Budapest University of Technology and Economics</app.vendor>
+        <app.copyright>2026 Artem Monakhov, Diego Gomes, Dimitrija Krstev, Hussein Serageldin, Ruba Alkhaldi</app.copyright>
         <main.class>software.project.Main</main.class>
         <main.jar>${project.build.finalName}.jar</main.jar>
+
+        <!-- Default platform (will be overridden by profiles) -->
+        <javafx.platform></javafx.platform>
+        <jpackage.type>dmg</jpackage.type>
+        <!-- Default icon (overridden per platform) -->
+        <jpackage.icon>docs/logo.png</jpackage.icon>
     </properties>
 
     <dependencies>
-
-        <!-- ===== Sound libraries ===== -->
+        <!-- Sound libraries (platform independent) -->
         <dependency>
             <groupId>com.googlecode.soundlibs</groupId>
             <artifactId>mp3spi</artifactId>
@@ -44,44 +51,66 @@
             <version>1.0.1.4</version>
         </dependency>
 
-        <!-- ===== JavaFX ===== -->
+        <!-- JavaFX (platform-specific classifiers added in profiles) -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
-        <!-- ===== JUnit 5 ===== -->
+        <!-- JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
-
         <finalName>pipes-in-desert</finalName>
 
-        <plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.jpeg</include>
+                    <include>**/*.wav</include>
+                    <include>**/*.ttf</include>
+                    <include>**/*.fnt</include>
+                    <include>**/*.txt</include>
+                    <include>**/*.mp4</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <!-- Include docs folder for logo and screenshot -->
+            <resource>
+                <directory>docs</directory>
+                <includes>
+                    <include>logo.png</include>
+                    <include>screenshot.png</include>
+                    <include>icon.icns</include>
+                    <include>icon.ico</include>
+                    <include>icon.png</include>
+                </includes>
+            </resource>
+        </resources>
 
+        <plugins>
             <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -102,6 +131,40 @@
                 </configuration>
             </plugin>
 
+            <!-- Create fat/uber JAR with all dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${main.class}</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Run app -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -109,59 +172,470 @@
                 <version>3.3.0</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
-
-            <!-- ========================= -->
-            <!-- JPACKAGE AUTOMATION       -->
-            <!-- ========================= -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.3.0</version>
-
-                <executions>
-                    <execution>
-                        <id>package-app</id>
-                        <phase>package</phase>
-
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-
-                        <configuration>
-                            <executable>jpackage</executable>
-
-                            <arguments>
-
-                                <argument>--name</argument>
-                                <argument>${app.name}</argument>
-
-                                <argument>--input</argument>
-                                <argument>target</argument>
-
-                                <argument>--main-jar</argument>
-                                <argument>${main.jar}</argument>
-
-                                <argument>--main-class</argument>
-                                <argument>${main.class}</argument>
-
-                                <argument>--icon</argument>
-                                <argument>docs/icon.icns</argument>
-
-                                <argument>--type</argument>
-                                <argument>dmg</argument>
-
-                            </arguments>
-
-                        </configuration>
-                    </execution>
-                </executions>
-
-            </plugin>
-
         </plugins>
-
     </build>
+
+    <!-- PLATFORM PROFILES -->
+    <profiles>
+        <!-- macOS Profile (auto-detect) -->
+        <profile>
+            <id>mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+                <jpackage.type>dmg</jpackage.type>
+                <jpackage.icon>docs/icon.icns</jpackage.icon>   <!-- FIXED: use .icns for macOS -->
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-macos-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--mac-package-identifier</argument>
+                                        <argument>software.project.pipesinthedesert</argument>
+                                        <argument>--mac-package-name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Windows Profile (auto-detect) -->
+        <profile>
+            <id>win</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>win</javafx.platform>
+                <jpackage.type>exe</jpackage.type>
+                <jpackage.icon>docs/icon.ico</jpackage.icon>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-windows-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--win-dir-chooser</argument>
+                                        <argument>--win-menu</argument>
+                                        <argument>--win-shortcut</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Linux Profile (auto-detect) -->
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+                <jpackage.type>deb</jpackage.type>
+                <jpackage.icon>docs/icon.png</jpackage.icon>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-linux-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--linux-deb-maintainer</argument>
+                                        <argument>team@pipesinthedesert.com</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Cross-compilation profiles (build for specific platform on any OS) -->
+        <profile>
+            <id>build-mac</id>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+                <jpackage.type>dmg</jpackage.type>
+                <jpackage.icon>docs/icon.icns</jpackage.icon>   <!-- FIXED: use .icns -->
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>mac</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-macos-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--mac-package-identifier</argument>
+                                        <argument>software.project.pipesinthedesert</argument>
+                                        <argument>--mac-package-name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist/mac</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>build-win</id>
+            <properties>
+                <javafx.platform>win</javafx.platform>
+                <jpackage.type>exe</jpackage.type>
+                <jpackage.icon>docs/icon.ico</jpackage.icon>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>win</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-windows-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--win-dir-chooser</argument>
+                                        <argument>--win-menu</argument>
+                                        <argument>--win-shortcut</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist/windows</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>build-linux</id>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+                <jpackage.type>deb</jpackage.type>
+                <jpackage.icon>docs/icon.png</jpackage.icon>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                    <classifier>linux</classifier>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-linux-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${jpackage.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${main.jar}</argument>
+                                        <argument>--main-class</argument>
+                                        <argument>${main.class}</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${jpackage.icon}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--copyright</argument>
+                                        <argument>${app.copyright}</argument>
+                                        <argument>--linux-deb-maintainer</argument>
+                                        <argument>team@pipesinthedesert.com</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/dist/linux</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

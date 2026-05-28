@@ -35,11 +35,17 @@ public final class CreditsVideoPlayer {
     }
 
     public static void play() {
+        if (fxPanel == null) {
+            new JFXPanel();
+        }
+
         URL resource = CreditsVideoPlayer.class.getResource("/ui/credits/credits.mp4");
         if (resource == null) {
-            System.err.println("[WARN] Credits video not found at /ui/credits/credits.mp4");
+            System.err.println("[ERROR] Credits video not found at /ui/credits/credits.mp4");
             return;
         }
+
+        final URL finalResource = resource;
 
         synchronized (LOCK) {
             if (frame != null) {
@@ -55,8 +61,7 @@ public final class CreditsVideoPlayer {
         }
 
         pausedSong = AudioPlayer.getInstance().pauseCurrentSong();
-
-        SwingUtilities.invokeLater(() -> openWindow(resource));
+        SwingUtilities.invokeLater(() -> openWindow(finalResource));
     }
 
     public static void stop() {
@@ -115,14 +120,18 @@ public final class CreditsVideoPlayer {
             Platform.runLater(() -> Platform.setImplicitExit(false));
             frame.add(fxPanel);
             fxPanel.setFocusable(true);
+
+            // Swing key listener: SPACE or ESC to stop
             frame.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    int code = e.getKeyCode();
+                    if (code == KeyEvent.VK_SPACE || code == KeyEvent.VK_ESCAPE) {
                         stop();
                     }
                 }
             });
+
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -141,25 +150,24 @@ public final class CreditsVideoPlayer {
     }
 
     private static void setupPlayer(URL resource) {
-        MediaPlayer player;
-
         synchronized (LOCK) {
             if (stopRequested || fxPanel == null || frame == null) {
                 return;
             }
         }
 
+        final MediaPlayer player;
         try {
             player = new MediaPlayer(new Media(resource.toExternalForm()));
         } catch (RuntimeException ex) {
-            System.err.println("[WARN] Unable to open credits video: " + ex.getMessage());
+            System.err.println("[ERROR] Unable to load credits video: " + ex.getMessage());
             stop();
             return;
         }
 
         player.setOnEndOfMedia(CreditsVideoPlayer::stop);
         player.setOnError(() -> {
-            System.err.println("[WARN] Credits video playback error: " + player.getError());
+            System.err.println("[ERROR] Credits video playback error: " + player.getError());
             stop();
         });
 
@@ -172,8 +180,10 @@ public final class CreditsVideoPlayer {
         root.setStyle("-fx-background-color: black;");
 
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        // JavaFX key event: SPACE or ESC to stop
         scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.SPACE) {
+            KeyCode code = event.getCode();
+            if (code == KeyCode.SPACE || code == KeyCode.ESCAPE) {
                 stop();
             }
         });
@@ -188,6 +198,7 @@ public final class CreditsVideoPlayer {
 
         fxPanel.setScene(scene);
         player.play();
+
         Platform.runLater(() -> {
             synchronized (LOCK) {
                 if (frame != null) {

@@ -19,4 +19,28 @@ public enum BitmapFonts {
     public String getMapping() {
         return mapping;
     }
+
+    public java.awt.image.BufferedImage loadFontImage() {
+        return sheet.loadImage();
+    }
+
+    public java.awt.Image[] loadGlyphs() {
+        java.awt.image.BufferedImage fontImage = loadFontImage();
+        if (fontImage == null) return null;
+
+        int glyphs = mapping.length();
+        java.awt.Image[] glyphImages = new java.awt.Image[glyphs];
+        int frameWidth = sheet.getFrameWidth();
+        int frameHeight = sheet.getFrameHeight();
+
+        int cols = fontImage.getWidth() / frameWidth;
+
+        for (int i = 0; i < glyphs; i++) {
+            int srcX = (i % cols) * frameWidth;
+            int srcY = (i / cols) * frameHeight;
+            glyphImages[i] = fontImage.getSubimage(srcX, srcY, frameWidth, frameHeight);
+        }
+
+        return glyphImages;
+    }
 }

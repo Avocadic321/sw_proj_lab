@@ -39,4 +39,19 @@ public enum Sprites {
     public String getPath() {
         return path;
     }
+
+    public java.awt.image.BufferedImage loadImage() {
+        try {
+            javax.imageio.ImageIO.setUseCache(false);
+            java.io.InputStream is = getClass().getResourceAsStream(path);
+            if (is == null) {
+                System.err.println("Failed to load: " + path);
+                return null;
+            }
+            return javax.imageio.ImageIO.read(is);
+        } catch (java.io.IOException e) {
+            System.err.println("Error loading " + path + ": " + e.getMessage());
+            return null;
+        }
+    }
 }
