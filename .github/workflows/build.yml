@@ -1,0 +1,81 @@
+name: Build Multi-Platform Installers
+
+on:
+  push:
+    tags:
+      - 'v*'               # Run when you push a tag like v1.0.0
+  workflow_dispatch:       # Also allow manual trigger from GitHub UI
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            profile: build-mac
+            artifact_name: installer-macos
+            installer_ext: dmg
+          - os: windows-latest
+            profile: build-win
+            artifact_name: installer-windows
+            installer_ext: exe
+          - os: ubuntu-latest
+            profile: build-linux
+            artifact_name: installer-linux
+            installer_ext: deb
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (with JavaFX)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'      # Liberica JDK includes JavaFX
+          java-version: '21'
+          java-package: 'jdk+fx'
+          cache: 'maven'
+
+      # Windows requires WiX Toolset to build .exe installers
+      - name: Install WiX Toolset (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          choco install wixtoolset -y
+          echo "C:\Program Files (x86)\WiX Toolset\bin" >> $env:GITHUB_PATH
+
+      - name: Build with Maven
+        run: mvn clean package -P ${{ matrix.profile }}
+
+      - name: Find installer file
+        id: finder
+        shell: bash
+        run: |
+          # The installer is inside target/dist/ (or target/dist/mac, etc.)
+          # We'll locate the first file matching the extension
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            INSTALLER=$(find target/dist -name "*.dmg" -type f | head -1)
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            INSTALLER=$(find target/dist -name "*.exe" -type f | head -1)
+          else
+            INSTALLER=$(find target/dist -name "*.deb" -type f | head -1)
+          fi
+          echo "installer_path=$INSTALLER" >> $GITHUB_OUTPUT
+          echo "installer_name=$(basename $INSTALLER)" >> $GITHUB_OUTPUT
+
+      - name: Upload installer as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ steps.finder.outputs.installer_path }}
+
+      # If this run was triggered by a tag, upload to GitHub Release
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.finder.outputs.installer_path }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
