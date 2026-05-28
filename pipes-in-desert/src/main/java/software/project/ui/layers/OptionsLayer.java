@@ -343,7 +343,13 @@ public class OptionsLayer extends Layer {
         String directory = dialog.getDirectory();
         if (fileName != null && directory != null) {
             File file = new File(directory, fileName);
-            audioPlayer.playSongFromFile(file);
+
+            // Stop current song if playing
+            audioPlayer.stopCurrentSong();
+
+            // Load and play the custom file
+            audioPlayer.loadSongFromFile("custom_music", file);
+            audioPlayer.playSong("custom_music");
             selectedMusicLabel = "custom";
         }
     }
@@ -352,6 +358,12 @@ public class OptionsLayer extends Layer {
      * Restores the default soundtrack.
      */
     private void resetToDefaultMusic() {
+        audioPlayer.stopCurrentSong();
+
+        // Unload custom music if it exists
+        audioPlayer.unloadSong("custom_music");
+
+        // Play default song (adjust the key to match your actual default song)
         audioPlayer.playSong("main_theme");
         selectedMusicLabel = "default";
     }

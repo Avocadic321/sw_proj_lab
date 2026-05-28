@@ -39,4 +39,5 @@ public enum Sprites {
     public String getPath() {
         return path;
     }
+
 }

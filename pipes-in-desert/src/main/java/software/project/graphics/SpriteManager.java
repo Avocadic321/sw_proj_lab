@@ -27,55 +27,26 @@ public class SpriteManager {
     public void loadSprite(Sprites sprite) {
         String path = sprite.getPath();
         String key = sprite.getKey();
-        try (InputStream is = getClass().getResourceAsStream(path)) {
-            if (is == null) {
-                if (showWarnings) {
-                    System.err.println("[WARNING] Sprite not found: " + path + " for key: " + key);
-                }
-                return;
-            }
-            BufferedImage img = ImageIO.read(is);
-            sprites.put(key, new Sprite(img));
-            if (showWarnings) {
-                System.out.println("[INFO] Loaded sprite: " + key + " from " + path);
-            }
-        } catch (IOException e) {
-            if (showWarnings) {
-                System.err.println("[ERROR] Failed to load sprite: " + key + " from " + path);
-                e.printStackTrace();
-            }
+        BufferedImage img = ResourceLoader.loadImage(path);
+        if (img == null) {
+            if (showWarnings) System.err.println("[WARNING] Sprite not found: " + path + " for key: " + key);
+            return;
         }
+        sprites.put(key, new Sprite(img));
+        if (showWarnings) System.out.println("[INFO] Loaded sprite: " + key + " from " + path);
     }
 
     public void loadSpriteSheet(SpriteSheets spriteSheet) {
         String key = spriteSheet.getKey();
         String path = spriteSheet.getPath();
-        int frameWidth = spriteSheet.getFrameWidth();
-        int frameHeight = spriteSheet.getFrameHeight();
-        try (InputStream is = getClass().getResourceAsStream(path)) {
-            if (is == null) {
-                if (showWarnings) {
-                    System.err.println("[ERROR] SpriteSheet not found: " + path + " for key: " + key);
-                }
-                return;
-            }
-            BufferedImage sheetImage = ImageIO.read(is);
-            if (sheetImage == null) {
-                if (showWarnings) {
-                    System.err.println("[ERROR] Failed to read image: " + path + " for key: " + key);
-                }
-                return;
-            }
-            System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x"
-                                   + sheetImage.getHeight());
-            SpriteSheet sheet = new SpriteSheet(sheetImage, frameWidth, frameHeight);
-            spriteSheets.put(key, sheet);
-        } catch (IOException e) {
-            if (showWarnings) {
-                System.err.println("[ERROR] IOException loading " + path + ": " + e.getMessage());
-                e.printStackTrace();
-            }
+        BufferedImage sheetImage = ResourceLoader.loadImage(path);
+        if (sheetImage == null) {
+            if (showWarnings) System.err.println("[ERROR] SpriteSheet not found: " + path + " for key: " + key);
+            return;
         }
+        System.out.println("[INFO] Loaded sprite sheet: " + key + " size=" + sheetImage.getWidth() + "x" + sheetImage.getHeight());
+        SpriteSheet sheet = new SpriteSheet(sheetImage, spriteSheet.getFrameWidth(), spriteSheet.getFrameHeight());
+        spriteSheets.put(key, sheet);
     }
 
     public Sprite getSprite(Sprites s) {
